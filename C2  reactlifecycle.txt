@@ -1,0 +1,1481 @@
+React lifercycle is flow of cotroll as normal.
+
+Flow for only single component:
+Suppose you have only one component like below - 
+
+	class Home extends React.Component {
+	   
+	   constructor(props) 		{ console.log('Home const', this.state.welcomeTextHome, this.props.type, $('#headerHome').innerText); }
+	   componentWillMount() 	{ console.log('Home WillM', this.state.welcomeTextHome, this.props.type, $('#headerHome').innerText); }
+	   componentDidMount()	 	{ console.log('Home DidMt', this.state.welcomeTextHome, this.props.type, $('#headerHome').innerText); }   
+	   render() 				{ console.log('Home render', this.state.welcomeTextHome, this.props.type, $('#headerHome').innerText); 
+								  const home = <div className='row wrapp'>  <h3 id='headerHome'> {this.state.welcomeTextHome + ' --- ' + this.state.greetText} </h3> </div>
+								  return home;
+								}
+	}
+
+	ReactDOM.render(<Home type='happy'/>, document.getElementById('app'));
+
+
+This is most basic example of react jsx. 
+You have three four methode here in lifecycle.
+When the page is loaded they will executed in this mannerr: 
+	constructor	 -->  componentWillMount  -->  render  --> componentDidMount
+This cycle remain firm in their sequence at a time of first load, if you have nested component then their methode may apear in between but sequence remain unchanged.
+
+constructor: 
+It will be called always at the first time and before lifecycle start.
+
+props: 
+	value of prop is remain unchangable throught the cycle and remain defined all the time.
+
+state:
+	state can only be initilized in constructor and then later can be modified in further flow.
+	to initilize it use: 
+	this.state = { welcomeTextHome: 'Welcom-Home' }
+	But you can not make changes in the state inside the constructor, You cannot use 'setState' methode in constructor at all.
+	So below code will give a error
+	
+	 constructor(props) { ...
+		this.state = { welcomeTextHome: 'Welcom-Home' }
+		this.setState(...);		// This line will give error
+	 }
+	  
+	Error is below->
+	Warning: setState(...): Can only update a mounted or mounting component. This usually means you called setState() on an unmounted component. This is a no-op.
+	
+	after innitilization you ca change the value in state in 'componentWillMount', 'render' and 'componentdidMount' function.
+	
+Changing state in 'componentWillMount' :-
+    
+	constructor(props) {... console.log('Home const ', this.state.welcomeTextHome);}
+	componentWillMount () {
+	   this.setState({welcomeTextHome: 'changed in componentWillMount'});
+	   console.log('Home WillM', this.state.welcomeTextHome);									//L1
+    }	
+	componentDidMount()	 	{ console.log('Home DidMt ', this.state.welcomeTextHome); }   		//L2
+    render() 				{ console.log('Home render', this.state.welcomeTextHome); ...}		//L3
+	
+As you know 'setState' is syncronusly change state, so change value may or may not reflect in the line 'L1'
+But 
+This will reflect in 'render' and  'componentdidMount' call sequenced to be next so output will be:
+	>>
+	Home const Welcom-Home
+	Home WillM Welcom-Home 
+	Home render changed in componentWillMount 
+	Home DidMt changed in componentWillMount .
+	
+changing state multiple time in 'componentWillMount' :-
+	if you call 'this.setState' many time in 'componentWillMount' then they all will be clubed and reflected in the very end of function.
+	and effect of last call of 'setState' will overlape all previous one.
+	And this change will reflect in 'render' and 'componentDidMount'
+	
+Changing state in render :- 
+	You cannnot change the state of same component in render function that component itself, bcoz it may create a infinite loop.
+	so calling below in render may cause the error at compiling
+		render() {			
+			this.setState({welcomeTextHome: 'changed in  render'});	....
+		}
+	Error:
+	Cannot update during an existing state transition (such as within `render` or another component's constructor). Render methods should be a pure function of props and state; constructor side-effects are an anti-pattern, but can be moved to `componentWillMount`.
+	***Though can you update the state of any other component in render is a open quesdtion
+	
+Changing state in 'componentDidMount' :-
+	This called after render as you know, but if you call 'setState' in this function then it will againg invoke the render function.
+	No matter how much time you call 'setState' in it, the render will be called only once.
+	But if you have not callled 'setState' in this function even at once then it will not re-invoke render function.
+	Also before and after the scheduled render call, it will call two hooh componentWillUpdate and componentDidUpdate
+	Here willU would have a older value of state, but didU has ythe updated value of state.
+	
+		constructor(props) {... console.log('Home const ', this.state.welcomeTextHome);}
+		componentWillMount () 	{ console.log('Home WillM', this.state.welcomeTextHome); }					//L4
+		componentDidMount()	 	{ console.log('Home DidMt ', this.state.welcomeTextHome); 					//L5	
+									this.setState({welcomeTextHome: 'changed in componentDidMount'});
+									this.setState({welcomeTextHome: 'changed in componentDidMount 1'});
+									this.setState({welcomeTextHome: 'changed in componentDidMount 2'});									
+								}   		
+		render() 				{ console.log('Home render', this.state.welcomeTextHome); ...}				//L6
+		
+So the output will be like this:
+		>>
+		Home const Welcom-Home
+		Home WillM Welcom-Home 
+		Home render Welcom-Home  
+		Home DidMt Welcom-Home
+		
+		Home WillU Welcom-Home 
+		Home render changed in componentDidMount 2
+		Home WillU changed in componentDidMount 2
+		
+So you see that willU, render, idiU is called one more time after 'componentDidMount'
+
+Changing state in 'click'
+It will simply call the willU, render and didU so result is:
+		Home WillU Welcom-Home 
+		Home render changed in componentDidMount 2
+		Home WillU changed in componentDidMount 2
+
+
+document.ready:-
+This function will be called in the very end of the lifecycle plus all the sheduled render.
+So if you have called 'setState' in the 'didMount' then 'ready' will be called even after the second render.
+If you have register multiple hook of 'ready' then as usual they will be called in sequence of their registration.
+so in above example:
+
+		Home const Welcom-Home
+		Home WillM Welcom-Home 
+		Home render Welcom-Home  
+		Home DidMt Welcom-Home
+		Home render changed in componentDidMount 2
+		Home ready changed in componentDidMount 2
+		
+-------------------------
+
+Multiple (Nested) react component:-
+you know that you have a nested react component 100% of the time, so now how it work
+First thing to remember is that, all the lefecycle methode of the child component will execute only if it is actcully render.
+But if you just create it and do not render than none of the lifecycle methode is called.
+
+	Home{
+		render() {
+			var hall = <Hall />;
+			return isHAll ? hall : ''
+		}
+	}
+	
+	Hall{
+	   
+	   constructor(props) {
+		   $(document).ready(()=> { console.log('Hall ready', this.state.welcomeTextHome, this.props.type, $('#headerHome').innerText); })
+		   console.log('Hall const', this.state, this.props, $('#headerHome').innerText);
+		   this.state = { welcomeTextHall:'Sit-in-Hall', }
+	   }
+	   
+	   render() {
+			console.log('Hall render', this.state.welcomeTextHall, this.props, $('#headerHome').innerText);
+			return (<div> {this.state.welcomeTextHall} </div>);
+	   }
+	   
+	   componentWillMount () { console.log('Hall WillM', this.state.welcomeTextHall, this.props, $('#headerHome').innerText); }
+	   componentDidMount () { console.log('Hall didMt', this.state.welcomeTextHall, this.props, $('#headerHome').innerText); }   
+	}	
+	
+if 'isHall' is false then none of the lifecycle methode of 'Hall' will be called. but if it is true than they will be called.
+**IMP**:  EVEN constructor of 'Hall' will not be called if 'isHall' is false.
+
+---
+
+
+**THUMB RULE***: IF the state has been updated then 'render' and only render will be called with willU and didU no other lifecycle methode.
+
+----
+
+
+now suppose 'isHall' is true.
+
+If you have hirarchy like below 
+	Home --> Hall
+Then flow of cycle be like: 
+
+	Home const Welcom-Home
+	Home WillM Welcom-Home 
+	Home render Welcom-Home  
+	Hall const Sit-in-Hall
+	Hall WillM Sit-in-Hall
+	Hall render Sit-in-Hall
+	
+	Hall didMt Sit-in-Hall
+	Home didMt Welcom-Home 
+	
+	Home ready
+	Hall ready
+
+So
+First the constructor, willMt and render of parent is called after that same will be called of descendet child and flow keep continue.
+once it reaches to pit, revesre flow of 'didMt' will start
+here the 'didMt' of most deep child will be called and then it reaches to top.
+
+Updating state of parent in parent:-
+suppose app is loading and you update the state 
+updating state in 'willMt' of parent :
+	The flow of page load remain as it is.
+
+##SER1
+updating state of parent in 'didMt' of parent :
+	First the complete cycle of loading will execute as it is (but not document.ready)
+		Home const Welcom-Home
+		Home WillM Welcom-Home 
+		Home render Welcom-Home  
+		Hall const Sit-in-Hall
+		Hall WillM Sit-in-Hall
+		Hall render Sit-in-Hall
+		
+		Hall didMt Sit-in-Hall
+		Home didMt Welcom-Home 	
+
+	Now render will be called for the component in which state is updated. and then render of all the child of that parent will also be called.
+	Also before that renders willU of that component be called. and in the end didU will be called from deepest child to parent
+
+	
+	Home {
+	componentDidMount () {
+		   console.log('Home DidMt', this.state.welcomeTextHome, this.props.type, $('#headerHome').innerText);	//L10
+		   this.setState({welcomeTextHome: 'changed in componentDidMount 2'});
+		} 
+	}
+	result:
+		Home const Welcom-Home
+		Home WillM Welcom-Home 
+		Home render Welcom-Home  
+		Hall const Sit-in-Hall
+		Hall WillM Sit-in-Hall
+		Hall render Sit-in-Hall
+		
+		Hall didMt Sit-in-Hall
+		Home didMt Welcom-Home 	
+
+		Home WillU Welcom-Home 
+		Home render changed in componentDidMount 2			//L8
+		Hall WillU Sit-in-Hall
+		Hall render Sit-in-Hall 							//L9
+		
+		Hall didU Sit-in-Hall 
+		Home DidUp changed in componentDidMount 2
+		
+	L8 and L9 is called because of L10
+
+
+##SER2	
+Updating state of parent in click of parent:-
+This will call the willU and render of Home (the parent) then of its all the child and finally didU of all the child starting from deepenst one the parent (Home)
+	
+	Home WillU Welcom-Home 
+	Home render changed in clk 2
+	Hall WillU Sit-in-Hall
+	Hall render Sit-in-Hall
+	
+	Hall didU Sit-in-Hall 
+	Home DidUp changed in clk 2
+		
+##SER3
+updating state of parent in 'didMt' of child :
+>>>IMPOSSIBLE<<<
+
+##SER4
+updating state of parent in 'click' of child :
+>>>IMPOSSIBLE<<<
+
+##SER5
+updating state of child in 'didMt' of child :
+After the loading lifecycle of parent and child, the willU, render and didU function of child is called again.
+		Home const Welcom-Home
+		Home WillM Welcom-Home  
+		Home render Welcom-Home  
+		Hall const Sit-in-Hall
+		Hall WillM Sit-in-Hall
+		Hall render Sit-in-Hall
+		
+		Hall didMt Sit-in-Hall
+		Home didMt Welcom-Home 	
+
+		Hall WillU Sit-in-Hall 
+		Hall render Sit-in-Hall 2
+		Hall didU Sit-in-Hall 2
+		
+##SER6
+updating state of child in 'click' of child :
+Only render of child will be executed.
+
+		Hall WillU Sit-in-Hall 
+		Hall render Sit-in-Hall 2
+		Hall didU Sit-in-Hall 2
+		
+##SER7
+updating state of child in 'didMt' of parent :
+This is same as calling this.setState({welcomeTextHall:'Sit-in-Hall-update-from-Home'}); in 'Hall' itself so result will be the same as ##SER5
+render of 'Hall' will be called called after complete lifecycle of page load.
+
+
+##SER8
+updating state of child in 'click' of parent :
+
+	This can be done by-
+	Home{
+		click(){
+			this.refs.hallRef.setState({welcomeTextHall:'Sit-in-Hall-update-from-Home'});
+		}
+	}
+This is same as calling this.setState({welcomeTextHall:'Sit-in-Hall-update-from-Home'}); in 'Hall' itself so result will be the same as ##SER6
+render of 'Hall' will be called 
+	
+----------
+
+toggeling the component:
+What will happen if i set 'isHAll' to true and false one by one
+Suppose it is true at a time of page load so lifecycle of page load will flow as disccused above
+
+		Home const Welcom-Home
+		Home WillM Welcom-Home 
+		Home render Welcom-Home  
+		Hall const Sit-in-Hall
+		Hall WillM Sit-in-Hall
+		Hall render Sit-in-Hall
+		
+		Hall didMt Sit-in-Hall
+		Home didMt Welcom-Home 
+
+Now you click aa button in parent as 
+	clkFun() { this.setState({isHall: !this.state.isHall}); }
+It will set the 'isHall' to false.
+state has been chaged so render will be called. not other methoes But the 'isHall' is false so <Hall/> will ne be rendered and so 
+render of hall will not be called. only of 'Home' will be called
+		
+		Home render Welcom-Home
+
+Now suppose you again press button so 'isHall' is true now.
+Now state of 'Home' is updated so render of Home is called but no other methode of 'Home' will be called
+But 'Hall' was destroyed(unmouted) earlier so it will be constructed gain from the scrach so complete lifecycle of 'Hall' will be called.
+	
+		Home render Welcom-Home
+		Hall const Sit-in-Hall
+		Hall WillM Sit-in-Hall
+		Hall render Sit-in-Hall
+
+		Hall didMt Sit-in-Hall
+
+
+toggeling the visibility of child in parent click function of parent:-
+	Then the render of parent will sure be called first but for the child
+	1.	if 'isHall' is false then render of the child will be ignered (all other as well)
+	2.	if 'isHall' is true then
+		2.1	if child is not prsent on the page (either not mounted or toggled off earlier) then comlete cycle of that child (Hall>> const->willMt->render->didMt)
+			will be called.
+		2.2 if child is prsent on the page than render of that child will be called.
+	
+	out(1) >>
+		Home render
+	out(2.1)
+		Home render Welcom-Home  
+		Hall const Sit-in-Hall
+		Hall WillM Sit-in-Hall
+		Hall render Sit-in-Hall
+		
+		Hall didMt Sit-in-Hall
+	out(2.2)
+		Home render Welcom-Home
+		Hall render Sit-in-Hall		
+-----------
+
+multiple 'setState' in event function (eg click, blur etc):
+In this case render is called for each call of 'setState'
+
+   clkFun() {
+	   this.setState({welcomeTextHome: 'changed in clkFun 2'});
+	   this.setState({secondLine: 'sit here'});		
+   }
+   Out:
+   Home render changed in clkFun 2
+   Home render sit here
+   
+multiple 'setState' in lifecycle function function didMt
+In this case render is called in the last only
+
+   clkFun() {
+	   this.setState({welcomeTextHome: 'changed in clkFun 2'});
+	   this.setState({secondLine: 'sit here'});	
+   Out:
+   Home render changed in clkFun 3   
+
+-------
+
+props: 
+props is provided through the parent and flow from top to bottom, it cannot be changed by child at all.
+only the parent can change it.
+
+
+If props is the 'this.' variable: 
+	Home(){
+		cons(){ this.hallColor = 'red'; }
+		clik(){ this.hallColor = 'blue'; }
+		render{ return <Hall hallColor={this.hallColor}> }
+	}
+When the click is called then 'Hall' will not updated to blue color becoz render is not called in the click. so if you want it to reflect it 
+you have to call the 'render' in some way.
+
+That is why we put the the changable value of component in the state and then pass it to props so if you change the state render will be called automatically
+	Home(){
+		cons(){ this.hallColor = 'red'; }
+		clik(){ this.setState(hallColor :'blue') }
+		render{ return <Hall hallColor={this.state.hallColor}> }
+	}
+Now hall wull turn red after we click.
+
+What if i use 'this.hallColor' and then call setState like below
+	Home(){
+		cons(){ this.hallColor = 'red'; }
+		clik(){ this.hallColor = 'blue'; this.setState({dumm: 'new Dummy'})}		way 1
+		clik(){ this.setState({dumm: 'new Dummy'}) this.hallColor = 'blue';}		way 2
+		render{ return <Hall hallColor={this.hallColor}> }
+	}
+way 1: here it will turn blue on first click because before
+way 2: here it will be very shaky because 'setState' can call te render before or after the next line because 'setState' is asynch
+
+So best way is to use state.
+
+you can use 'this.' approch if you are sure that value is never ever gooing to change.
+
+if the parent re-render the child conponent then child will recive a callback 'componentWillReceiveProps' where it can see the delta 
+between current and upcoming props.
+So at the time of first load it will not be called. but suppose in the parent you did the 'setState' then it will re-render the 
+parent componenst and its child too, here it will also call the componentWillReceiveProps of child too.
+Even thoug it may be possible that their is no single changes in the props passed to child, then also 'componentWillReceiveProps' be called 
+
+Lifecycle:
+Just remember that it will be called before the 'willU' of the render function of the component in which the prop is passed.
+
+This methode is very useful if you wants to determine changes in props.
+
+	
+	Home(){
+		cons(){ this.hallColor = 'red'; }
+		clik(){ this.setState(hallColor :'blue') }				L20		
+		clik(){ this.setState(blabla :'bb') }					L21
+		clik(){ }												L22
+		render{ return <Hall hallColor={this.state.hallColor}> }
+	}
+	Hall(){
+		render{ return <div> this.props.hallColor </div> }
+	}
+	
+	if you do the click:
+	L20: 
+		Home WillU 
+		Home render
+		Hall componentWillReceiveProps red blue
+		Hall willU red
+		Hall render blue
+		Hall didU blue
+		Home didU 
+	L21 
+		Home WillU 
+		Home render
+		Hall componentWillReceiveProps red red
+		Hall willU red
+		Hall render red
+		Hall didU red
+		Home didU 	
+	L20: none will be called.
+	
+Also note that 'componentWillReceiveProps' will have current and upcoming props both, in willU you notice the props is older one not the uncoming one.
+
+As the name suggest this 'componentWillReceiveProps' will be called when child see that props is coming no matter this are changed form what it was proviously or not
+But if parenr re-render its child child will get the props coming and so child will call 'componentWillReceiveProps'
+
+calling setState() in 'componentWillReceiveProps':
+This will not call the additional render methode instead it will remain in same lifecycle loop.
+
+-------
+
+calling setState in 
+	constructor						:	Impossible
+	componentWillMount				:	No additional render but will reflect in same event loop
+	render							:	Exteremly risky may cause infinite rendering
+	componentDidMount				:	another re-render happen [willU->render->didU]
+	document.ready
+	
+	shouldComponentUpdate			:	
+	
+	componentWillReceiveProps		:	No additional render but will reflect in same event loop
+	componentWillUpdate				:	It will call the new re-render but it may also cause the infint rendering if not propery done
+	render							:	Exteremly risky may cause infinite rendering
+	componentDidUpdate				:	It will call the new re-render but it may also cause the infint rendering if not propery done
+	
+	
+	
+	
+	Country> {prop}[state](ref)		-->		State> {prop}[state](ref)			-->		City> {prop}[state](ref)
+
+	First Time page load: (Mounting phase) 
+
+1. 	const> {asia}[India]({})
+2.	comWM> {asia}[india]({})
+3.	rendr> {asia}[india]({})
+									4.	const> {india}[MP]({})
+									5.	comWM> {india}[MP]({})
+									6.	rendr> {india}[MP]({})
+																			7.	const> {india MP}[Ujjain]({})
+																			8.	comWM> {india MP}[Ujjain]({})
+																			9.	rendr> {india MP}[Ujjain]({})
+--										--									10	--
+																			11.	comDM> {india MP}[Ujjain]({..})
+									12.	comDM> {india}[MP]({..})
+13.	comDM> {india}[MP]({..})
+
+
+** see 'hall.js', reacttuto.js and kitchen.js for "CN*"
+
+So in the above cycle you that how constructor, willM and render execute in one-set for each component starting from parent to deepest child.
+This cycle run only the time when component is loading first time on the page or re-loading after toggeling on. (So basically at mounting time) 
+
+VVVIMP CONCEPT TO REMEMBER: #REFCON1
+For componentWillMount function 
+	If you call the 'setSstate' here for any component, then it will not call the additional update cycle(willU->render->didU)
+	Instead it will accomodate the changes in the current mounting cycle itself.
+	This is because 'render' is not yet called and state is not yet proccessed to show on UI.
+	So if you next time see the code 'this.setState({...})' in componentWillMount function, do not
+	worry about lifecycle because there is no effect on mounting cycle due to this. But changes value do get reflected in the end of same cycle.
+
+	No matter you call setState of child or parent via this.setState of this.ref...setate(), if we call it in mounting cycle (line 1 - 13) 
+	it will not reflect in current cycle but enque a new update cycle.
+
+	
+------
+Country.constructor: 
+	This is first entry point, the constructor of parent of all.
+
+props:-
+	Here 'props' will always be remain defined because you have sent them from any super-parent like below:
+		ReactDOM.render(<Country type='happy' conti="Asia"/>, document.getElementById('app'));
+	
+state:-
+	# If you are component is statful, then initiate the state here only becoze after the constructor function you will not be able to defined
+	it anywhere else in the life cycle. So do it
+		this.state = {name: 'India'};
+	# Direct state mutation: 
+		As you cannot use 'this.setState', the only way to change the state is by direct mutation 
+		So line 'CN3' will not give any error here
+	# But you cannot call 'this.setState' here otherwise it will give the error, this is not at all allowed.
+	So 'CN1' will give you the error 'setState(...): Can only update a mounted or mounting component. This usually means you called setState() on an unmounted component. This is a no-op.'
+		
+	
+this.ref:-
+	At this point it is undefined.
+
+Accessing state of child: 
+	Impossibe because child are not yet created and 'this.ref.*' is null.
+
+---
+Diving in the constructor: 
+If you open 'super'	of React.component then you will se the below code-
+
+	function Component(props, context, updater) {
+	  this.props = props;
+	  this.refs = emptyObject;
+	  this.updater = updater || ReactNoopUpdateQueue;
+	}
+Soo the lines 
+1.	this.props is initiated here and this is what coming from the parent.
+2.	constructor initiated the refs but with empty object so this.ref.* will always be null.
+3.	this.updater is initiated here which in lated time used to update this component 
+	to update it you have 3 way (thoug it all used only internally in lib)
+		enqueueForceUpdate: if forecUpdate() is called (rarly)
+		enqueueSetState: 	if setState() called
+		
+	Also it has one variable: 
+		isMounted: lib use this to determmine that is component is mounted or not.
+		if it is true then update cycle will be called for 'setState'
+		otherwise no update cycle will be called for 'setState'	
+----------
+
+Country.componentWillMount:
+	After the constructor this methode is called. 
+
+props:-
+	This is obvious that props will be available here as it was available in prvious function 'Country.constructor' already
+	
+state:-
+	# Whatever value you initiate into the state in constructor, it will reflect here.
+	# You cannot initilize state here 
+	So line 'CN2' will give error.
+	# You can change the state directly(mutatint it) here and it the changes will reflect after this cycle ends. Still you should avoid doing this
+	As its anti-pattern in React. So 'CN5' is not recommended at all.
+	# You can use 'this.setState' to change the state, This is recommended way to do the changes in state. 
+	As we described in #REFCON1, when you call 'this.state' it will not call the additional update cycle(willU->render->didU)
+	Instead it will accomodate the changes in the current cycle itself.
+	So if you write 'CN4' it will work and lifecycle will remain same as above. but the name variable do get chabges and print new value.
+		
+
+this.ref: As like constructor this.ref remain empty and this.ref.* will always be undefined.
+		
+Accessing state of child: 
+	Impossibe because child are not yet created and 'this.ref.*' is null.
+
+---------
+
+Country.render:	
+	
+props:-
+	This is obvious that props will be available here as it was available in both the prvious function already
+	
+state:-
+	# Whatever value you initiate into the state in constructor and later may change in willM, will reflect here.
+	# You cannot initilize state here 
+	So line 'CN8' will give warning (not error).
+	Changeing state here is very very risky and buggy, also it will give warning in console as below.
+	"Cannot update during an existing state transition (such as within `render` or another component's constructor). Render methods should be a pure function of props and state; constructor side-effects are an anti-pattern, but can be moved to `componentWillMount`"
+	If you read the erroe you will see that 
+	*** BEST place to update the state in mounting cycle (not in update cycle) in 'componentWillMount'. ***
+	in simple word: NEVER UPDATE STATE IN RENDER.
+	Though If you use 'this.state' here anyway, then chages will enqued for next cycle not in current one.
+this.refs: As like constructor and componentWillMount this.ref remain empty and this.ref.* will always be undefined.
+	
+Accessing state of child: 
+	Impossibe because child are not yet created and 'this.ref.*' is null.
+---
+
+#REFCON4
+Once you are out of 'render' of country the state of 'country' would get HARD LOCK for this mounting cycle, and can not be changed
+anywhere in current cycle.
+We should not at al change the state in render so effectivly state get locked in willM itself.
+So after line 3 there is no way to change the state of 'Country' till line number '13.'
+
+It doesnt mean you cannot call 'setState' of country, Yes you can but that change will not reflect in currrent mounting cycle instead it will go in 
+new update cycle. [we will look it later].
+
+But thumb rule is : ONCE you are out of render function for any react component, Its state will get HARD LOCKED for that event cycle.
+All new chages happen in that cycle in later stage will be entertain by new update cycle.
+
+-------
+
+
+Now we will go into the next component, we will travel into the first child of Country, Province:
+
+props: 
+when you enter here, props will be passed from 'coutry' to 'province' and as like the parent ('Country') behaviour
+it will remain defined from construdctor to willM.
+
+state:
+for state of itself all the rule is same above as of 'country'
+
+this.ref:
+for ref also all the rule is same above as of 'country' and it willl remain empty.
+
+props of parent:
+A component has a read only access to only to its own prop, not of anybody else either of parent or chid.
+Also note, he cannot change its own prop too, only can read it.
+Though with some tweak and proxy function (not directly) he do can get read-only access of parents props.
+Now when you do this you, props will alawys be defined and intiated because parents constructor has already been called.
+SO never worry about nonavailibity of props of parent in child of that.
+
+	Country() {
+		...
+		getProps() {return this.props}
+		render() {
+			<Hall getCountryProps = {getProps} />
+		}
+	}
+	Hall() {
+		constru/willM/didM/didU/render/..../() {
+			var parProps = this.props.getCountryProps();
+		}
+	}
+
+	
+changint props of parent from child: 
+	IMPOSSIBLE to change parent. read #REFCON2
+
+state of parent: 
+Though state of parent do remain defined here becoz it is called after the constructor of parent.
+But you do not have direct any way to access the state of parent from here.
+but as like props you can indirectly access it via proxy function.
+#REFCODE1
+
+	Country() {
+		...
+		getState() {return this.State}
+		render() {
+			<Hall getCountryState = {getState} />
+		}
+	}
+	Hall() {
+		constru/willM/didM/didU/render/..../() {
+			var parState = this.props.getCountryState();
+		}
+	}	
+	
+changint state of parent from child: 	
+In the above code if you try to change the state via one simple line like this 
+	parState.name = 'USA';
+This will be a state mutation and so strictly prohibited.
+
+So the only way to do it is again via proxy function like below [in the above code do one simple change]:
+	getState() {
+		this.setState({name: 'USA'})
+		return this.State
+	}
+Though you do it but this will not reflect in current cycle and so value of the 'name' will remain India for all the line till '13',
+Once this cycle finish then again a new update cycle will be initiated for this change.
+So meanwhile in cycle no matter what changes you make in state of parent component, as long as they are done with (const + willM + render) 
+all the changes will be reflected in next update cycle.
+THis concept will remain same no matter you call it from whichever childs function.
+alsp read #REFCON4
+---
+So accessing the props or state of parent component in child(for reqad-only) is possible via a proxy methode of parent
+which is sent via a props into the child.
+Changing the props is impossible but state can be changed via this proxy function.
+
+Accessing 'this.ref' of parent from child: 
+	It cannot be accessed directly but via proxy function like below
+	Country() {
+		...
+		getRefs() {return this.refs}
+		render() {
+			<Hall getCountryRefs = {getRefs} />
+		}
+	}
+	Hall() {
+		constru/willM/didM/didU/render/..../() {
+			var parRefs = this.props.getCountryRefs();
+		}
+	}		
+	
+	But At this point of mounting cycle all the 'this.ref' of country remain empty
+----------
+
+(((((((((((((((((((((((
+With the props proxy function you can access state, ref and props of parent but its value and changability depends as below:-
+
+((((((((((((((((((((((
+sibling compo and chnages
+
+---------
+##Summary: 
+If you are in mounting cycle line number 4,5,6 so in the 'City'
+For state here you can - 
+	Change the state of Province(self) itself by this.setState() - and result will reflect in same mounting cycle immediatly
+	Change the state of Country(Parent) by a proxy prop function  - and result will reflect in next update cycle
+	Cannot change the state of child as this.ref is empty here.
+		[Though we yalked abouth line 4, 5, 6 but its is recomennded to do state changes in willM only]
+
+For 'this.ref' here you can - 
+	Nothing bcoz it is empty for all from line 1 to 13
+	
+If you are in mountung cycle line 12, didM of Province
+For state here you can - 
+	Change the state of Province(self) itself by this.setState() - and result will reflect in next update cycle
+	Change the state of Country(Parent) by a proxy prop function  - and result will reflect in next update cycle
+	Cannot change the state of child as this.ref is empty here - and result will reflect in next update cycle
+
+For 'this.ref' here you can - 
+	PArent's 'this.ref' will be empty here as we are now moving upward and 'didM' of parent yet to begin
+ 	For self 'this.ref' now it is avialable so he can access children functions now
+	ref of children and deep children(this.ref.city.ref.street.ref.house.fun()) is also avilable to foe deep functions.
+	
+----------
+Now until this point count-render-willM for Country and Provine has been executed.
+props for both of this are definer and usable
+state of both os this are define and usable But
+refs for both of this remain empty yet.
+
+Now we will go to last one 'City' and fast forward it and suppose all of it three functionm have also execute. and so we have complete 
+top to bottom movement of out mounting cycle.
+
+All of them have their const, render, willM execute.
+All of them have their prop set
+none of them have their this.ref set.
+So untill this point you cannot use 'this.ref' any any function
+That is why it is strically prohibited to use 'this.ref' in const, render or willM.
+
+----------
+
+$$$$$$$$$$$$$
+Now we will go to reverse cycle of didM:
+here the movement occure from bottom to top. 
+
+City.didM: 
+#REFDIDM1
+props: 
+	all the props are vaialble 
+
+#REFDIDM2
+state:
+	state are available 
+changes in state can simply be done via this.setSate();, Though it will not reflect in current cycle but will enque a new update cycle 
+which will run once we exit from current cycle (after line 13) 
+
+#REFDIDM3
+this.ref: it will be available for City only so City can update the state of its child now.
+
+#REFDIDM5
+Accessing this.ref of parent: 
+Again we do not have direcct access of 'this.ref' of parent so we do it via proxym but still its of no use.
+becoz as we know this.refs for any component get its content only after mouting cycle enter on first line of didM of that component.
+But as we are in didM of child so didM of parent is surely be non-executed.
+So this.ref of parent remain empty here.   
+
+#REFDIDM4
+updating state of parent: 
+As you know we cannot have direct access of parents state in child so we do it via props'function proxy, as we did at #REFCODE1
+Here again as we discussed already at #REFCODE1, it willl not do the reflection in current cycle but enque a new update cycle.
+
+Now it will move to next call:   
+Province.didM: 
+props: 
+	Same as #REFDIDM1
+state:
+	Same as #REFDIDM2
+	
+this.ref:
+	Same as #REFDIDM3
+	Also here you have access to the child ref also via 'this.ref.city.cityFun()'
+	With this approch you can change the state of chids though updation will enqued for another update cycle.
+	
+this.ref of child: Here it is availlable and directly avialble via 'this.ref.city.fun()'
+
+finally when you reach to didM of Country, whwrw all this end and system go to next update cycle if required.
+----------
+
+
+
+
+-----------
+CONREF5:
+Availibility of 'this.ref' : 
+As you know that thisa.ref is used to call the function of child component from parent, 
+But when you are in mounting cycle toward downward child component (line 1 to 10) first the parent is created and later its subsequent childs.
+So you have parent created but child may have not.
+Till line 3 > Coutry created
+Till line 6 > Coutry, Province created  
+Till line 9 > Coutry, Province, City created
+
+So if you try the access the function of child (Province) before line 3, it will give error.
+that is why if you try access function of Province(CHILD) in constructor, willM or render of Country(PARENT) then it will give error.
+becoz child have not yet created.
+
+That is why react lib take the extreme care for this and did below:
+'this.ref' for all the component (be it country, province, city or anything) will remain empty till that component enter into first line of 'componentDidMount'
+
+So after line 10: --
+'this.ref' of City will be available to use in line 11 (didM)   
+'this.ref' of City and Provine both, will be available to use in line 12 (didM)   
+'this.ref' of City and Provine and Country all, will be available to use in line 10 (didM)   
+
+So in didM of City you can do :
+	this.ref.<child>.myfun()
+in didM of Province:
+	this.ref.city.cityFun()
+in didM of country:
+	this.ref.province.provinceFun()
+	this.ref.province.ref.city.cityFun()
+	
+-------------
+
+Now lets go to parent country again and change state of child: 
+Changing prop of child via parent:
+Actullay this is the only way to change the child props, even child himself cannot change it.
+For this you have to first make changes in parents variable whatever you wants and the do have to 
+make the call of render again.
+Possibilities: 
+	1.	we are in larger render cycle and a parent of te parent is rendering again, in that case render of the parent will also be called.
+		and so props of its child will get updated.
+	2.	parent called this.setState or forceRender and so intiated the render for him and his childs.
+
+Generally you bind the prop to any variable as below:
+1.	to upcomimg prop: this is like water flowing from to to bottom. any change in pick of the mountain cause all the render ti re-run
+2.	to simple var: 
+		this.vName = 'vIndia';
+		render() {
+		...
+			<Province contName={this.vName}>
+		}
+3.	to state:
+		this.state = {name: 'India'};
+		render() {
+		...
+			<Province contName={this.state.name}>
+		}
+
+1. 	This approach is simple and no need to dive in.
+2.	If you do the this approach then its very difficult to hadle the changes in variable 'vName', every time you make changess in 'vName'
+	because everytime you make change in this var you have to intimate the internal lib about the chages. and fir this you will
+	have to call the 'this.setState({})' or forceUpdate(), so that a new updated cycle get enqued.
+	if we do not do this then this change will not reflectand will appear later on any other render. so it cause bugs.
+	
+	Country {
+		render(){
+		...
+			<Province provinceCount={this.provCount}>
+		}	
+		clkFun() {
+		   this.provCount = 30; 
+		   this.setState({});
+		}
+	}	
+	So this approch is strongle unrecomendded.
+3.	This one is best and most used. because here if you make any changes in state variable, it will immediatly enque the the new update cycle.
+	when your prop is connected with state, then when you call the setState to change the variable, it will shedule a update cycle for this change.
+	And so the change will appear once that updated cycle completed.
+
+Changing state of child via parent:
+Once the mounting on parent and all of its susequent child is completed and you are out of line '13' you can update the childs state via parent as
+	this.refs.chld.setState({..})
+this is 100% same as calling 'this.setState' in child component.
+But do remember that 'this.ref' for any component is avialable from the first line of 'componentDidMount' not before that 
+So you cannot do change the state of child from the parent unless 'componentDidMount' functionbegin its execution.
+Do read: #CONREF5
+
+
+---------
+
+#REFCON2
+Any kind of changes in the prop directly is prohibited at all the location, 
+SO at nowhere yoou can do 
+	this.props.value = 'asdsd'
+It will always give this error: 
+	Cannot assign to read only property 'value' of object '#<Object>'
+
+	
+	
+---------
+Accessing/updating sibling: 
+
+First you should remember that there is no direct way to do it, for this first you have to go to parent via a proxy funcyion and then 
+either do it by :
+	1.	updating a state that is connected wothh prop of that child
+	2.	use this.ref.* in parent to reach to exact function of that child
+
+1:-
+	Country {
+		updaueProvince() 	{ this.ref.province.myFun(); }			//LN23
+		render() 			{ <div> <Province/> <UnTr updaueProvince={this.updaueProvince}/> </div> }
+	}	
+	Province 				{ myFun() {....} }
+	UnTr 					{ onclick() {this.props.updaueProvince()} }
+
+	
+updating sibling at mounting time-
+	till line 10 'this.ref' is empty so immpossible
+	after when you are in mounting cycle of line 11 to 13 the 'this.ref' of parent in available after the 'this.ref' of child.
+	So even if UnTr is in didM and 'this.ref' of UnTr is available, but 'this.ref' of Country is still empty so 'LN23' will give error.
+	
+updating sibling at update-cycle time-
+	(((((((((((
+	
+2:- 	
+	updaueProvince() { this.setState({pn: 'abc'}) }	
+	Province { <div> {this.props.pn} </div> }
+updating sibling at mounting time-	
+	Here you can change the state of parent and so it will reflect on sibling, How and when it will update that depend on how and when the state get update.
+	and in the mounting cycle how and when state will update, we have already studid.
+updating sibling at update-cycle time-
+	(((((((((((	
+	
+	
+Sibling in mounting phase:-
+It is simply First come First serve.
+Those who come first in render, will get its and its childs mounting cycle(const->willMt->render) first
+
+
+-------------
+
+Q> render() {
+		var vv = <Hall />
+		var vw = <Room />
+		return [vv]
+	}
+	Which lifecycle methode of Room will called
+	Ans: none.
+
+-------------------------UPDATE CYCLE-----------------
+
+This cycle is called when the setState is enqued and begin execution.
+Whenver you call the setSate for any component once that component get out of its const->willM->render phase of mounting cycle, then a new
+update-cycle enqued after that mounting cycle.
+
+But if it is called during the didM phase of mounting cycle, it do not add nes update cycle in que, but do the changes in same mounting cycle
+
+If after some user or timelapse event if you call the setState then also a new update-cycle enqued 
+
+Now lts say we call the 'setState({name: 'Bhart'})' in Country
+
+irst it will go in shdUp: here in the argument you can see the two params for new state and props.
+If you written false then the update cycle stop here immediatly and exit without calling any other cycle function.
+Though it do update the value of state but does not call the render.
+So it may cause very tricky bugs. so use of this is highly unrecommended.
+
+next will be the 
+
+Country.wilrv: This function is called only when new set of props are coming(or simpply parent pushed the new props), but here
+Country itself called setState, not its parent did any change in props. so this function will not be called.
+RULE: fir topmost component who intiated the update-cycle via this.setState, in the update cycle 'willRcvp' of that topmost parent 
+will not be called, bocz its parent ot that topmost parent has not push new set of prop.
+
+Country.willUpdate: 
+this one have two param, nextPrps and nextState. 
+Though when you are in this function the state of component is not yet updated. it still hold the older value but new upcoming value of state 
+can be seen in formal param. see the line 2 below
+
+Calling this.setState in willU: 
+If you do it then it will create a new update cycle which will run after the current cycle finish.
+Thoug when you come to the samu function in second cycle it will schedule one more update cycle and this will keep on going.
+So if you are doing setState here then be very careful and not fall in infinite rendering.
+
+calling child function to change the state: 
+this.ref.province.setState({}):
+Now you know that if parent is in render phase then 100% all of its child going to be re-render, so let the parent make any chages he wants in his child
+and let the child reflect it in that cycle only.
+So If you do the changes in the state of child here then this changes will be accomodated in the same cycle, a new update cycle wont be created.
+So if you call it in Conntry.willU then when you enter in render of child (Province) you will have a new value of this.state.name for country.
+Though you should also remember-
+Suppose you call this.refs.province.setState({name: 'Maha'})
+Then when update cycle move to Province and execute 'wilRv' and 'willU', at that time the 'this.state.name' remain the older one that is 'MP'
+but once it gone into the render then only 'this.state.name' will become 'Maha'
+
+Actully willUp is the opint where we say our component is start responding to chages, and now no new chages will be conside to be respond for himself(or his parents) 
+this all further new chages will be answered in new update cycle.
+
+
+wilUp - 
+updating state of parent - A new cycle will be enqued for this, because render of parent has been called and its state is now hard locked.
+updating state of self - A new cycle will be enqued for this, because in current cycle we are treating a upcoming state as new change, next new change will go in next cycle.
+updating state of child - same cycle, becoz child are yet to start the responding to chages of current cycle.
+
+render: 
+This is where the new value reflect and you have new value of state.
+see the line 3 for changes. state and props both get updated here.
+
+updating state of parent - A new cycle will be enqued for this, because render of parent has been called and its state is now hard locked.
+updating state of self - A new cycle will be enqued for this, because in current cycle we are treating a upcoming state as new change, next new change will go in next cycle.
+updating state of child - same cycle, becoz child are yet to start the responding to chages of current cycle.
+
+
+
+SO Finally we say: 
+In the upsdated cycle for first parent first the willU is called whwre all the state value is older and new value lies in formal param.
+after that render is called whre this chages reflect.
+If you make more chages in the state of country here again, then it will not reflect here but in next cycle.
+But if you make chages in the state of child then that will reflect in same cycle.
+ 
+
+Now lets move in Province: 
+Here again thigs flow in same way.
+Our country.state.name is conneccted to props of city.so now props of cprovince will get changed. Also if in line 1 or 2 (willUp/render of Country )
+you make any change in state of Provice via 'this.ref.province.setState({name: 'MA'})' that also be accomodated here.
+
+
+Province.wilrv: no matter you make any change in content of prop, this function will be called for all the child of Country.
+all the value of state and props will be older one here, but upcoming will be viewd in formal params.
+Also if you make any chages in state here again by 'this.setState' then it will reflect in same cycle not in new one.
+
+Changing state of parent in wilRcv of child:
+You have to do it via proxy props function of parent. and it goes in next cycle.
+
+Changing state of child in wilRcv of parent:
+goes in same cycle.
+
+Province.wilUp: same rule as Country.willUpdate.
+
+Province.render: same rule as Country.willUpdate.
+Here you will see the real changes, noe this.stae and this.props for Province will have new value.
+See the line 6 for this changes.
+
+wilrv - 
+updating state of parent - A new cycle will be enqued for this, because render of parent has been called and its state is now hard locked.
+updating state of self - same cycle, bcoz willUp of the same comp is not yes begin, mns this comp have not yet stated to respond to this cycle changes.
+updating state of child - same cycle, becoz child are yet to start the responding to chages of current cycle.
+
+
+Flow for setState({name: 'Bhart'}) :-
+
+	Country> {prop}[state](ref)		-->		State> {prop}[state](ref)			-->		City> {prop}[state](ref)
+
+1.	----
+2.	wilUp> {asia}[india]({})
+3.	rendr> {asia}[bhart]({})
+									4.	wilrv> {asia india}[MP]({})
+									5.	wilUp> {asia india}[MP]({})
+									6.	rendr> {asia bhart}[MA]({})
+																			7.	const> {asia india MP}[Ujjain]({})
+																			8.	comWM> {asia india MP}[Ujjain]({})
+																			9.	rendr> {asia bhart MA}[Ujjain]({})
+--										--									10	--
+																			11.	comDM> {asia bhart MA}[Ujjain]({..})
+									12.	comDM> {asia bhart}[MA]({..})
+13.	comDM> {asia bhart}[MA]({..})
+
+--------
+
+CAlling this.setState/this.ref.*.setState in render for mount and update cycle ((((((((
+
+This is one of the biggest risky thing to do and system also give you sever warning, no matter you are in mounting or update phase.
+For mounting: 
+	for self - this.setState : New update cycle be enqued.
+	for child - this.ref.*.setState : Impossible
+For update	
+	for self - this.setState : New update cycle be enqued.
+	for child - this.ref.*.setState : Same mounting cycle will do it, no new update cycle
+
+For calling this.ref.*.* You must first check the if(this.ref.*), because it will be null at mouning time.
+	
+----
+So in deep within the rect lib there must be some code like below:
+		....
+		....
+		for(i; Parent to deepenst child; compList) {
+			
+			var comp = new compList[i](propsFromParent)		-CL1
+			comp.componentWillMount();						-CL2
+			comp.render();									-CL3
+		}
+		...
+		for(i; deepenst child to Parent; compList) {
+			
+			comp.componentDidMount();
+		}
+Here CL1, CL2 and CL3 line of code will execute the constructor, componentWillMount and render for each component
+
+
+
+** what if 'componentWillReceiveProps' do not update any state of child.
+
+
+--------Quick notes-------
+
+The componentWillMount() method is the first called in this phase. It’s invoked once and immediately before the initial rendering occurs, 
+hence before React inserts the component into the DOM. It’s very important to note that calling this.setState() 
+within this method will not trigger a re-render.
+
+The componentDidMount() is the second invoked in this phase, just once and immediately after React inserts the component into the DOM. 
+Now the updated DOM is available for access, which means that this method is the best place for initializing other Javascript libraries 
+that need access to the DOM and for data fetching operations.
+
+
+
+
+
+--------------------
+
+
+NW : no warning
+IL : May cause infinite looping
+W1 : Warning 1 :- 
+				Warning: Cannot update during an existing state transition (such as within `render` or another component's constructor). Render methods should be a pure function of props and state; constructor side-effects are an anti-pattern, but can be moved to `componentWillMount`.
+W2 : warning 2:-
+				Warning: setState(...): Can only update a mounted or mounting component. This usually means you called setState() on an unmounted component. This is a no-op.
+HR: highly risky
+Sam: Same
+
+#			|			this.props.updateState()		|		this.setState()			|			this.ref.*.setState()
+------------------------------------------------------------------------------------------------------------------------------------------------
+const		|			New - NW								HR  - W2							Impossibe
+wilMt		|			New	- NW								Sam - NW							Impossibe
+rendr		|			New	- W1 - IL							New	- W1 - IL 						Impossibe	
+didMt		|			New - NW 								New	- NW							New - NW
+			|
+wilRc		|			New - NW - IL							Sam - NW							Sam - NW
+wilUp		|			New	- NW - IL							New	- NW - IL						Sam - NW
+rendr		|			New	- W1 - IL							New	- W1 - IL						Sam - W1
+didup		|			New	- NW - IL							New	- NW - IL						New - NW - IL
+------------------------------------------------------------------------------------------------------------------------------------------------
+#REFtable-cyclemap 
+
+
+
+Q1: if it update in same cycle, does it means this.state.val will give chnaged value immediatly after this.setState()
+Q2: when exactly callback is called in setState() (((((((((((((((((
+
+-------------
+
+When you call the this.setState/this.ref.*.setState, it may reflect in same or next cycle. but NEVER ever its effect reflect immediatly. 
+It means if you write belo: 
+
+	this.setState({..}) OR
+	this.ref.*.setState({..})
+	console.log(this.state.*)  //LS1
+	console.log(this.ref.*.state.*)  //LS2
+	
+Line 'LS1' or 'LS2' will never gve you updated result, at that point value of state do remain same, 
+So when exactly it will set the value of state to new value: 
+	1.	incase if this is schedule to reflect in same cycle: Then it will reflect when execution reached to the render function of the component for which state is changed.
+	2.	incase if this is schedule to reflect in next cycle: First the curreunt cycle is completed with tho old value of state
+															 Then its new value will reflect when execution reached to the render function of the component for which state is changed.
+
+----------------
+
+Batching of setState: 
+If in any event cycle you have multiple 'setState', then they may or may not be batched together depending on scenario.
+batching them will enhance the performance.
+Batchih does happen between setState of self and child component, not with the parent one.
+First of all batching will work only in REACT-ECOSYSTEM, not outside.
+Basically batchibg is possible in two cases: 
+	-	In react syantheic evebt
+	-	In any react lifecycle.
+It is IMPOSSIBLE in	
+	-	Jquery, JS event
+	-	setTimer(..)
+	-	Any non react event
+
+But it is strongly recomended that you should be in React-ecosystem all the time, and avoid the use of JQuery or JS events.
+
+So we will look into scenario 1: 
+If you are in any React-synthetic event or in react lifcycle, then what will happen to multiple call of setState: 
+In both of this case the 'setState' of self component and the chuld component will be clubed together and reflected in the same cycle.
+When you club the the final value will be depend on the last statement executed for that state.
+Also you know that setState is asynch so, value do not reflect immediatly and real update reflected in first render happen after that setState.
+So value of 'Country.name' remain india for whole 'rctSynClk' function.
+So at any line in 'rctSynClk' if you write, console.log(this.state.name, thisrefs.province.name) then it will print 'India MP'
+this 'setState' return immeidiatly here without making any chages but enque new or update existing update cycle.
+
+	const{
+		this.state= {name: 'india'}
+	}
+    rctSynClk() {
+		this.setState({name: 'USA'});
+		console.log(this.state.name)
+		this.setState({name: 'AUS'});
+		this.refs.province.setState({name: 'Arizo'});
+		console.log(this.state.name)
+		this.refs.province.setState({name: 'Syda'});
+		console.log(this.state.name)
+		
+   }
+    willUpdate (nextProps) {
+		this.refs.province.setState({name: 'MALBR'});
+   }
+   
+Here only one updated cycle will happen and alll the chages goes in it,
+output:
+	India
+	India
+	MP
+	MP
+  
+Try to get the point:-
+Suppose our code get to the first line of 'rctSynClk', and set state to 'USA' Now
+Even though you write console.log(this.state.name) in 'willUpdate', it will give 'India' bcoz the actual update will take place only and only in render of that component.
+not before it.
+So if it is noy yet chaged yet, it will not reflect in further line of 'rctSynClk'
+
+In the willU of Country, a new setState is also called for child and as described in #REFtable-cyclemap it will also be accomodated in same cycle.
+
+So final value of 
+Country.name: 'AUS'
+Province.name: 'MALBR'
+
+----------
+Jquery event + setState: 
+This is highly ris prone and currently react community is wirking on it.
+Here two thing happen: 
+	-	No one will be clubbed	[so highly in-efficient]
+	-	setState will run synchronusly [anti pattern]
+So if you do belo:
+
+    ${'#bt'}.click({
+		this.setState({name: 'USA'});
+		console.log(this.state.name)
+		this.setState({name: 'AUS'});
+		this.refs.province.setState({name: 'Arizo'});
+		console.log(this.state.name)
+		this.refs.province.setState({name: 'Syda'});
+		console.log(this.state.name)
+   });
+   It will create 4 render cycle
+   the putput be:
+   USA
+   AUS
+   Arizo
+   Syda  
+
+--------------------
+Callback of setState: 
+in short: This is called when the state is updated.
+In long: 
+Main question is when exactly it is called:
+You know 'setState' could be batched or run in diffrent cycle, no matter waht happen the callback of that setState will always be called once render + didU of that component
+is finish.
+So
+if you are in update cycle the first the complete render methods of all child and self b done.
+Then didU will start for  child to topmost parent, inthat phase call back corrosponding to respective component will be called.
+so the callback belongs to chil comp will be called first then the parent one.
+
+## no matter from where you called the setate, either self or parent, they all always will be run after the didUp of its actual class is comlplete [they may run in same or next cycle]
+EG:
+	Country{
+		willUp/didU/cons/didMt/render/synclick() {
+			this.ref.province.setState({...}, cb)		//CBRE1
+		}
+	}
+	Province() {
+		willUp/didU/cons/didMt/render/synclick() {
+			this.setState({...}, cb)					//CBRE2
+		}
+	}
+	synclick-- this is synthetic reqact event.
+In the both line 'CBRE1' and 'CBRE2' both the callback will run after Province.didUp finish.
+
+
+See the example
+    rctSynClk() {
+		console.log('start')
+		this.setState({name: 'USA'}, ()=>{console.log('cbl1', this.state.name)}); 													console.log('l1', this.state.name)
+		this.setState({name: 'AUS'}, ()=>{console.log('cbl2', this.state.name)}); 													console.log('l2', this.state.name)
+#PR1	this.refs.province.setState({name: 'Arizo'}, ()=>{console.log('cbl3', this.state.name, this.refs.province.stae.name)}); 	console.log('l3', this.state.name, this.state.refs.province.name)
+#PR2	this.refs.province.setState({name: 'Sydan'}, ()=>{console.log('cbl4', this.state.name, this.refs.province.stae.name)}); 	console.log('l4', this.state.name, this.state.refs.province.name)
+		console.log('End')
+   }
+    willUpdate (nextProps, nextState) {
+#PR3	this.refs.province.setState({name: 'MALBR'}, ()=>{console.log('cbl5', this.refs.province.stae.name)}); console.log('l5', this.state.refs.province.name)
+   }   
+
+IMP : 'rctSynClk' is synthetic react click function not the js one.
+
+-	First line wlll print 'start'
+-	next line will enque the update cycle of self (Country component) and return immediatly whithout actual update. actual change will occure when when exection reached 
+	to Country.render
+	As the state update is enqued but not perform, so Country.state.name remain 'india'
+	So the next console line will print 'l1, india'
+-	Now agin it sees that 'setSate' for self(Country) is called, now it wont shecdule a new update cycle, instead accomodated in the pre-existing created in above step.
+	Agin as the state in not actully chages, but only scedule to chage so next console agin print 'l2 india'
+-	In next he sees tha state for the child is called, Now it is the child so this change can be accomodated in current cycle itself. 
+	But this change will also not reflect immediatly instead actual change will occure when when exection reached to Province.render
+	So the next console line will print 'l3, india MP'	
+-	now it will reach to next line all goes same as above and console will print: '14 India MP'
+-	In the end 'End' will print.
+-	Now we will leave from the function (a synthetic react event)
+--	here start the REACT UPDATE CYCLE now go in that
+*	Now all the 'setState' is from child and self, so they all will be merged in one cycle. and the final value be taken is of th last stetment for that state property.
+-	First it will go in Country.willUp
+-	Here again it sees the 'setState' called for child, as you know from #REFtable-cyclemap, it will be accomodated in same cycle, so it will be accomodated in this cycle,
+	But the actual chages happen when we reach to Province.render
+-	2 will executed, values remain older one
+-	Now finally a render comes for 'Country', Here all the state for the Country class will get changes to new value. and as you know after accomodating all the 'setState'
+	function final value of Country.name is 'AUS', so now it will get changes, [console.log(this.state.name) in Country.render here will give ''AUS]
+	So you can see the reflected chage in line 3, though Province.render not yet reached, so Province.state.name will be MP
+-	Now execution move to line 4 and values will be come from last line 3 as it is.
+-	Now execution go to line 5,  and values will be come from last line 3 as it is.
+-	Now we will go to the render of Province, here the changes in the state of province will happen so you can see the change in line 6
+**	Now execution go to city and reach to line 10. After line 10 reverse cycle of didMount be begin from child to top
+	This is like the locked phase, no new 'setSate' of either parent, self, or child will be entetain here, they all now will be enqued into next update cycle.
+	after this the states get hard locked for whole tree and cannot be changed in this cycle.
+	Between line 11 to 13 the callback registered with setState also be called. 
+	Once the didU for any component is finished, then the callback registred with 'setState' for that component be called. 
+	If multiple setState is called for a Component then on FIFO basis (those who register first will be executed first)
+	Also as the didU of child will executed first and parent at last. si setState belongs to child will executed first and the parent. no matter who was registered first.
+	-	callback sequece between parent child: child first parent later
+	-	callback sequece between same : FIFO
+-	Now we go to line 11, and City.didUp finishes. We do not have register any single 'setState' callback for 'City', so execution move to line 12
+-	Now didMount for Province will be executed. once it is finished, all the callbacks register for 'Province' by setState will be called.
+	You have regiser three callback for the Province in line #PR1, #PR2, #PR3. and sequence is also same.
+	So now this callback will start executing.
+	So afetr line 12, first the callback registered in '#PR1' will executed. At this point you know the value of state is updated one, so the console will print below
+	'cb13 AUS MALBR'
+	Now the callback registered in '#PR2' will executed. 
+	'cb14 AUS MALBR'
+	Now the callback registered in '#PR3' will executed. 
+	'cb15 AUS MALBR'
+-	Finally in the last it will move to Country.didUp, and execute it
+-	After this it will run all the callback of 'Country', now as the state is now fully updated and locked, so the value appear here is ''AUS'
+	'cbl1 Aus'
+	'cbl2 Aus'
+
+			
+	Country> 						-->		State> 			-->				City> 
+
+1.	----
+2.	wilUp> India, MP
+3.	rendr> Aus,   MP
+									4.	wilrv> Aus,   MP
+									5.	wilUp> Aus,   MP
+									6.	rendr> Aus,   MALBR
+																			7.	wilrv> Aus,   MALBR
+																			8.	wilUp> Aus,   MALBR
+																			9.	rendr> Aus,   MALBR
+--										--									10	--
+																			11.	comDU> Aus,   MALBR
+																				[callback list City]
+									12.	comDU> Aus,   MALBR
+										[callback list Province]
+13.	comDU> Aus,   MALBR 
+	[callback list Country]
+
+
+Lets deep dine in below line '#PR1'
+	this.setState({name: 'USA'}, ()=>{console.log('cbl1', this.state.name)}); 													
+	console.log('l1', this.state.name)
+	this.setState({name: 'AUS'});
+	
+Here first you set the state to 'USA', then at the console in next line it did not give 'USA', but 'India' becausse value will reflect only ater Country.render start.
+Now third line set schedule the sate value for 'AUS' so ovverriding previus one 'USA'
+now when country.render + Country.didUp, the callback 'cb2' called. and it print the value 'AUS'
+
+So if you solely look this line    'this.setState({name: 'USA'}, ()=>{console.log('cbl1', this.state.name)}); '
+You find that you are changing the value to 'USA' but in the callback it is 'AUS'.
+This is achilis hill of react when it come to 'setState' batcihing.
+	
+
+	
+   rctSynClk() {
+		console.log('start')
+		this.setState({name: 'USA'}, ()=>{console.log('cbl1', this.state.name)}); 													console.log('l1', this.state.name)
+		this.setState({name: 'AUS'}, ()=>{console.log('cbl2', this.state.name)}); 													console.log('l2', this.state.name)
+#PR1	this.refs.province.setState({name: 'Arizo'}, ()=>{console.log('cbl3', this.state.name, this.refs.province.stae.name)}); 	console.log('l3', this.state.name, this.state.refs.province.name)
+#PR2	this.refs.province.setState({name: 'Sydan'}, ()=>{console.log('cbl4', this.state.name, this.refs.province.stae.name)}); 	console.log('l4', this.state.name, this.state.refs.province.name)
+		console.log('End')
+   }
+    willUpdate (nextProps, nextState) {
+#PR3	this.refs.province.setState({name: 'MALBR'}, ()=>{console.log('cbl5', this.refs.province.stae.name)}); console.log('l5', this.state.refs.province.name)
+   }
+   
+So final output be:
+>>	start
+>>	l1 India
+>>	l2 India
+>>	l3 India MP
+>>	l4 India MP
+>>	End
+>>	Country.wilUp > India, MP
+>>	Country.rendr > Aus,   MP
+>>	Provinc.wilrv > Aus,   MP
+>>	Provinc.wilUp > Aus,   MP
+>>	Provinc.rendr > Aus,   MALBR
+>>	City.   wilrv > Aus,   MALBR
+>>	City.   wilUp > Aus,   MALBR
+>>	City.	rendr > Aus,   MALBR 
+				--
+>>  City.   comDU > Aus,   MALBR
+>>	Provinc.comDU > Aus,   MALBR
+>>	cb13 AUS MALBR
+>>	cb14 AUS MALBR
+>>	cb15 AUS MALBR
+>>	Country.comDU > Aus,   MALBR 
+>>	cb11 AUS 
+>>	cb12 AUS 
+
+	
+somwhere in deep lib: 
+
+	for (cLict: child to parent loop) {
+		var comp = cList[i];
+		
+		if(comp != topmostCycleBeginer) {
+			comp.comppnentWillReciveProp();
+		}
+		comp.comppnentWillUpdate();
+		this.state = newState;
+		comp.render();
+	}
+	
+	for (cLict: child to parent loop) {
+		
+		var comp = cList[i];
+		comp.comppnentDidUpdate();
+		for(cbList: callbacks of comp) {
+			cbList[i].call();
+		}
+		
+	}
+	
+
+----------------------------------
+
+React intentionally “waits” until all components call setState() in their event handlers 
+before starting to re-render. This boosts performance by avoiding unnecessary re-renders.
+
+However, you might still be wondering why React doesn’t just update this.state immediately without re-rendering.
+that is bcoz, This would break the consistency between props and state, causing issues that are very hard to debug.
+
+
+
+
+		
+		

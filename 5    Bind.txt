@@ -1,0 +1,494 @@
+To understan the bind first lets remember some JS notes: 
+
+1.	any js which is in the script tag or linked directly in html doc, by default has a this. === window
+	meaning everything declared at root level is actully a global variabale and lie in window object.
+	and all the call happen at root level actully happen inside window context.
+
+2.	In any imported file, at root level there is no context so 'this.' will alwqays be undefined there.
+
+3.	By default 'this.' reprsent the context from which the function is called.
+
+4.	homeObjLitr.printName   VS    homeObjLitr.printName()  :  The first one is refrence of methode 'printName' later one is actual call of this methode
+
+-------
+
+First lets dive in into one imported .js file
+
+api.js>>
+	function Home() {
+		this.name = name;
+		this.printName = function() {console.log(this.name)};
+	}
+	var homeObj = new Home('muf');			
+	homeObj.printName();
+	
+So it is so clear that we create an object 'homeObj'. then call the member function 'printName' in the context of 'homeObj'.
+so value of 'this.' is actully reprsent an object 'homeObj'.
+Now
+Suppose you have a simillar object like this:
+	var homeObjLitr = {name: 'sha'}
+This one is not created with 'Home' constructor but with some other way.
+Now you wants to do the same operation of 'printName' as it could be done with object of 'Home'.
+
+There is two way:
+	1.	Create a simillar function for 'homeObjLitr' and run it like
+			homeObjLitr.printName = function() {console.log(this.name)};
+			homeObjLitr.printName();
+	2.	Or Use the member methode 'printName' of 'Home' with the object 'homeObjLitr'.
+			For this one we will use 'bind' or 'apply' or 'call'
+
+We will concentrate on 'bind' first.
+
+To achive the way 2 we will do the following:
+	var bindedMethoed = homeObj.printName.bind(homeObjLitr);
+So what it do:
+	First you have created the object of 'Home' as 'homeObj'.
+	now you take the refrence of 'printName' methode by 'homeObj.printName'  [not homeObj.printName()]
+	now you create a simmilar methode as 'printName' with function 'bind' like homeObj.printName.bind, this newly
+	now you will attach the object on whichs context you wats to run this methode.
+	
+So basically we ask the 'homeObj' object to lent its methode to 'homeObjLitr' so that he can use it without creating a new one.
+when you call 'bind' over the function refrence, it does not call the methode itself, instead it creat and return a new methode simillar to 
+that one but in context of the object passed in 'bind' methode. so after calling below one
+	var bindedMethoed = homeObj.printName.bind(homeObjLitr);
+'bindedMethoed' refer to the function same as 'printName' but in context of 'homeObjLitr'
+to call this methode simply do this: 
+	bindedMethoed();
+In this calling 'this.' will refer to 'homeObjLitr' not 'homeObj'.
+
+	var homeObj = new Home('muf');			
+	homeObj.printName();				// Muf [this >> homeObj]
+	var bindedMethoed = homeObj.printName.bind(homeObjLitr);
+	bindedMethoed();					// Sha [this >> homeObjLitr]
+
+When you call 
+	homeObj.printName();
+'this.' in the 'printName' will point to the context of 'homeObj'.
+When you call 
+	bindedMethoed();
+'this.' in the 'printName' will point to the context of 'homeObjLitr'.
+	
+But there is one limitation here - 
+if you wants to lent a methode of the class by this way, you must create at least one object of lender class.
+To avoid this you can follow below approach:
+
+api.js>>
+	var methodeRfHolder;
+	function Home() {
+		this.name = name;
+		methodeRfHolder = function() {console.log(this.name)};
+	}
+	methodeRfHolder()  			// this will give Error - 'this' is undefined 
+	var methodebinded = methodeRfHolder.bind(homeObjLitr);			
+	methodebinded();			// sha
+
+----------
+api.js >>
+	function fnm() {....}
+	fnm();
+the call of 'fnm()' happen without any context. because in imported file 'this.' remain null for root level call and elements.
+So if you have used 'this.' inside 'fnm' then it will throw error surely. otherwise it will work fine.
+
+	function fnm() {console.log(this.name)}
+	fnm();		// Throw error
+	But
+	var obj = {name: 'mufa'}
+	function fnm() {console.log(this.name)}
+	fnm.bind(obj)();		// will work fine
+	
+--------
+
+You can bind the methode at the time od declatration too: 
+	var myBindedMet = (function() {...}).bind(this/homeObjLitr/homeObj)
+	
+-------
+
+	var muf = {
+		name: 'Mufazzal',
+	}
+	var decBinded = (function() {
+		console.log("From decBinded >>" + this.name)
+	}).bind(muf)
+
+Now see below: 
+	var muf = {
+		name: 'Mufazzal',
+		decMember: function() {console.log("From decMember >>" + this.name)},
+	}
+In the second one 'decMember' is member function of 'muf'.
+But in first one 'decBinded' is not a member methode of 'muf'.
+But both  of them will run in the context of muf.
+way of calling will be diffrent -	
+	decBinded()   //From decBinded >> Mufazzal
+	muf.decMember()   //From decMember >> Mufazzal
+If you try something like below, it will give error: 
+	muf.decBinded()  //  muf.decBinded is not a function
+--------
+
+
+what happen inside the map() function of array : 
+	array.map( function() {...} )
+in the framwork:
+	map(callback) {
+		...
+		...
+		callback();
+		...
+		...
+	}
+So it is very mush clear here that 'callback' is called without any 'this./obj.' so inside the callback implementation if you have used 'this.' then it will
+throw an error, so u must use bind before passing it:
+	array.map( (function() {...}).bind(this/obj) )
+---------------------------------
+
+Now we will examin the 'City' class in tutorial 'Nesting' :
+
+if we apply the bind on the methode that are declare with 'var', than 'this.' will be available in that function 'vHome'. 
+and 'this.' will point to the object which are binded.
+E.g. :
+	City() {
+		var vHome() = {
+			this.inVHomeByThis = 'inVHomeByThis' 
+		}
+		var vHomeBind = vHome.bind(this);
+		vHome();								//	This will give error when called 'this.' is undefined
+		vHomeBind();							//	This will work fine
+	}
+Simillarly bind will change the behaviour of vRoom, vMemberIntHome. There also u will be able to declare variable with 'this.' and call/access
+methode and permater of 'this.'
+U will be able to declare	
+	this.invRoomByThis = 'invRoomByThis'.  
+and
+	this.invMemberIntHomeByThis = 'invMemberIntHomeByThis';
+in respective function.
+
+bind also change the behaviour of methoder declare with 'this.'
+eg: 
+	City() {
+		this.name = 'bar'
+		this.tHome() = {
+			console.log(this.name)
+		}
+		tHome();										// It will print 'bar'	
+		var mmh = this.tHome.bind({name:'bad'});
+		mmh();											// It will print 'bad'
+	}
+	
+-------------------------------------
+
+
+binding + Closure :> 
+Binding the methode which is child of constructor or function is very tricky: 
+When you bind any inner function (either of 'this.' or 'var'), Just imagine that you have crted a exact copy of binded function, which lies
+exactly paraller to the binding function.
+So the closure of the binding function is also avialable to the newly binded function
+
+see the example with 'this.' first: 
+	
+	function Home(popf, locf) {
+		var pop = popf;
+		this.loc = locf;
+		
+		this.printLoc = function() {  var st = 'MP'; console.log(this.loc, pop, st)};
+	}
+	
+	var bar = new Home(100, 'bar');					bar- {loc: 'bar'}	closure_bar- [pop: 100]
+	bar.printLoc();									//print loc from 'bar' and pop fron 'closure_bar'.	| 	bar, 100, MP
+	
+	var bad = new Home(10, 'bad');					bad- {loc: 'bad'}	closure_bad- [pop: 10]
+	bad.printLoc();									//print loc from 'bad' and pop fronm 'closure_bad'.	| 	bad, 10, MP
+
+	var bindSwap = bar.printLoc.bind(bad);			//A paraller function (in imagination) with 100% same code as 'printLoc' is created like this
+														bindSwap = function() {  var st = 'MP'; console.log(this.loc, pop, st)};
+													Now it is paraller to the the 'printLoc' of 'bar' so it will have the closure of 'bar' too
+	bindSwap();
+	
+When you call 'bindSwap()', it will connected with object 'bad- {loc: 'bad'}'  and closure   closure_bar- [pop: 100]
+The point is if you bind the function of object type 'A' with the another object of same type 'A', then that function will have 'this.' connected to 
+binded object and closure connected to binder object:
+	var bindedFunction = binderObject.functionOfM.bind(bindedObject);
+bindedFunction		--->	{this. 		==> bindedObject}
+					--->	[closure 	==>	__binderObject.functionOfM()__]
+
+so 
+this.loc:	will come from object 'bad', 
+pop:		will come from closure 'closure_bar'
+	so final output be:
+	bad, 100, MP
+
+Also pay attention to line ' var st = 'MP'' in printLoc.
+This is internal variable of 'printLoc', so it is initilize each time when we call either 'printLoc' or binded function of 'printLoc' that is 'bindedFunction'
+
+-----------------------------------------
+
+Now lets see one example with graphocal reprsentation of how binding work:- 
+see the image 'mm.docx' too
+	City() {
+		this.setV = function(namef, popu) {
+			this.loc = namef;
+			pop = popu;
+		}	
+		
+		this.printLoc = function() {console.log(this.loc, pop)};		
+	}
+	var objInd = new City('ind', 200);
+	var objUjj = new City('ujj', 100);	
+	
+So above two line will created following object and closures: -	
+objInd --> this.-> {loc: 'ind'}    	objInd_City_closure -->	[pop: 200]
+objUjj --> this.-> {loc: 'ujj'}    	objUjj_City_closure -->	[pop: 100]
+
+Now we have one object below, this could be any random object. and suppose it have one matching key with 'City'
+1.	bind to any object
+
+	var mumLit = {loc: 'mumbai'};
+	var bindedByLit = objInd.setV.bind(mumLit)
+
+Now when you bind the 'mumLit' with function of 'objInd', than a new function {bindedByLit} is created which will be 100% same as 'setV' and lie in paraller to 
+'setV' itself.
+Now this newly copied function (bindedByLit) will share the same closure as the objInd.setV that is 'objInd_City_closure' but
+in this function 'this.' will be connected to 'mumLit'
+
+bindedByLit --> this.-> {loc: 'mumbai'}			objInd_City_closure -->	[pop: 200]
+		
+	bindedByLit('Hyd', 400);
+	
+After calling this newly created function, anything change with 'this.' will reflect in 'mumLit' and 
+anything change via closure will reflect in 'objInd_City_closure'
+So closure of 'objInd' will also get impacted
+	
+objInd		--> this.-> {loc: 'ind'}    	objInd_City_closure -->	[pop: 400]
+objUjj 		--> this.-> {loc: 'ujj'}    	objUjj_City_closure -->	[pop: 100]
+mumLit		--> this.-> {loc: 'Hyd'}		
+
+
+
+2.	bind with simillar or same type of object: [see the image mm.docx for more detail]
+	var bindedBySim = objInd.setV.bind(objUjj)
+	
+bindedBySim		-->	this.-> {loc: 'Ujj'}	objInd_City_closure -->	[pop: 200]
+	
+	bindedBySim('deh', 500);
+
+objInd		--> this.-> {loc: 'ind'}    	objInd_City_closure -->	[pop: 500]
+objUjj 		--> this.-> {loc: 'deh'}    	objUjj_City_closure -->	[pop: 100]
+-----------------------------
+
+As we know function declare with var (without 'this.') do not have 'this.' defined in it. 
+So it make no sense to use 'this.' in it. 
+And we also know that when we bind a methode of one object(o1) with other object (o2) we actlly says that 'this.' will connect to (o2)
+Now is function is declared with 'var' then 'this.' should have been not prsent in the methode body
+So binding make no sense in it 
+	o1.myFun.bind(o2)  
+	
+But you still can use 'this.' in the methode declare with 'var', in that case u will have to bind it with some object, otherwise it will give 
+undefind error.
+
+Second very imp thing to remember is that if function is declared with 'var', it will have local scope. Amd avialble only in 'City' block or its inner 
+blocks.
+You cannot bind it outside of 'City'
+
+So now we will visulize how bindind of a methode declared with 'var', [we assume that we have used 'this.' in that methode too]
+See the graphical reprsentation of following code in 'varbind.cocx'
+
+Suppose u have a very random function like this:-
+	City() {
+		var varMet = function() {
+			var lvar;
+			this.loc = 'fran'
+			pop = 123;
+		}
+	}	
+	
+	var objInd = new City('ind', 200);
+	var objUjj = new City('ujj', 100);	
+	
+We call City() construtor twice so two closure will be made each for each object
+So above two line will created following state of object and closures for inner methode 'varMet': -	
+
+varMet:objInd --> this.-> undefined    	objInd_City_closure -->	[pop: 200]
+varMet:objUjj --> this.-> undefined    	objUjj_City_closure -->	[pop: 100]	
+
+'verMet' is declared with 'var' so 'this.' point to nothing.
+
+1.	bind to any object : now lets bind a methode 'varMet' to object below, You can bind it only inside the 'City' block or its inner block
+	City() {
+		...
+		this.expoFun() = {
+			var mumLit = {loc: 'mumbai'};
+			var bindedByLit = varMet.bind(mumLit)
+		}
+		...
+	}
+lets call the function through public methode of 'objInd':-
+	objInd.expoFun();
+	
+We call it via 'objInd', closure will be used here of 'objInd_City_closure'
+Now when you bind the object 'mumLit' with function 'varMet', than a new function {bindedByLit} is created 
+which will be 100% same as 'varMet' and lie in paraller to 'varMet' itself.
+Now this newly copied function (bindedByLit) will share the same closure as the 'varMet' that is 'objInd_City_closure' but
+in this function 'this.' will be connected to 'mumLit'
+
+bindedByLit --> this.-> {loc: 'paris'}			objInd_City_closure -->	[pop: 200]
+		
+	bindedByLit();
+	
+After calling this newly created function, anything change with 'this.' will reflect in 'mumLit' and 
+anything change via closure will reflect in 'objInd_City_closure'
+So closure of 'objInd' will also get impacted
+	
+objInd		--> this.-> {loc: 'ind'}    	objInd_City_closure -->	[pop: 123]
+objUjj 		--> this.-> {loc: 'ujj'}		objUjj_City_closure -->	[pop: 100]
+mumLit		--> this.-> {loc: 'fran'}		
+
+2.	bind with simillar or same type of object
+	var bindedBySim = varMet.bind(objUjj)
+	
+bindedBySim		-->	this.-> {loc: 'Ujj'}	objInd_City_closure -->	[pop: 200]
+	
+	bindedBySim();
+
+objInd		--> this.-> {loc: 'ind'}    	objInd_City_closure -->	[pop: 123]
+objUjj 		--> this.-> {loc: 'deh'}    	objUjj_City_closure -->	[pop: 100]
+
+---------------------
+
+if function is declared with 'var' and has 'this.' used in it, but the function is not called with 'bind' than it will give error.
+
+	function City() {
+		var varMet = function() {
+			var lvar;
+			this.loc = 'fran'
+		}
+		varMet();							// This call will give error in the methode : 'this.' is undefined
+		this.expo = function() {varMet()};
+	}
+
+	var cc = new City();
+	cc.expo();								// This call will give error in the methode : 'this.' is undefined
+	
+----------------------------
+
+binding methode with declared with 'this.' is like:		objInd.setV.bind(objUjj)
+	1	create a copy of function setV in same closure.
+	2	disconnect the 'this.' from 'objInd'
+	3.	connect the 'this.' with 'objUjj'
+	
+binding methode with declared with 'var' is like:		objInd.varMet.bind(objUjj)
+	1	create a copy of function setV in same closure.
+	2.	connect the 'this.' with 'objUjj'
+	
+So in case of 'var' step two of disconnection not require bcoz connection not exist.
+------------------------------
+
+bind and perameter :-	
+The function wchich are binded can pass perameter in two way:
+1.	At a time of binding [first in line]
+2.	At a time of call [second in line]
+3	Together
+
+1.	At a time of binding :-
+To pass param at time of perameter, just pass the passing perameter after the binding object (obj).
+	var paramPlay = function(p1, p2) {
+		console.log(p1, p2)
+	}
+now bind it:
+	bindedFun = paramPlay.bind(obj, 'muf', 'hus')
+	
+So in bind function first param is the binding object and after that start the methode argument.
+Now call the the functon simply as:
+	bindedFun();	//muf  hus
+	
+the sequence of passing param is in synch with the argument in actual function.
+So if you pass less argument than the formal variable of actual function, then formal params coming in the end will go undefined.
+e.g.
+	bindedFun = paramPlay.bind(obj, 'muf')
+	bindedFun();	//muf  undefined
+	
+	
+2.	At a time of call :-
+if you wants you can avoid passing the perameter at time of binding and pass it at a time of calling 
+But first bind it without params:-
+	bindedFun = paramPlay.bind(obj);
+Now call
+	bindedFun('muf', 'hus');
+	
+the sequence of passing param is in synch with the argument in actual function.
+So if you pass less argument than the formal variable of actual function, then formal params coming in the end will go undefined.
+e.g.
+	bindedFun(obj, 'muf');	//muf  undefined
+
+3.	Together:
+You can also pass in both at a time.
+In that case first all the values passed at a time of bind will be mapped with formal args, if still some formal frgs remain unmapped with values, then 
+they are mapped with values passed at a time of call.
+
+--
+	bindedFun = paramPlay.bind(obj,'ind1', 'ujj1');			
+					     bindedFun('ind2', 'ujj2');				
+																		ind1	ujj1	ind2	ujj2
+																		p1		p2
+																												ind1	ujj1
+	bindedFun = paramPlay.bind(obj);			
+						 bindedFun('ind2', 'ujj2');	
+																						ind2	ujj2
+																						p1		p2
+																												ind2	ujj2
+	bindedFun = paramPlay.bind(obj,'ind1', 'ujj1');			
+					 bindedFun();	
+																		ind1	ujj1	
+																		p1		p2
+																												ind1	ujj1
+	bindedFun = paramPlay.bind(obj,'ind1');			
+					 bindedFun();	
+																		ind1	_		
+																		p1		p2
+																												ind1	undefined
+	bindedFun = paramPlay.bind(obj);			
+					 bindedFun('ind2');	
+																						ind2	_	
+																						p1		p2
+																												ind2	undefined
+	bindedFun = paramPlay.bind(obj,'ind1');			
+					 bindedFun('ind2');	
+																		ind1			ind2		
+																		p1				p2
+																												ind1	ind2
+	bindedFun = paramPlay.bind(obj,'ind1', 'ujj1');			
+					 bindedFun('ind2');	
+																		ind1	ujj1	ind2		
+																		p1		p2		
+																												ind1	ujj1
+	bindedFun = paramPlay.bind(obj,'ind1');			
+					 bindedFun('ind2', 'ujj2');	
+																		ind1	ind2			ujj2		
+																		p1		p2		
+																												ind1	ind2
+
+----------------------
+
+apply/call :
+apply and call also work like bind, except it execute the binded methode immediatly
+
+	varMet.bind(myObj)()   ===  varMet.call(myObj)
+If you pass some params than: 
+
+	varMet.call(myObj, 'ind2', 'ujj2')
+------------------------------------Why is binding necessary at all?
+
+	In JavaScript, these two code snippets are not equivalent:
+1.	obj.method();
+
+2.	var method = obj.method;
+	method();
+-------------------
+
+
+function Dg() {
+	this.myfun = function() {console.log(this)}
+}
+var dg = new Dg();
+let vv = dg.myfun();
+vv()							// 'this' will be undefined here becoz it is not called in any contex
+var vv1 = dg.myfun.bind({})	
+vv1()							// 'this' wil be {} here, as it is binded.

@@ -1,0 +1,21 @@
+Process lifecycle
+
+Each android app is a process itself and this can be in one of 5 phase.
+
+1. 	Froground Process: 
+	a.	frorground activity
+	b.	services which are bound to frorground activity only
+	c.	all forground services. startForrgroundService()
+	d.	in any callback function
+2.	Visible process
+	a.	Visible activity
+	b.	services which are bound to Visible activity only
+3.	Service process
+	a.	services started with startService()
+4.	Background process:
+	a.	Background/Stopped activities (use savedInstance to recreate) [multiple such process resolved by LRU algo]
+5.	Empty process
+	a.	all cached process which are hold for quick relaunch if required
+
+	
+	

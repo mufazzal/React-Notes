@@ -1,0 +1,342 @@
+da		->	Array of HTML DOM element
+da[0]	->	Single of HTML DOM element
+
+ja		->	A Jquery object [wrapped around one or more than one HTML DOM element]
+ja[0]	->	HTML DOM element
+
+da:
+	opration on single elment not possible. so 'innerHtml' and 'className' not work
+	
+----
+document.getElementsBy* OR 	HTMLCollection:
+
+all the methode of such types return the object of 'HTMLCollection'
+	-	As the name suggest it is collection(like Array/ArrayList/HsahMap of Java) of HTMLElement type of object . 
+	-	Elements of this collection is simply access as array element
+	-	You can get the size if collction by 'da.length'
+	-	there is no other methode of attrubute exist for this 
+	-	This function gives you the array always never a single element. But this is cusomized array which is of type 'HTMLCollection'
+	-	deep in the framwok: 
+			function HTMLCollection() { ... }
+			HTMLCollection.prototype = Array.prototype	
+HTMLCollection.prototype >> Object
+
+---
+Methoe of HTMLElement : 
+	-	getElementBy*
+	-	getElementsBy*
+	-	click, focus
+Property of HTMLElement : 
+	-	innerHTML, className
+	-	onclick, onhover
+	-	remove, removeAttribute, setAttribute
+	
+---	
+
+REF#11
+document.getElementBy* OR 	HTMLCollection[n]	OR		document.getElementsBy*()[n]	
+all the methode of such types return the object of HTML Element not an collection or array
+	-	this HTML element has a proper heirarchy structure as below : 
+			document.getElementBy*/HTMLCollection[n].prototype >> HTML*Element >> HTMLElement >> Element >> Node >> EvetTarget >> Objevt
+	-	printing them in console will print the HTML text itself.
+	-	This return the actual HTML element not a collection so you have lot of methode and property for operations
+	-	you have property like below in 'HTML*Element' where * is div, p, h etc: 
+			innerHtml, className, onclick
+	-	you have methode like:
+			click, blur, focus
+	-	in class 'HTMLElement' you have methodes like:
+		getElementById, getElementsByClassName, getAttribut etc
+	
+	
+----
+
+$()		or 		JQuery()
+This will always and always return a collection of Jquery object which is wrapped around the array of HTML DOM elements, which matching the selction query.
+This never return a standalon jquery object or HTML Element, but return a collection.
+There is couple of methode avilable on this. they will operate on the collection of this HTML DOM element.
+so if you do 
+	var ja = $(..);
+
+if function f accepts raw HTML and css selector both it mns: 
+f("<p> a pera here...</p>")
+f('.muf')
+Both will work and we will say it is f(rs) r: raw HTML, s: selector of css
+	
+	
+$()		vs 		getElement*By*()
+with the $ you get the jquery object but with the getElement*By*() you will get the Basic HTML DOM element.
+things we get from $ is actully a wrapper around the thing we get from getElement*By*()
+
+getting basic HTML dom element from $: 
+if you wants to get a HTML element not a wrapper object of jquery than you just have to do below
+	$('.apple')		->		A jqury wrapper around collection of HTML element
+	$('.apple')[n]	->		A HTML Dom element (not jqery object) this is 100% simmilar to 'document.getElementsByClassName('apple')[n]'
+
+	
+------------------
+
+JS						VS				Jquery
+innerHTML				|				html(v)						
+value					|				val(v)
+innerText				|				text(v)
+ classList 				|
+ className				|
+onclick					|				
+click 					|
+ 
+
+-------------------
+	
+list of opration: 
+opration on collection:-
+	add(rs): this function can be used to add the element in the collction (this will not de any change on DOM page itself)
+		var vv = $('.muf').add('.hus');
+		now vv is collction of element of classnema muf anf hus.
+		It do not add classname element 'hus' inti the 'muf'. 
+		This is not a operation on DOM but on collection.
+		This return a new collction				
+operation on HTML DOM: 
+	append(...)/prepend(...): 
+		This two function is used to push the element before or after the given set of HTMLCollection.
+		this function accepts raw HTML and css selector both. this function accept infinite param
+			$('.apple').append($('#muf')):
+		
+			<da>apple</da>
+			<da>apple</da>
+			will do->
+			<da>apple <dm>muf<dm> </da>
+			<da>apple <dm>muf<dm> </da>
+	---
+		$('#fruite').append($('<div>  Apple4 </div>'));
+		$('#fruite').append('<div>  Apple4 </div>');
+		Both will work here, and give same result
+	---
+	remove():
+		$('.apple').remove(): 
+		This will remove all the element of class name 'apple' with all their child from DOM page.
+		here you do not have to know about the parent. if you have proper selector of HTML element. you can remove them.
+		It do not accept any param
+	empty():
+		$('.apple').empty(): 
+			This will remove all the child inside all the element of class name 'apple'
+	
+	addCalss()/removeClass()/toggleClass(): 
+		as the name specify it do the respective operation on collection of element:
+		$('.apple').addCalss('muf')/removeClass('muf')/toggleClass('muf')
+			<da class="muf">apple</da>
+			<da class="muf">apple</da>
+
+	
+	css:
+		This function use to set and get the css property of HTML elements, but there is atrick here
+		For get: 
+			get will work only for the first element of the collection and ignore the rest
+				$('.apple').css('color');
+			will give color of element $('.apple')[0] and ignore the rest.
+		Set:
+			This will work for all the element in collection
+				$('.apple').css({"color": 'green', "background-color": 'black'});
+			above line will change the corrosponding css values for all the element 
+	
+	attr:
+		This one is also same as css() function
+		For get: 
+			get will work only for the first element of the collection and ignore the rest
+				$('.apple').attr('id');
+			will give id of element $('.apple')[0] and ignore the rest.
+		Set:
+			This will work for all the element in collection
+				$('.apple').attr({"id": 'myId', "value": 'mud'});
+			above line will change the corrosponding attribute values for all the element 
+			
+	attr and css: 
+		the both accept following pattern for set
+		--css/attr("propertyname","value");
+		--css/attr({"propertyname":"value","propertyname":"value",...});
+		--css/attr("propertyname", function(){...});
+	
+	addClass(): 
+	this will add the class on all the elements in the collection e.g.:
+		$('.muf').add('.hus').addClass('piplu')
+	will add class 'piplu' on all the element of class name 'muf' and 'hus'
+	
+	Traversing: 
+	parent():
+		This function give the collection of first immidiate parent of all the HTML element in collection.
+		return value in itself is a collection.
+		if multiple element has a same parent then only one entry will appear in the resulting collection.
+			<div class="apple"> 
+				<div class="greenApple" id="ap1">greenApple </div>
+				<div class="greenApple" id="ap2">greenApple </div>
+			</div>			
+			<div class="orange"> 
+						<div class="greenOrange">greenOrange </div>
+						<div class="greenOrange"> greenOrange</div>	
+			</div>		
+		>> $('.greenApple').add('.greenOrange').parent()
+		res--
+			HTMLCollection[div.apple, div.orange, __proto__..]
+			
+	find():
+		This will travrse in all the element of HTML collection and finally give a collection of HTML element who are matchibg the selector
+		find travrse for each element and to all of each-ones children.
+		it will go deep down, chil, grand-child, grand-grand-child...
+	children(): 
+		it will give the first immediate children of all the element in collection. it will not go deep down
+	sibling: 
+		use next(), prev()
+	
+	Filtering:
+		This will filter the element in collection for matcing query.
+		$('.apple, .orange').filter(query);
+	
+operation for reading/writing content:  
+	There is three methode for this 
+	Reading:-
+	html(): return the concatanated string of all the inner html of all the HTMLElement in the collection, if the element has only text then it will be ignored
+	text(): return the concatanated string of all the text of all the HTMLElement in the collection, all the HTML tag will be ignored.
+	val():	return the string of the value of first HTMLElement (input type) in the collection.
+	
+	<div> muf </div>
+	<div> hus </div>
+	<div> sha </div>
+	<div> <p>pmuf<p> </div>
+	<div> <p>phus<p> </div>
+	<input type="text" value="tttt" id="inpTb" class="inp inpTb"/>
+	<input type="text" value="dddd" id="inpTb" class="inp inpTb"/>
+	
+	$('div').html(): muf hus sha <p>pmuf<p> <p>phus<p>
+	$('div').text(): muf hus sha pmuf phus
+	$('div').val():  empty string
+	$('div').add('input').val():  empty string
+	$('input').val():  tttt
+	
+	Writing:-
+	same as above, just pass the first param
+	This will remove all the existing content (html or non-html) and set the value passed in param
+	html(ele)
+	ele: This could passed it three way
+		1.	a simple HTML string
+			$('.orange').html($('<p>mufff</p>')): 
+			Here all the element of class 'orange' will have passes content
+			
+		2.	$('.orange').html($('.apple')): 
+			First it will completely empty all the element of class name 'orange',
+			Then it will remove element of class name 'apple' from its location
+			Then all the element of class name 'apple' will be copied into the all the element of class name 'orange'.
+			
+			<do>orange</do>
+			<do>orange</do>
+			<da>apple</da>
+			<da>apple</da>
+			
+			$('.orange').html($('.apple')): 
+			
+			<do>
+				<da>apple</da>
+				<da>apple</da>
+			</do>
+			<do>
+				<da>apple</da>
+				<da>apple</da>					
+			</do>
+			So more than actual html element of apple is created above.
+	Simillar behaviour work for val(ele) and text(ele)
+	but here 'ele' is string only.
+	
+	
+	
+	Events:
+		In jquery a common function is used to set the click handler and to click/blur/focus... itself.
+		$('.apple').click()	: will click all the element of class name apple.
+		$('.apple').click(f): will attach the clicklistener on all the element of class name apple	
+	Some impp events:
+		click, blur, focus...
+		more : https://www.w3schools.com/Jquery/jquery_ref_events.asp
+		
+	bind/on:
+		You can also use bind/on to set the event handle like below:
+		$('.apple').bind/on('click', f);
+		bind is now deprecated and u should only use 'on'
+	
+	Effect:
+	hide/show:
+		this will hide show the selected set of element, it use append the 'display: none' in element-style
+	slide, fadeIn, fadeOut, animate,
+		
+	Other:
+	chainning- 
+		$("#p1").css("color", "red").slideUp(2000).slideDown(2000);
+	
+-----
+
+By default, all HTML elements have a static position, and cannot be moved.
+To manipulate the position, remember to first set the CSS position property of the element to relative, fixed, or absolute!
+
+-------
+$()[n]		or 		JQuery()[n]
+Now this will give you a HTMLElement (a javascript object not a jquery one)
+this produce the same result as in section 'REF#11'
+
+	
+-----	
+document.getElementById		VS		document.getElementsByClassName
+id will return one HTML DOM element not an array.
+second one will gives array of HTML DOM elements, size of 0 or greater.
+
+
+		
+---------------
+<p class="" id="header1"> Mufa </p>
+	  <p class="" id="header2"> Sha </p>
+	  
+	  	  
+      <div id = "app" style="background-color:white">
+		
+		<input type="text" value="dddd" id="inpTb" class="inp inpTb"/>
+		<input type="checkbox" value="dddd" id="inpCb" class="inp inpCb"/>
+		<input type="radio" value="dddd" id="inpRb" class="inp inpRb"/>
+		<input type="button" value="dddd" id="inpBt" class="inp inpBt"/>
+		
+		<div class="muf" id="muf"> 
+		Mufazzal
+		</div>
+		
+		<div class="apple"> 
+			<div class="greenApple">greenApple </div>
+			<div class="greenApple">greenApple </div>
+			<div class="greenApple">greenApple </div>		
+			
+			<div class="redApple">redApple </div>
+			<div class="redApple">redApple </div>
+			<div class="redApple">redApple </div>					
+		</div>
+		<div class="apple">apple </div>
+		<div class="apple">apple </div>
+		<div class="apple">apple </div>
+		
+		<div class="orange"> 
+			<div class="greenOrange">greenOrange </div>
+			<div class="greenOrange"> greenOrange</div>
+			<div class="greenOrange">greenOrange </div>		
+			
+			<div class="redOrange">greenOrange </div>
+			<div class="redOrange">greenOrange </div>
+			<div class="redOrange">greenOrange </div>		
+		</div>
+		<div class="orange">orange </div>
+		<div class="orange">orange </div>
+		<div class="orange">orange </div>
+		
+	  </div>	
+--------------
+
+document.getElementsByClassName('apple').onclick = function...		// Incorrect
+document.getElementsByClassName('apple')[0].onclick = function...	// Correct
+
+-------------
+
+document.ready   VS   window.onload    Vs   $(document).ready
+document.ready>> There is nothing like 'document.ready' as core js do not have anything like.
+window.onload>> A function of core js, but each browser have its own implementatipn so this is in MESS, never use this
+$(document).ready >> This is the best choise, this will wrap the window.onload and provide a common platform for all the browser.

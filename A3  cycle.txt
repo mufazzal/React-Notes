@@ -1,0 +1,100 @@
+
+Ther is two very imp cycle in JS execution 
+1.	At a time of page load (when document is null)
+2.	After page load and in document.ready function
+
+-----
+1.	At a time of page load (when document is null) --->
+	
+In this cycle all the code which are at root level of all the file will execute 
+This code could be in any file like 
+in <script> tag
+in index.js   [by script link]
+in api.js	  [by import or require]
+
+All below code must be in root level not in any block or function
+e.g. :
+	console(..)
+	alert('ad');
+	myFun();
+	this.printInfo();
+	...
+	...
+	function() {...}
+	..
+	
+The code in this ccle will not have document variable so if you try any of them it will fail:
+	...
+	...
+	document.getElementById('asd').value = 'sad'  						//Error
+	document.getElementById('asd').display = 'none'  					//Error
+	document.getElementById('asd').onClick = function() {..}  			//Error
+	...
+	...
+
+Now lets examine how this root level code behave at a time of pahge load [again it is in root level not in any function block]	
+Suppose you have a setup like ->
+	
+index.html >>
+
+	<script>
+		var faimily = {}
+	</script>
+	<Script src="dada.js">
+	<Script src="dady.js">
+	<script>
+		var homepune = {}
+	</script>
+	<Script src="son1.js">
+	<Script src="son2.js">		
+	
+dada.js OR dadaApi.js>>
+	faimily.dadaName = "muhmmad"
+	homepune.dadaName = "muhmmad"		// Error
+	
+dady.js OR dadyApi.js>>
+	faimily.dadyName = "shabbir"
+	homepune.dadyName = "shabbir"		// Error
+	
+son1.js OR son1Api.js>>
+	faimily.son1Name = "mufazzal"
+	homepune.son1Name = "mufazzal"	
+	
+son12.js OR son12Api.js>>
+	faimily.son2Name = "murtuza"
+	homepune.son2Name = "murtuza"
+	
+	
+--------
+
+2. After page load and in document.ready function -->
+
+dada.js OR dadaApi.js>>
+	document.ready({
+		faimily.dadaName = "muhmmad"
+		homepune.dadaName = "muhmmad"		// NO error now
+	)};
+	
+dady.js OR dadyApi.js>>
+	document.ready({
+		faimily.dadyName = "shabbir"
+		homepune.dadyName = "shabbir"		// NO error now
+	)};
+	
+son1.js OR son1Api.js>>
+	document.ready({
+		faimily.son1Name = "mufazzal"
+		homepune.son1Name = "mufazzal"	
+	)};
+	
+son12.js OR son12Api.js>>
+	document.ready({
+		faimily.son2Name = "murtuza"
+		homepune.son2Name = "murtuza"
+	)};
+	
+All the code above is written at root level of respective file not in any kind of block of function.
+
+That is the reason many time you get error 'JQuery is not define'
+You have to put JQuery link on the top so all the js who are using jQuery will have window.jQuery or window.$ defined
+

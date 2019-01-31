@@ -1,0 +1,126 @@
+Byte, Cheatarcter, Unicode
+
+String is the best way to reprsent what you wants to say fron the ancient time and string are builds by charachters.
+Now as you know there are thousands of language and crores of chrachter are there in world and so we must need a proper ecosystem to reprsent each char in digital systems.
+
+On the very beginnning of digital world there was support for only 127 char.
+this 127 set of char is called ASCII.
+and they are reprsented by integer value 0-127 in the digital system with typical 8-BIT .
+char 		memory reprsentation
+
+
+
+So the big question
+Why in the name of god we need unicode system if we already have such a easy ASCII system
+ANS: Now as you imagine this will have very limited scope and thousands laguage and crore chars.
+
+After hell lot of thinking and modeling and bla bla bla of 3*10^8 geniuses and organization..
+finally geniuses come under the single roof and decided 'We need to settel down'
+They come with an idea of UNICODE.
+So what is it?
+Look man there is crores of charachter in the world and it is impossible to repsent then in 8 bit for sure.
+So idea is that we will not reprsent char itself in the memory, but we will reprsent an integer which will repsent that char in memory and that integer will be his unicode.
+and you can  build your own approch to reprsent that unocodes.
+So here we will add one more layer 'UNICODE'
+Every single charachter in the world will have a unicode which will be same irrespective of country, territoty, machine, language, person, place or gender (OK not gender :)).
+Now to reprsent this unicode in the memory there are diffrent type of approch available
+This approches called 'charachter encoding' or 'encoding'
+Diffrent software, machine, system may opt for any of those.
+some most famous are 
+UTF-8, UTF-16, ASCII, UTF-32. 
+So now system will looks like this
+
+------------------------------------------------------------------------------
+char 	|	unicode		|	memory reprsentation	|
+		|				| UTF-8	|UTF-16	|UTF-32	|ASCII	|		
+------------------------------------------------------------------------------
+
+ASCII:  This is most legacy and repsent till char = 127, after that it does not works.
+	    So in case your file/system deals in charachter till 128 only ASCII is good for u.
+	    Memory took : 1 byte only
+UTF-8:  this is most used formate in tidays scenario.
+	    This is varibale length encoding, mns number of charachter to encode could be changed, UTF-8 encode the dat in
+	    MIN 1 byte to MAX 4 byte.
+	    Length is depends upon unicode value of charachter to reprsent.
+	    heigher value of unicode needed higher amount of bytes.
+	    Best part is that
+	    For first 128 charachter it takes 1 byte and all of that charachter allign with ASCII, so UTF-8 supports all legacy
+	    system who uses ASCII
+	    So
+	        for U+00 to U+7F
+	            UTF-b('*') = ASCII('*');
+
+        Table matrix UTF-8:
+
+          fron        to         var bits   bytes
+  1.      U+0000     U+007F         7        1
+  2.      U+0080     U+07FF         11       2
+  3.      U+0800     U+FFFF         16       3
+  4.      U+10000    U+1FFFF        21       4
+
+            Row 1: ASCII
+            Row 2: greek,roman...arabic,hebrew
+            Row 3: basic multilang
+            Row 4: Historic and EMOJI.
+
+NOTE: Emojis charachterser are included after 2010.
+
+UTF-16: This uses minimum 2 byte to max 4.
+
+UTF-8 VS UTF-16 : 
+	1st is littile slower but save lot of memory
+	2nd is faster but takes lot of memory [minimun 2byte for all WTF]
+
+string vs Base64String
+Base64 is wiedly used and only god can help you to store/transmit BINARY data if Base64 were not there.
+So why
+whenever you wants to store/trans binary data(byte array byte[]) you have to convert it into the string and then finally send this to n\w or storage file.
+but if you convert it into the normal string say UTF=8, UTF-16, ASCII. It will definatly have diffrent charachter lies in that range.
+this charachter could be anything like  q,f,5,7,-,+,^,/,/t,/n,/&e,  . 
+Now problem with this veriety of charachter is that some of the machine, file, hub devices or any intermidiate media can process this or read this diffrently.
+and as long as this string reprsent binary data so when you re-convert this string into byte array you may found result diffrent than expected.
+To solve this problem some genius did a littile trick, He remove all the character which can be processed or machine dependent and finally come up with 
+exact  64  character which will have same behaviour across the globe, nope universe 
+this 64 champs are
+A - Z  ==>  0 - 25
+a - z  ==>  26 - 51
+0 - 9  ==>  52 - 61
+62     ==>  +	
+63     ==>  /
+
+and now 2^6 = 64
+so byte array are breaked up in sequence of 6 bits and then charachter is assigned to its value
+conversion process ;> 
+to convert the byte array in base64, number of byte have to be mutiple of 3
+byte array are break up in subsets of 3,
+so all subset will have 8*3 = 24 bit
+24 bit will be devide in 4 part as 6*4 = 24
+each set of 4 part will be assign to mapped charachter 
+now this new string is base64 string
+
+you can see 3 normal(utf-8/16, ASCII) charachter/byte is reprsent by 4 base64 charachter, 
+that is the reason why base64 string is larger than its normal (utf-8/16, ASCII) counterpart.
+
+Working example
+Text content				M			a			n
+ASCII					77 (0x4d)		97 (0x61)		110 (0x6e)
+Bit pattern				010011	01		0110 	0001		01	101110
+Logical conversion			______  ____________________	__________________	______
+Index					  19		22			5		  46
+Base64-encoded				  T		W			F		  u
+
+ASCII(man) = Base64(twfu)
+
+What if byte array/no of char to conver is not the multiple of 3
+	Then we add a extra byte with zero value in input 
+	ex if input is   m  then m00
+	   if input is   ma  then ma0
+	bla bla conversion perform
+	in the output we will add padding char '=' explicitly
+	for 
+	m   ==> m00 ==> bQ==
+	ma  ==> ma0 ==> bWE=	
+	man ==> man ==> bWfu	
+
+-------------------
+

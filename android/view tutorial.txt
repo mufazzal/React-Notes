@@ -1,0 +1,189 @@
+** contex is final variable in view class which is set inside all three cunstructor 
+** view does not have default cunstroctor, so all classes derived from view must override one of three counstructor.
+
+any view treval in three phase
+phase 1. 	Measure Pass:  
+			this is first pass after completion of this pass all the view will know width and height of himself and of their childrens
+			parent view may call measure methode of each children more than once if required iin order to space allocation.
+			but this all call occure in this phase only.
+			
+			after completion of measure function (not Measure Pass) for each view element, cllaback function onMeasure(ws, hs) got called on that particular view
+			onMeasure has proper body in all views classes like TextView, Button, LinearLayout etc, at this function with all perameter view calculate their size.
+			code in this function receive RULE SPECIFICATION FOR HEIGHT AND WIDTH FROM PARENT (or from somwhere in this phase)
+				either you override this function or 
+				it is default implementation of ***view classes of android
+				u must follow the set of rule u recevied
+			see section (protocol to override onMeasure)
+			
+			**(actully onMeasure function is have a code that determine size of view wrt to condions and rules that are ordered by parent view through measure phase)
+			** measure methode is final in view.java and cant be override
+			**When a view's measure() method returns, its getMeasuredWidth() and getMeasuredHeight() values must be set, along with those for all of that view's descendants
+			**Framwork calls requestLayout() methode inside whever he feels to make changes in view size or layout, 
+				u can also call it by yourself to intiate re-bounding of that view
+			*	requestLayout never make any changes in appearance of view
+			
+phase 2.	Layout Pass
+			this is second pass after completion of this pass all the parent view  know exact locations of it and its children
+phase 3.	Draw Pass
+
+
+
+
+CONTEXT:
+	All view including dialog:	they takes activity context in perameter
+	Toast:	they takes ApplicationContext as perameter
+	thats why Toast could be shown without activity[from service/brcr/appContext] but not dialog 
+
+
+	
+**	If either requestLayout() or invalidate() were called (by you or by framwork), the framework will take care of measuring, laying out, and drawing the tree as appropriate.
+**	Don't call setLayoutParams in onMeasure. Layout happens in a second phasse after measuring.
+
+
+protocol to override onMeasure:
+*	(widthMeasureSpec and heightMeasureSpec parameters, both are integer codes representing dimensions) 
+		which should be treated as requirements for the restrictions on the width and height measurements you should produce.
+* 	if calculated w and h does not follow specification then the parent can choose what to do, including clipping, scrolling, throwing an exception, 
+		or asking the onMeasure() to try again, perhaps with different measurement specifications).
+*	integer value of width and hight can be genrated by   MeasureSpec.getSize(width/height_MeasureSpec), and its value is in PX unit
+*	it will be in ranget 0 to infinity and can never be -ve.
+*	even if layout_width/height is wrap_content or match_parent it will have 0 or any +ve value
+	** here we talked about w and h in raw px so wrap_content or match_parent is no longer matter here.
+	mode of width and hight can be genrated by   MeasureSpec.getMode(width/height_MeasureSpec).
+
+	so overall 4 perameters are there
+	ws = width size    wm = width mode
+	hs = height size   hm = height mode
+	
+	use this 4 params to determine size of your view (margin, bound and ant other location cordinates has no role here except padding)
+	
+	this rule are applicable to both width and height.
+	there are three types of mode here
+	1.	MeasureSpec.EXACTLY : 
+			if mode (either of width height) is EXACTLY it means after all bla bla opration happening^^ in measure phase this view is 
+			instructed by its parent that its size (either of width height) will have to be ws/hs only neither small nor big so it and 
+			its all children must fit in this size.
+	2.	MeasureSpec.AT_MOST: 
+			if mode is AT_MOST it means maximum size of the view would be ws/hs. so view can be smaller than ws/hs but can never be larger than ws/hs.
+			Ex: for view with wrap_content it is AT_MOST. coz here size could be anything smaller than parent size
+	3.	MeasureSpec.UNSPECIFIED: 
+			if mode is UNSPECIFIED it means size of the view could be anuthing we wants.
+	
+setMeasuredDimension(w,h): 
+	after evaluating width and height you should always call setMeasuredDimension(w,h) to set them in the tree and bla bla process.
+	failure to do so will erase all changes and u nothing will reflect in view.
+	super.onMeasur(): should always be called either at first line or not at all, otherwise it will erase all changes made in overrided onMeasur() methode.
+
+GOTO: l1 and l4
+
+onMeasur(widthMeasureSpec,heightMeasureSpec)
+{
+	super.onMeasur(widthMeasureSpec,heightMeasureSpec);
+    int ws/hs = MeasureSpec.getSize(width/heightMeasureSpec);
+	int wm/hm = MeasureSpec.getMode(width/heightMeasureSpec);
+    //Measure [size is width once and height once with w and h respectivly]
+    if (wm/hm == MeasureSpec.EXACTLY) {
+        //Must be this size
+        size = ws/wm;
+    } else if (wm/hm == MeasureSpec.AT_MOST) {
+        //Can't be bigger than ws/hs
+        size = 500 < ws/ws ? 500 : ws/ws;
+    } else {
+        //Be whatever you want
+        size = 500;
+    }
+	
+	setMeasuredDimension(size,size);
+}
+
+
+**	while processing the measure and layout phase if any parents wants to know the width and height of any child view 
+	to distribute the space among them it will use childView.getMeasuredWidth/Height() for this.
+	beacuse actual; width and height (from getWidth/Height()) will be generated only after completion of all three pass.
+	That is the reason getWidth() give 0 value if u call this function b4 actual view rendering(completion of all three phase)
+	
+	
+
+^^ happening [not happened]: bcoz measure functions of all views in tree may be call multiple times in the measure phase.
+								and each it can have diffrent set of that 4 params.
+								Ex --> in lineatlayout(orientation=horizental) with weight, measure may first called with 
+									ws=0 and wm=UNSPECIFIED; after all bla bla opration it comes again with
+									ws=100px and wm=EXACTLY; 
+
+------------------------------------------------------------------------------------------------------------------------
+Draw Pass: 
+VIEW.draw() vs VIEW.onDraw() vs VIEW.dispatchDraw()
+template of draw function in view class
+draw
+{
+	print backgroung code 
+	
+	onDraw();	  // 		all subclass view which does not have children (like textview, edittext . unlike Linearlayout, Relativelayout) 
+							override this function and do all neccsary code to print that view
+							so this function is useful for view with no child. though u can override it for both.
+							at the end of this function that view himself (not its child view) has been printed
+							** this function has empty body in view class but do have body in textview, edittext, claender etc.
+							
+	dispatchDraw() // 		all subclass view which does have children (like Linearlayout, Relativelayout, unlike edittext, claender) 
+							override this function and do all neccsary code to print their child views
+							so this function is useful for view with childs. though u can override it for both.
+							at the end of this function children of this view has been printed
+							** this function has empty body in view class but do have body in Linearlayout, Relativelayout.
+	
+	print scrollbar and other decoration code
+}
+
+
+setWillNotDraw(false) : set this flag true or false in cunstrocter
+	false: if custom view wants to draw somthing and will override onDraw for that, hereby we order draw methode to do call onDraw() in it [ex textview, edittext]
+	true: if custom view doesn't want to draw somthing and so will not override onDraw for that, hereby we order draw methode 
+			that onDraw() is not necessary to call in it [ex viewgroups]
+			by default it is true so by default all viewgroup avoid this function.
+			and that is why u must always set it false to avoid confusion.
+
+*	one should never override draw() methode			
+*	Framwork calls invalidate() methode inside whever he feels to make changes in view appearance, 
+				u can also call it by yourself to intiate re-draw of that view
+*	invalidate never make any changes in size of view
+------------------------------------------------------------------------------------------------------------------------
+
+ViewTreeObserver: 
+	ViewTreeObserver vto = anyview.getViewTreeObserver();
+	this class is used to listen the changes in view tree of any view.
+	This will notify us the changes occue in view tre like
+		1. 	layout pass is done
+		2.	draw pass is about to start or done
+		3.	that view or view inside that view is scrolled.
+		** so all and all it is envigilator for whole view tree architechure of that view.
+Use: 
+	vto.add**Listener(){callbacks();}
+	addOnDrawListener-> onDraw() :>> called after draw pass is done
+	addOnGlobalFocusChangeListener-> onGlobalFocusChanged (View oldFocus, View newFocus) :>> 
+	addOnGlobalLayoutListene-> OnGlobalLayout() : >> called after layout pass so whenever layou state changed.
+			also called when softkeypasd open or close
+
+	
+
+
+READ it 
+http://developer.android.com/reference/android/view/View.html
+requestLayout()
+
+imp listener and clsses
+1.	viewTreeObserver
+2.	onLayouChangeListener
+3. 	ongloballayoutlistener
+
+touch callbacks
+inVALIDAT();
+adapterView vs viewGroup
+onSizeChanged()
+ getMeasuredHeight() vs hetHeight()
+
+
+--------------------------------------
+Links:
+l1  http://stackoverflow.com/questions/12266899/onmeasure-custom-view-explanation	
+    http://developer.android.com/training/custom-views/optimizing-view.html
+    https://developer.android.com/guide/topics/ui/how-android-draws.html
+l4	http://developer.android.com/guide/topics/ui/custom-components.html

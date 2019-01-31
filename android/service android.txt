@@ -1,0 +1,258 @@
+Services:
+
+Service can be started in two way
+1.	Started service: startService()
+2.	Bound service: bind()
+
+
+	
+	** Can i show dialog with context of  BroadCastRecevier: NO
+		Toast:	Yes
+		
+		
+Started service: startService()
+	The service that are started normally via any context
+	lifecyle
+		onCreate() --> onStartCommand() --> [service is runnuing till stopSelf() or stopService called] --> onDestroy()
+	*	if service is not running {either never started or stoped} and startservice() is called to start it, then it paas through onCreate() and onStratCommand()
+	*	if service is already started by startSertvie() {and no yet stoped} then only onStartCommand will be called with that intent.
+	*	there will be only one instance of service will be prsent in the system. calling startservice() multiple time will deliver intent in onStartCommand()
+		, not to use for creating new service. so onStartCommand() must be prepared to handle multiple call.
+	*	onStartCommand() always called in main thread, so never be cause synchronization problems and caleed one by one.
+	*	multiple calls of startSr\ervice() will cause multiple call of onStartCommand(), but single call of stopSelf() or stopService() in enough to stop it
+	*	Think of such service as a very long running extensive task in the process (once started), that can be inturrupted via onStartCommand(),
+	
+		
+		
+Communication with service:
+	* 	u can use broadcastReciver or LocalBroadcastManager class in the support library v4 to communicate.
+	*	better way is to use binder.
+	*	with bind we can communicate with service from another application
+			
+Bound service: bindService()
+	if u want effecieant and more comprehensive way to communicate between service and other component then binding the service is best way
+	lifecyle
+			onCreate() --> onBind() --> [service is runnuing till all ] onUnbind()  --> onDestroy()
+	*	if service is not running and we called bindService() [not startService()] then it will pass through
+		onCreate() --> onBind()
+	*	if service is already started (bu bindservice() or by startservice()) then it will pass through onBind() only
+	*	bind service cant be stop till all of its client unbind themselve
+	*	if service is started with startService then many client bind it then it should unbind all client then call stopService() to stop it.
+		vice versa also true, means if after couple of client bound themselve with service, thereafter somone called startSevice(), in this case we must call stopService to stop it.
+		Ordering of bindService, unbindService, startService, stopService not required.
+	*	If a component calls bindService() to create the service onStartCommand() will not called
+	*	if service is bound to an activity (forground actiivity) user interacting with, then it is very less likely to be killed.
+		*** not sure what happen if system killes bound service which is bounded to background service on memory crisis, and then restart service 
+			and rebind it again on memory retrival.
+	
+Both: 
+		*	your service can work both ways—it can be started (to run indefinitely) and also allow binding. 
+		*	both can be used in another app with proper intent action string.
+		*	stopService() or stopSelf() does not kill the service till all client unbind it
+		*	no of times bindService called must be same as no of times unBindService call to stop the service
+			but single call of stopService() [no bind] is enough to stop service even many times startService is called.
+		*	bind and start Lifecycle:	
+			These two paths are not entirely separate. That is, you can bind to a service that was already started with startService(). For example, a background music 
+			service could be started by calling startService() with an Intent that identifies the music to play. Later, possibly when the user wants to exercise some
+			control over the player or get information about the current song, an activity can bind to the service by calling bindService(). In cases like this,
+			stopService() or stopSelf() does not actually stop the service until all clients unbind.
+
+		
+		
+in case of memory crisis system can kill the service, and once sufficient memory availiable he can deal with that servce depends upon return valne of onStartCommand:
+	
+	1.	START_NOT_STICKY:		will never be restated by the system
+	2.	START_STICKY:			will be restated with null intent in onStartCommand()
+	3.	START_REDILIVER_INTENT:	will be restated with last intent in onStartCommand()
+
+
+	
+	
+	
+	
+	
+	
+	
+Bound Services: 	
+	Bound service is simply a client-server arch, where server is service and client is diffrent component which bind this service.
+	Service must implement onBind methode and return object of IBinder class to treated as bind service.
+	There are two way to start or bind the service.
+	1.	by IBinder :	useful if client and server both are in same process (app). mns service and its binder belongs to same package.
+						useless if they belongs to diffrent package.
+						it will return iBinder instance in onBind();
+				in framwork: 	IBinder -> it is interface, Binder -> class
+				class Binder implements IBinder {};
+				working:
+					we create a custom binder class which extends Binder class, write all logical function for server-client 
+					communication at here. and finally instatiate it.
+					return its instance in onBind() methode of server.
+					the instance we return in onBind() methode of server, is recevied at ServiceConnection.onServiceConnected(p1, p_ibinder)
+					so this p_ibinder is actully what we return in onBind(). so simply typcast it in your custom binder class
+				synchronization:
+					client and server both are in same process so all function (like getSomthingFromService, setSomthingInService,doAnythingInServiceFromClient)
+					call occure asynchronusly in main thread one by one.
+					so no issue of multiple call at a time occure.
+				
+				
+	2.	by  IBinder of Messanger : useful in both case. (more prefrable in second case)
+						it will return messanget.getBinder()  in onBind();
+			*	Messanger handle the IPC (interprocess communication ) internally by itself.
+			*	request from multiple client is handle one by one.
+			*	each message request is delivered in handler of service one by one.
+				so u do not have to worry about muti-request simulteniously
+			*	one alternative for IPC is AIDL but AIDL should only be used if u need to handle multiple request simulteniously
+			*	Messenger queues all calls to the service, whereas, a pure AIDL interface sends simultaneous requests to the service, 
+				which must then handle multi-threading.
+			*	Basically client and server communicate using Messaeger each side with raw parameters
+			
+			in framwork: 
+				class Messanger implements Parcelabe{}
+	
+	
+	
+1. by IBinder :	
+	
+	SERVICE:	
+				public class LocalService extends Service 
+				{
+					private final IBinder mBinder = new LocalBinder();
+					public class LocalBinder extends Binder
+					{
+						LocalService getService() 
+						{
+							return LocalService.this;
+						}
+						int getSomthingFromService()
+						{
+						
+						}
+						int setSomthingInService()
+						{
+						
+						}
+					}
+					
+					public void doAnythingInServiceFromClient()
+					{
+						
+					}
+					
+					public IBinder onBind(Intent intent) 
+					{
+						return mBinder;
+					}
+
+				}	
+	Client:	
+			
+			onStart() -->  bindService(new Intent(this, LocalService.class), mConnection, Context.BIND_AUTO_CREATE);
+			onStop --> unbindService(mConnection);
+			
+			private ServiceConnection mConnection = new ServiceConnection() {
+
+				public void onServiceConnected(ComponentName className, IBinder p_ibinder) {
+					LocalBinder binder = (LocalBinder) p_ibinder;
+					
+					
+					binder.getSomthingFromService();
+					binder.setSomthingInService();
+					
+					
+					mService = binder.getService();
+					mService.doAnythingInServiceFromClient();
+					
+				}
+
+				public void onServiceDisconnected(ComponentName arg0) {
+				}
+			};			
+	
+	
+2.	by  IBinder of Messanger
+		
+		SERVICE:
+			public class MessengerService extends Service 
+			{
+			
+				final Messenger mMessenger = new Messenger(new IncomingHandler());
+				class IncomingHandler extends Handler 
+				{
+					public void handleMessage(Message msg) 
+					{
+						// PROCESS MESSAGES AT HERE
+					}
+				}
+				
+				public IBinder onBind(Intent intent) {
+					return mMessenger.getBinder();
+				}
+			}
+		
+		CLIENT:
+			onStart() -->  bindService(intentOfService, mConnection, Context.BIND_AUTO_CREATE);
+			onStop --> unbindService(mConnection);
+			
+			Messenger messenger = null;
+			private ServiceConnection mConnection = new ServiceConnection() 
+			{
+	
+				public void onServiceConnected(ComponentName className, IBinder p_ibinder) 
+				{
+					messenger = new Messanger( p_ibinder );
+				}
+
+				public void onServiceDisconnected(ComponentName arg0) 
+				{
+					messenger = null;
+				}
+			};	
+			
+			public void communicate(string smsg)   // CALL THIS FUNCTION FOR COMMUNICATION
+			{
+				Message msg = Message.obtain(null, smsg, 0, 0);
+				try 
+				{
+					messenger.send(msg);
+				}
+				catch (RemoteException e) 
+				{
+					e.printStackTrace();
+				}
+			}
+	
+	
+------------------------------------------------------------------------------------------------------------------------	
+
+Intenet	Service:
+	Why we need it:	coz when we use Service and call startService(), it will execute the code of onStartCommand() in main Thread which may be very extensive.
+	To solve this problem we use this, which will run that extensive code in diffrent thread called working thread:
+		when we called first time startService() it passes like
+				onCreate() -> onStaertCommand() -> 
+													onHandleIntent()
+		next time it will be
+				onStaertCommand() -> 
+									onHandleIntent()
+	*	onStartCommand function is overrided in IntentService class from Service class so that it will handle the functionality of 
+		queing the request and delivering it to onHandleIntent one by one.
+	*	most importandly onStartCommand here run in main thread and onHandleIntent run in worker thread
+	*	if u override onStaertCommand() function in extended IntentService class u must properly call super.onStaertCommand(), otherwise onHandleIntent() will
+		not be called. though as per documantation u should neve override onStaertCommand() in intentService class.
+	*	once all the queed request has been processed, service will kill itself and pass from onDestroy().
+	*	u should never call stopSelf() or stopService() for this, bcoz if you do it will stop the service and unprocessed qued request remained unanswered
+	*	An operation running on an IntentService can't be interrupted.
+	*	Always remember that IntentService keep themselve alive till all request are not completed and 
+		passed from onHandleIntent() and returns, then only it will be killed, so context of that activity will always be 
+		alive at any time of onHandleIntent().
+		*	IntentService kill onlu when worker thread is empty and completely processed
+	*	Showing Toast in onHandleIntent():	
+			not possible, gives exception coz onHandleIntent does not run in UI thread,
+			use Handler with Context of service for this
+
+intentService + Binder:	
+		we can also bind the intent service
+		useful case senario:	if u wants to download a large book and wants to show its updates on activity.
+	
+	
+getSystemService();
+forgrounService
+intentService + Binder + onStartCommand

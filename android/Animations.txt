@@ -1,0 +1,190 @@
+Amination is what make user delight so it has to be AWeSSOMMEEE
+
+Android provide three type of Animation
+1.	Property Animation	:	android.animation
+2.	View Animation
+3.	Drawable Animation
+
+
+Property Animation: 
+	It actully change the actual properties(X, TranslationX, alpha..) of the view
+
+ ObjectAnimator: 
+	Most Imp Methode 
+		ObjectAnimator.of<Type>(targetObject, propertyName, values....);
+	This class is use to play animation on any type of object (view or non-view), you can play animation even on Person class
+	with this
+	ObjectAnimator.of<Type>(targetObject, propertyName, values....) :-
+			suppose you wants to animate  id  of person from 1 to 100 in 10 seconds then
+			** Preconditions:
+				It(person) must must have setId(int/float/Object){...} declare in Person class (For now just forget Object and concentrate on int/float)
+				If required it must have getId(){....} also
+    <Type>:	
+			it may be int, float, argb,  Object(detail later), depends on data type of <p>
+            In our case it is   int id  so we will use   ObjectAnimator.ofInt(...)
+    targetObject: 
+			This is the real object on which animation will take place, this will be the object for which settermethodes()
+			will be called internally. in the ObjectAnimator class code somewhere:
+                     for(..) {targetObject.set<p>(..)} will happen
+             in our case suppose object is  po = new Person() so
+                      ObjectAnimator.ofInt(po, ...)
+    propertyName: 
+			This is name of property in string format (YES in String format, Internal api do all the necessary operation and
+			finally make calls like setPropertyNme(..))
+            In our case it id id so use "id"
+              ObjectAnimator.ofInt(po, "id", ...)
+    values: 
+			This is varagx. This is the set of perameter value which is going to be set over precise time while animation is playing
+			this values are scattered linearly over time span of this animation.
+			they are scatterd in analog formate not in digital so if you give
+			1 2 : then value change from 1 to 2 like 1, 1.1, 1.2 ... 1.99, 2 in duration
+			1 2 3 : then value change from 1 to 2 to 3 like 1, 1.1, 1.2 .. 2 .. 2.99, 3 in duration
+             In our case suppose i wants ti animate id from 0 to 100 the
+            ObjectAnimator.ofInt(po, "id", 0, 100)
+             Suppose i wants to get it back on 0 again then
+            ObjectAnimator.ofInt(po, "id", 0, 100, 0)
+
+         VIMP: whenever you use ObjectAnimator.on<Type>() with targetObject and propertyName, it is sure that targetObject will have a methde like
+			targetObject.setPropertyName(Type data) other wise ERROR
+			Detect animation End: it can be detect by ObjectAnimator.addLlistener(listener)
+            suppose in our case at the end of animation i wanats to reset the id of target object then
+            ObjectAnimator.addLlistener(
+               onEnd(){
+                  po.setId(0);
+              }
+             )
+         ** This approach is very useful in actual view animation when you wants to reset the view at the end of animation
+
+
+
+
+TX 0->100
+Start? XY:  40.0  0.0  LPA: 40  TXY:   0.0  0.0  BONDS: 40  0  277  96
+END?   XY: 140.0  0.0  LPA: 40  TXY: 100.0  0.0  BONDS: 40  0  277  96
+
+X
+Start? XY:   0.0  0.0  LPA: 40  TXY: -40.0  0.0  BONDS: 40  0  277  96
+END?   XY: 100.0  0.0  LPA: 40  TXY:  60.0  0.0  BONDS: 40  0  277  96
+
+So either u use XY orTXTY they will change both of them.
+
+if X -: 0 -> 100 in t time
+	** X is calculated WRT parants 0,0 so
+	>> B1 will move to A immidiatly
+	>> then it will slide from A to C in t time
+		X will move from 0 to 100 thereby TX will move from -40 to 60
+	>> B1 will stop at c and stay their
+	>> if u wants to reset use : myView.setX(0)
+	** No any change will happen on Layout Params before during or after animation
+		so X is simpally Relative distance of view from its parant ground(0, 0)
+
+if TX -: 0 -> 100 in t time
+	** After layout pass location of view is detrmined in parant, this location(view.left, view.top) is groung(0,0) for Tx
+		so TX is simpally Relative distance of view from its calculated positon(view.left)
+	>> B1 will move 100px right in t time
+	>> stop their
+		TX will move from 0 to 100 thereby X will move from 40 to 140
+
+Just for not: 
+	in this scenario 
+	TX -: -40 to 60 will produce the same effect as X-: 0 to 100
+
+XY/TXTY : No one can change margin/paddin/layoutt params by any way, they must change x y tx ty
+
+View Animation:
+	It actully animate the drawing of the view not its property
+
+			Layout Params
+XY/TXTY   VS   Layout bounds/margins/padding/left/right
+	Second one is used at the time of layout pass this peramter read and set at the time of layout call and in 
+	measure() methodes, at this time exactly in the pass XY/TXTY values is set with the help of those parameters
+	Now at the time of rendering only   XY/TXTY  params are used to place the view into the parant.
+
+	When you play any animation it is played with XY/TXTY properties of view not with layout params, so at the time or after 
+	the animation, generally calculation of layout params and XYTXTY are not in the synch and postion is solely depends on the XYTXTY.
+	this is why while or after animation you should use methode like
+		view.setRotation/X/TX..(value) to reset its postion not like view.setLayoutParams() etc.
+	and after u did it it will also randomly effect the positions of other childs of the view's parent view
+
+	VIMP: in case u use layoutparams to reset (not recomended) u must follow
+	1.	build proper layout params of view
+	2. 	set it by setter of view
+	3.	call request layout of view's parant
+		** Result may effect other child positions also
+
+
+XY/TXTY: they both are technically a either side of the coin, animation played by one can also be played by other, 
+	  but with littile diffrent calculations. 
+	suppose :	cmp = calculated position of view after measure phase
+	When you use TX your ground will be view.left, 
+
+	so if TX = 0 	mns X = cmp  		view.left = cmp 
+	   if TX = 100 	mns X = cmp + 100px	view.left = cmp 
+	   if TX = -10 	mns X = cmp - 10px	view.left = cmp 
+	
+IMP: measure phase: this phase take all layout params like gravity, alignLeft, margin, centerVertical etc. and calculate X and Y, at this phase TX and TY remain 0`
+
+-ve:
+  TX: -ve TX will shift the view to left, if TX = -20 then view will move to  view.left-20
+	in this case view may goes outside of parant if TX value overpass the parants ground at (X, Y ) = (0, 0)
+	
+  X: -ve TX will shift the view to left of parant, if X = -20 then view will move to X =-20 and outside of parant at left by 20px
+	in this case view will always goes outside of parant ground at (X, Y ) = (0, 0)
+
+
+
+IMP: no margin param play any role in animation, so there is no change in layout params at all so while animation there is never measure phase happen
+	so there will be no changes in the postions of other view in the parant 
+IMP: When you play animation
+	parants margin: no role
+	view's marging:	effective till anim stat than its rudundant (till parants requestlayou() called)[its use will havily effeect othe childs
+	parants padding: no role but child will become invisible ifits X/Y exceeds the padding
+	views padding: no role
+
+
+TX : is like a a KHUTA or RUBBER se bandha hua: KHUTA is at current location of view(0 0)
+X : is like a a KHUTA or RUBBER se bandha hua: KHUTA is at current location of view's parent(0 0 )
+
+IMP: 
+    txtNot.setVisibility(VISIBLE/INVISIBE);
+    UtilitiesAndroid.animateLike(txtNot);
+	OR
+    UtilitiesAndroid.animateLike(txtNot);
+    txtNot.setVisibility(VISIBLE/INVISIBE);
+		Does it make any diffrence like setting visibilty after/b4 animation
+		ANS: NO.
+		Because animatios played once after current event task is completer not in the current event task.
+		So you set its visibility b4 or after ultimatly it will run after the setting visibility.
+
+
+** If suppose you wants to play an animation which is going to take +15 px space (EG. scalex(15))
+	Then it is better idea to leave 15px margin in child at both side
+	not padding in parant
+	So if you need to have 15 px space for animation:	
+	Margin of parant:	does not make any sense
+	padding of parant:	animated child will be truncated if overflowed from padding
+	Margin of child:	YES
+	padding of parant:	does not make any sense
+-----------------------
+Layout animation
+
+
+
+
+
+
+-------------------------------------------
+Viewgroup: Layouttransition  http:developer.android.com/guide/topics/graphics/prop-animation.html
+
+
+
+
+	
+
+
+
+
+
+ 
+
+	

@@ -1,0 +1,1026 @@
+{\rtf1\ansi\ansicpg1252\deff0\deflang1033{\fonttbl{\f0\fnil\fcharset0 Calibri;}}
+{\colortbl ;\red0\green0\blue255;}
+{\*\generator Msftedit 5.41.21.2510;}\viewkind4\uc1\pard\sa200\sl276\slmult1\lang9\b\f0\fs22 Android is a Linux-based mobile operating system that allows developers to create applications that can perform basic and advanced functions for a user. -\par
+content resolver \par
+content provider\par
+cursor\par
+contact_uri\par
+intent filter\par
+\fs28  How to find middle element of linked list in one pass?\par
+\b0\fs22 One of the most popular question from data structures and algorithm, mostly asked on telephonic interview. Since many programmer know that, in order to find length of linked list we need to first traverse through linkedlist till we find last node, which is pointing to null, and then in second pass we can find middle element by traversing only half of length. They get confused when interviewer ask him to do same job in one pass. In order to find middle element of linked list in one pass you need to maintain two pointer, one increment at each node while other increments after two nodes at a time, by having this arrangement, when first pointer reaches end, second pointer will point to middle element of linked list. See this trick to find middle element of linked list in single pass for more details.\par
+\b\fs28\par
+How to find if linked list has loop ?\par
+\b0\fs22 This question has bit of similarity with earlier algorithm and data structure interview question. I mean we can use two pointer approach to solve this problem. If we maintain two pointers, and we increment one pointer after processing two nodes and other after processing every node, we are likely to find a situation where both the pointers will be pointing to same node. This will only happen if linked list has loop.\par
+\b\fs28\par
+How to find 3rd element from end in a linked list in one pass?\par
+\b0\fs22 This is another frequently asked linked list interview question. This question is exactly similar to finding middle element of linked list in single pass. If we apply same trick of maintaining two pointers and increment other pointer, when first has moved upto 3rd element, than when first pointer reaches to the end of linked list, second pointer will be pointing to the 3rd element from last in a linked list.\par
+\b\fs28\par
+In an integer array, there is 1 to 100 number, out of one is duplicate, how to find ?\par
+\b0\fs22 This is a rather simple data structures question, especially for this kind of. In this case you can simply add all numbers stored in array, and total sum should be equal to n(n+1)/2. Now just subtract actual sum to expected sum, and that is your duplicate number. Of course there is a brute force way of checking each number against all other numbers, but that will result in performance of O(n^2) which is not good. By the way this trick will not work if array have multiple duplicates or its not numbers forming arithmetic progression. Here is example of one way to find duplicate number in array.\par
+\b\fs28\par
+How do you find duplicates in array if there is more than one duplicate?\par
+\b0\fs22 Sometime this is asked as follow-up question of earlier datastrucutre interview question, related to finding duplicates in Array. One way of solving this problem is using a Hashtable or HashMap data structure. You can traverse through array, and store each number as key and number of occurrence as value. At the end of traversal you can find all duplicate numbers, for which occurrence is more than one. In Java if a number already exists in HashMap then calling get(index) will return number otherwise it return null. this property can be used to insert or update numbers in HashMap.\par
+\b\fs28\par
+reverse a string\par
+\b0\fs22 public static String reverse(String str) \{\par
+        StringBuilder strBuilder = new StringBuilder();\par
+        char[] strChars = str.toCharArray();\par
+        for (int i = strChars.length - 1; i >= 0; i--) \{\par
+            strBuilder.append(strChars[i]);\par
+        \}\par
+        return strBuilder.toString();\par
+    \}\par
+    public static String reverseRecursively(String str) \{\par
+        //base case to handle one char string and empty string\par
+        if (str.length() < 2) \{\par
+            return str;\par
+        \}\par
+        return reverseRecursively(str.substring(1)) + str.charAt(0);\par
+    \}\par
+\}\par
+\par
+\b\fs28 BubbleSort \par
+\b0\fs22 public class BubbleSort \{\par
+  \par
+  \par
+    public static void main(String args[]) \{\par
+        //testing our bubble sort method in Java\par
+        int[] unsorted = \{32, 39,21, 45, 23, 3\};\par
+        bubbleSort(unsorted);\par
+      \par
+        //one more testing of our bubble sort code logic in Java\par
+        int[] test = \{ 5, 3, 2, 1\};\par
+        bubbleSort(test);\par
+      \par
+    \}   \par
+  \par
+    /*\par
+     * In bubble sort we need n-1 iteration to sort n elements\par
+     * at end of first iteration larget number is sorted and subsequently numbers smaller\par
+     * than that.\par
+     */\par
+    public static void bubbleSort(int[] unsorted)\{\par
+        System.out.println("unsorted array before sorting : " + Arrays.toString(unsorted));\par
+      \par
+        // Outer loop - need n-1 iteration to sort n elements\par
+        for(int i=0; i<unsorted.length -1; i++)\{\par
+          \par
+            //Inner loop to perform comparision and swapping between adjacent numbers\par
+            //After each iteration one index from last is sorted\par
+            for(int j= 1; j<unsorted.length -i; j++)\{\par
+              \par
+                //If current number is greater than swap those two\par
+                if(unsorted[j-1] > unsorted[j])\{\par
+                    int temp = unsorted[j];\par
+                    unsorted[j] = unsorted[j-1];\par
+                    unsorted[j-1] = temp;\par
+                \}\par
+            \}\par
+            System.out.printf("unsorted array after %d pass %s: %n", i+1, Arrays.toString(unsorted));\par
+        \}\par
+    \}\par
+\par
+\}\par
+\par
+Output:\par
+unsorted array before sorting : [32, 39, 21, 45, 23, 3]\par
+unsorted array after 1 pass [32, 21, 39, 23, 3, 45]:\par
+unsorted array after 2 pass [21, 32, 23, 3, 39, 45]:\par
+unsorted array after 3 pass [21, 23, 3, 32, 39, 45]:\par
+unsorted array after 4 pass [21, 3, 23, 32, 39, 45]:\par
+unsorted array after 5 pass [3, 21, 23, 32, 39, 45]:\par
+unsorted array before sorting : [5, 3, 2, 1]\par
+unsorted array after 1 pass [3, 2, 1, 5]:\par
+unsorted array after 2 pass [2, 1, 3, 5]:\par
+unsorted array after 3 pass [1, 2, 3, 5]\par
+\b\fs28 Insertion Sort\par
+\b0\fs22\par
+ void insertionSort( int arr[], int size )\par
+\{\par
+  for ( int i = 1 ; i < size ; i++ )\par
+    \{\par
+       for ( int j = i ; j > 0 ; j-- )\par
+         if ( arr[ j - 1 ] > arr[ j ] )\par
+            swap( arr[ j - 1 ], arr[ j ] ) ;\par
+         else\par
+            break ; // can stop now\par
+    \}\par
+\}\par
+\par
+int swap( int & first, int & second )\par
+\{\par
+   int temp ;\par
+   temp = first ;\par
+   first = second ;\par
+   second = temp ;\par
+\}\par
+output:-\par
+\b i=1\par
+j=1  \b0 [3 5 2 1]\par
+\b i=2\par
+j=2  \b0 [3 2 5 1]  \b j=1  \b0 [2 3 5 1]\par
+\b i=3\par
+j=3  \b0 [2 3 1 5]  \b j=2  \b0 [2 1 3 5]  \b j=1  \b0 [1 2 3 5]\par
+\par
+\b\fs28 Selection Sort\par
+\b0\fs22\par
+void selectionSort( int arr[], int size )\par
+\{\par
+  for ( int i = 0 ; i < size - 1 ; i++ )\par
+    \{\par
+       int minIndex = findMinIndex( arr, i, size ) ;\par
+       if ( i != minIndex )\par
+          swap( arr[ i ], arr[ minIndex ] ) ;\par
+    \}\par
+\}\par
+\par
+int findMinIndex( int arr[], int start, int last ) \par
+\{\par
+   int minIndex = start ;\par
+   for ( int i = start + 1 ; i < last ; i++ )\par
+      if ( arr[ i ] < arr[ minIndex ] )\par
+        minIndex = i ;\par
+   return minIndex ;\par
+\}\par
+\par
+\b OUTPUT:-\par
+i=0\par
+[1 3 2 5]\par
+i=1\par
+[ 1 2 3 5]\par
+i=2\par
+[1 2 3 5]\par
+\b0\par
+\b\fs28 Quick Sort\par
+\b0\fs22 Array quickSort(Array data) \{\par
+   if (Array.Length <= 1)\par
+      return;\par
+   middle = Array[Array.Length / 2];\par
+   Array left = new Array();\par
+   Array right = new Array();\par
+   for (int i = 0; i < Array.Length; i++)\par
+      if (i != Array.Length / 2) \{\par
+         if (Array[i] <= middle)\par
+            left.Add(Array[i]);\par
+         else\par
+            right.Add(Array[i]);\par
+      \}\par
+   return concatenate(quickSort(left), middle, quickSort(right));\par
+\}\par
+\par
+\par
+\b\fs28 Palindrome\par
+\b0\fs22 private static boolean isPalindrome(int number) \{\par
+        if(number == reverse(number))\{\par
+            return true;\par
+        \}\par
+        return false;\par
+    \}\par
+  \par
+      \par
+    private static int reverse(int number)\{\par
+        int reverse = 0;\par
+      \par
+        while(number != 0)\{\par
+          reverse = reverse*10 + number%10; \par
+          number = number/10;\par
+        \}\par
+              \par
+        return reverse;\par
+    \}\par
+\par
+\b\fs28 Thread synchronization, object level locking and class level locking\par
+\fs22 Class Lock \b0 - If a static method is marked as Synchrnozied \par
+and called by a Thread, the whole Class will be locked \par
+until the method execution completed. \par
+\b Object Lock \b0 - If a non-static method is marked as \par
+Synchronzied and called by a Thread, the current instance \par
+(Object) will be locked util the method execution completed\par
+Synchronization in java guarantees that no two threads can execute a synchronized method which requires same lock simultaneously or concurrently.\par
+synchronized keyword can be used only with methods and code blocks. These methods or blocks can be static or non-static both.\par
+When ever a thread enters into java synchronized method or block it acquires a lock and whenever it leaves java synchronized method or block it releases the lock. Lock is released even if thread leaves synchronized method after completion or due to any Error or Exception.\par
+java synchronized keyword is re-entrant in nature it means if a java synchronized method calls another synchronized method which requires same lock then current thread which is holding lock can enter into that method without acquiring lock.\par
+Java Synchronization will throw NullPointerException if object used in java synchronized block is null. For example, in above code sample if lock is initialized as null, the synchronized (lock) will throw NullPointerException.\par
+Synchronized methods in Java put a performance cost on your application. So use synchronization when it is absolutely required. Also, consider using synchronized code blocks for synchronizing only critical section of your code.\par
+It\rquote s possible that both static synchronized and non static synchronized method can run simultaneously or concurrently because they lock on different object.\par
+According to the Java language specification you can not use java synchronized keyword with constructor it\rquote s illegal and result in compilation error.\par
+Do not synchronize on non final field on synchronized block in Java. because reference of non final field may change any time and then different thread might synchronizing on different objects i.e. no synchronization at all. Best is to use String class, which is already immutable and declared final.\par
+\b\fs28 Callable interface \par
+\b0\fs22 A task that returns a result and may throw an exception. Implementors define a single method with no arguments called call.\par
+The Callable interface is similar to Runnable, in that both are designed for classes whose instances are potentially executed by another thread. A Runnable, however, does not return a result and cannot throw a checked exception.\par
+The Executors class contains utility methods to convert from other common forms to Callable classes.\par
+public class ServerAcceptingRequestsVerifier implements Callable \{\par
+02\par
+    /**\par
+03\par
+     * @return Boolean.TRUE is server is accepting requests\par
+04\par
+     * Boolean.FALSE otherwise\par
+05\par
+     */\par
+06\par
+    public Boolean call() throws Exception \{\par
+07\par
+        Boolean isAcceptingRequests = null;\par
+08\par
+        ... ask server about taking requests here\par
+09\par
+        return isAcceptingRequests;\par
+10\par
+    \}\par
+11\par
+\}\par
+12\par
+public Boolean isServerTakingRequests(String server)\par
+13\par
+            throws UnresponsiveException, InterruptedException \{\par
+14\par
+    ServerAcceptingRequestsVerifier acceptingRequestsVerifier =\par
+15\par
+        new ServerAcceptingRequestsVerifier();\par
+16\par
+    Future future =\par
+17\par
+        THREAD_POOL.submit(acceptingRequestsVerifier);\par
+18\par
+    try \{\par
+19\par
+        Boolean isAcceptingRequests = future.get();\par
+20\par
+        //waits for the thread to complete, even if it hasn't started\par
+21\par
+        return isAcceptingRequests;\par
+22\par
+    \} catch (ExecutionException e) \{\par
+23\par
+        throw new UnresponsiveException(e.getCause());\par
+24\par
+    \}\par
+25\par
+ \par
+26\par
+\}\par
+It\rquote s also nice that we now have explicit TimeoutException if we decide to limit how long we\rquote re willing to wait for completion.\par
+\par
+view sourceprint?\par
+01\par
+try \{\par
+02\par
+    Boolean isAcceptingRequests = future.get(5, TimeUnit.SECONDS);\par
+03\par
+    //this waits for 5 seconds, throwing TimeoutException if not done\par
+04\par
+    return isAcceptingRequests;\par
+05\par
+\} catch (TimeoutException e) \{\par
+06\par
+    LOGGER.warn("Timed out waiting for server check thread." +\par
+07\par
+        "We'll try to interrupt it.");\par
+08\par
+    future.cancel(true);\par
+09\par
+    return Boolean.FALSE;\par
+10\par
+\} catch (ExecutionException e) \{\par
+11\par
+    throw new UnresponsiveException(e.getCause());\par
+12\par
+\}\par
+\par
+\par
+\b\fs28 public interface Runnable\par
+\b0\fs22 The Runnable interface should be implemented by any class whose instances are intended to be executed by a thread. The class must define a method of no arguments called run.\par
+This interface is designed to provide a common protocol for objects that wish to execute code while they are active. For example, Runnable is implemented by class Thread. Being active simply means that a thread has been started and has not yet been stopped.\par
+\par
+In addition, Runnable provides the means for a class to be active while not subclassing Thread. A class that implements Runnable can run without subclassing Thread by instantiating a Thread instance and passing itself in as the target. In most cases, the Runnable interface should be used if you are only planning to override the run() method and no other Thread methods. This is important because classes should not be subclassed unless the programmer intends on modifying or enhancing the fundamental behavior of the class.\par
+\par
+\b If you just invoke run() directly, it's executed on the calling thread, just like any other method call. Thread.start() is required to actually create a new thread so that the runnable's run method is executed in parallel.\par
+\par
+A Runnable \b0 is basically a type of class (Runnable is an Interface) that can be put into a thread, describing what the thread is supposed to do.\par
+\par
+The Runnable Interface requires of the class to implement the method run() like so:\par
+\par
+public class MyRunnableTask implements Runnable \{\par
+     public void run() \{\par
+         // do stuff here\par
+     \}\par
+\}\par
+And then use it like this:\par
+\par
+Thread t = new Thread(new MyRunnableTask());\par
+t.start();\par
+If you did not have the Runnable interface, the Thread class, which is responsible to execute your stuff in the other thread, would not have the promise to find a run() method in your class, so you could get errors. That is why you need to implement the interface.\par
+\par
+Advanced: Anonymous Type\par
+\par
+Note that you do not need to define a class as usual, you can do all of that inline:\par
+\par
+Thread t = new Thread(new Runnable() \{\par
+    public void run() \{\par
+        // stuff here\par
+    \}\par
+\});\par
+t.start();\par
+This is similar to the above, only you don't create another named class.\par
+\par
+You can make your code \b thread-safe \b0 by making all the data immutable, if there is no mutability, everything is thread-safe.\par
+Secondly, you may want to have a look at java concurrent API which has provision for providing read / write locks which perform better in case there are lots of readers and a few writers. Pure synchronized keyword will block two readers also.\par
+\b\par
+Immutable objects are those, whose state can not be changed once created e.g. java.lang.String, once created can not be modified e.g. trim, uppercase, lowercase. All modification in String result in new object,\par
+\b0 Since Strings are immutable in Java if you store password as plain text it will be available in memory until Garbage collector clears it and since String are used in String pool for reusability there is pretty high chance that it will be remain in memory for long duration, which pose a security threat. Since any one who has access to memory dump can find the password in clear text and that's another reason you should always used an encrypted password than plain text. Since Strings are immutable there is no way contents of Strings can be changed because any change will produce new String, while if you char[] you can still set all his element as blank or zero. So Storing password in character array clearly mitigates security risk of stealing password.\par
+\b Immutable class example :-\par
+way 1\par
+\b0 public final class Contacts \{\par
+\par
+    private final String name;\par
+    private final String mobile;\par
+\par
+    public Contacts(String name, String mobile) \{\par
+        this.name = name;\par
+        this.mobile = mobile;\par
+    \}\par
+  \par
+    public String getName()\{\par
+        return name;\par
+    \}\par
+  \par
+    public String getMobile()\{\par
+        return mobile;\par
+    \}\par
+\}\par
+\b way 2\b0\par
+public final class ImmutableReminder\{\par
+    private final Date remindingDate;\par
+  \par
+    public ImmutableReminder (Date remindingDate) \{\par
+        if(remindingDate.getTime() < System.currentTimeMillis())\{\par
+            throw new IllegalArgumentException("Can not set reminder\rdblquote  +\par
+                        \ldblquote  for past time: " + remindingDate);\par
+        \}\par
+        this.remindingDate = new Date(remindingDate.getTime());\par
+    \}\par
+  \par
+    public Date getRemindingDate() \{\par
+        return (Date) remindingDate.clone();\par
+    \}\par
+\}\par
+\par
+1) Immutable objects are by default thread safe, can be shared without synchronization in concurrent environment.\par
+2) Immutable object simplifies development, because its easier to share between multiple threads without external synchronization.\par
+\par
+3) Immutable object boost performance of Java application by reducing synchronization in code.\par
+\par
+4) Another important benefit of Immutable objects is reusability, you can cache Immutable object and reuse them, much like String literals and Integers.  You can use static factory methods to provide methods like valueOf(), which can return an existing Immutable object from cache, instead of creating a new one.\par
+\b\par
+Differences between HashMap and Hashtable?\par
+\b0 The HashMap class is roughly equivalent to Hashtable, except that it is non synchronized and permits nulls. (HashMap allows null values as key and value whereas Hashtable doesn't allow nulls).\par
+HashMap does not guarantee that the order of the map will remain constant over time.\par
+HashMap is non synchronized whereas Hashtable is synchronized.\par
+Iterator in the HashMap is fail-safe while the enumerator for the Hashtable is not and throw ConcurrentModificationException if any other Thread modifies the map structurally by adding or removing any element except Iterator's own remove() method. But this is not a guaranteed behavior and will be done by JVM on best effort.\par
+\par
+\b\fs28 scheduling algorithms:\par
+\b0\fs22 First come first serve\par
+shortest job first\par
+priority based scheduling\par
+round robin scheduling\par
+multi queue scheduling\par
+\par
+\b\fs28 Deadlocks\b0\fs22\par
+ Necessary Conditions\par
+\par
+There are four conditions that are necessary to achieve deadlock:\par
+Mutual Exclusion - At least one resource must be held in a non-sharable mode; If any other process requests this resource, then that process must wait for the resource to be released.\par
+Hold and Wait - A process must be simultaneously holding at least one resource and waiting for at least one resource that is currently being held by some other process.\par
+No preemption - Once a process is holding a resource ( i.e. once its request has been granted ), then that resource cannot be taken away from that process until the process voluntarily releases it.\par
+Circular Wait - A set of processes \{ P0, P1, P2, . . ., PN \} must exist such that every P[ i ] is waiting for P[ ( i + 1 ) % ( N + 1 ) ]. ( Note that this condition implies the hold-and-wait condition, but it is easier to deal with the conditions if the four are considered separately. )\par
+\par
+public static Singleton getInstance()\{\par
+     if(_INSTANCE == null)\{\par
+         synchronized(Singleton.class)\{\par
+         //double checked locking - because second check of Singleton instance with lock\par
+                if(_INSTANCE == null)\{\par
+                    _INSTANCE = new Singleton();\par
+                \}\par
+            \}\par
+         \}\par
+     return _INSTANCE;\par
+\}\par
+\par
+\b How do you prevent for creating another instance of Singleton using clone() method?\par
+\b0 This type of questions generally comes some time by asking how to break singleton or when Singleton is not Singleton in Java.\par
+Answer: Preferred way is not to implement Clonnable interface as why should one wants to create clone() of Singleton and if you do just throw Exception from clone() method as  \ldblquote Can not create clone of Singleton class\rdblquote .\par
+\b How do you prevent for creating another instance of Singleton using reflection?\par
+\b0 Open to all. In my opinion throwing exception from constructor is an option. \par
+Answer: This is similar to previous interview question. Since constructor of Singleton class is supposed to be private it prevents creating instance of Singleton from outside but Reflection can access private fields and methods, which opens a threat of another instance. This can be avoided by throwing Exception from constructor as \ldblquote Singleton already initialized\rdblquote\par
+\par
+// Implements a simple logging class using a singleton.\par
+public class Logging \{\par
+\par
+// this creates the actual Singleton instance\par
+private static final Logging singletonInstance = \par
+new Logging();\par
+\par
+/* Private constructor prevents others from\par
+   instantiating this class: */\par
+private Logging()\par
+\{\par
+\}\par
+\par
+// this method returns the singleton instance\par
+public static Logging getSingleton() \par
+\{ \par
+  return singletonInstance; \par
+\}\par
+\par
+/* This will print a message to the screen:\par
+   sample call: Logging.getSingleton().log("testing message");\par
+*/\par
+\par
+public void log( String message )\par
+\{\par
+  System.out.println( System.currentTimeMillis() \par
+  + ": " + message );\par
+\}\par
+\}\par
+\par
+public static Logging getSingleton() \{\par
+/*Create the singleton instance only if it's\par
+  null, which means no one else has created it\par
+  already\par
+*/\par
+             if( singletonInstance  == null )\{\par
+                 singletonInstance  = new Logging();\par
+             \}\par
+\par
+             return singletonInstance;\par
+         \}\par
+Just for reference, this is what the getSingleton() method looked like before \endash  note that the singletonInstance is not being initialized:\par
+\par
+public static Logging getSingleton() \par
+\{ \par
+  return singletonInstance; \par
+\}\par
+And the singleton itself will be changed to look like this:\par
+\par
+/* note that it is no longer final and it initially points to null\par
+   the old version looked like this - because it was initialized\par
+   without anyone actually calling the getSingleton method :\par
+   private static final Logging singletonInstance = new Logging();\par
+*/\par
+private static Logging singletonInstance = null; \par
+Note that the method used to retrieve the Singleton instance will now check to see if the \ldblquote instance\rdblquote  member variable is null. If it is null that of course means that the singleton has not yet been created, so it will then actually create the instance. This will of course only happen the first time the getInstance method is called. But if instance is not null, the instance will simply be returned.\par
+\par
+\b This technique is known as lazy loading\par
+\b0\par
+So, we want to repeat that the key thing to understand here is that the method has been changed to check if an instance already exists. If it does exist, it just returns that instance. If it doesn\rquote t exist, then it just creates a new instance and returns that one. The whole point of this is to save resources by instantiating the Singleton only when it\rquote s actually needed. This technique is commonly known as lazy loading, or deferred initialization, because of the fact that the singleton instance is created only once it\rquote s needed \endash  hence it\rquote s \ldblquote lazy\rdblquote  or \ldblquote deferred\rdblquote .\par
+\par
+In the Observer pattern, an object can broadcast any changes in it\rquote s state to any \ldblquote observers\rdblquote  \endash  which are basically other classes \endash  that want to know about it\rquote s state. Why would an \ldblquote observer\rdblquote  be interested in another object\rquote s state? Well, because the state of the object can affect the state of the observer \endash  read below for an actual example. So, the object being observed is called the \ldblquote subject\rdblquote . These observers are typically notified when the subject changes because the subject will call a method belonging to an observer.\par
+\par
+\b\fs28 Observer Pattern is used in MVC\b0\fs22\par
+\par
+The Observer pattern plays a key role in the popular MVC \endash  Model View Controller \endash  architectural pattern. Any change in state to the Model \endash  which represents the underlying data, and is the \ldblquote subject\rdblquote  \endash  will result in a notification to the View, which is the Observer.\par
+\par
+Now, let\rquote s answer the actual question. One problem that may arise with the Observer pattern is that a subject may be updating it\rquote s state too frequently. This means that the subject is spending a great deal of time updating it\rquote s observers, which is of course inefficient. In this scenario, a possible solution is to simply have the subject turn off all updates temporarily. Then, the subject can make the changes in that period of time. And, once the changes are complete, the subject can go ahead and update any and all observers with one big notification. This is far more efficient because of the fact that only notification is sent out to observers as opposed to constantly sending out notifications.\par
+\par
+\b Finding a good strategy with the Observer Pattern\b0\par
+\par
+One other possible dilemma when dealing with the Observer pattern is figuring out a good strategy for observers to know what has been changed in the subject. Let\rquote s consider an example website (like Yahoo.com) that has to update particular parts of the page (the Observer) when the data (the subject) changes. So when a stock price changes, Yahoo will have to update the stock portion of the page, and if there\rquote s some breaking news, then Yahoo will have to update the \ldblquote Latest News\rdblquote  portion of the page, etc.\par
+\par
+\b SQL injection \b0 is a technique where malicious users can inject SQL commands into an SQL statement, via web page input.\par
+\par
+Injected SQL commands can alter SQL statement and compromise the security of a web application.\par
+\par
+Using the SQL % Wildcard\par
+The following SQL statement selects all customers with a City starting with "ber":\par
+\par
+Example\par
+\par
+SELECT * FROM Customers\par
+WHERE City LIKE 'ber%';\par
+\par
+\par
+The following SQL statement selects all customers with a City containing the pattern "es": \par
+\par
+Example\par
+\par
+SELECT * FROM Customers\par
+WHERE City LIKE '%es%';\par
+\par
+\par
+\par
+Using the SQL _ Wildcard\par
+The following SQL statement selects all customers with a City starting with any character, followed by "erlin":\par
+\par
+Example\par
+\par
+SELECT * FROM Customers\par
+WHERE City LIKE '_erlin';\par
+\par
+Try it yourself \'bb\par
+The following SQL statement selects all customers with a City starting with "L", followed by any character, followed by "n", followed by any character, followed by "on":\par
+\par
+Example\par
+\par
+SELECT * FROM Customers\par
+WHERE City LIKE 'L_n_on';\par
+\par
+\par
+Using the SQL [charlist] Wildcard\par
+The following SQL statement selects all customers with a City starting with "b", "s", or "p":\par
+\par
+Example\par
+\par
+SELECT * FROM Customers\par
+WHERE City LIKE '[bsp]%';\par
+\par
+The following SQL statement selects all customers with a City starting with "a", "b", or "c":\par
+\par
+Example\par
+\par
+SELECT * FROM Customers\par
+WHERE City LIKE '[a-c]%';\par
+The following SQL statement selects all customers with a City NOT starting with "b", "s", or "p":\par
+\par
+Example\par
+\par
+SELECT * FROM Customers\par
+WHERE City LIKE '[!bsp]%';\par
+\par
+or\par
+\par
+SELECT * FROM Customers\par
+WHERE City NOT LIKE '[bsp]%';\par
+\b retrieve running apps \par
+\b0 The permission you are referring to is android.permission.GET_TASKS and it doesn't let you "access" other applications but find out about them.\par
+\par
+I'm new here and I've searched for questions to help me but I have no clear answers.\par
+\par
+I need to make an application to block other applications on the phone. I've seen several on the market but I want to make one. is there any way of knowing when a user tries to open an application and bring forward an activity? (to put the password).\par
+\par
+I tried with FileObserver, but only works with files and directories (obviously). Could I make a listener that captures the Intent of the other applications before starting?\par
+\par
+I apologize for my english and I appreciate your help!\par
+\par
+android\par
+share|improve this question\par
+edited Sep 12 '11 at 20:04\par
+\par
+Merlin\par
+7,40412245\tab\par
+asked Aug 30 '11 at 18:38\par
+\par
+ngbl\par
+6814\par
+  \tab   \tab\par
+That service that checks every second will drain your battery in a couple hours. Wouldn't it be better to make a launcher / home app? \endash   Erdal Sep 12 '11 at 8:01\par
+  \tab   \tab\par
+you're right! But it's not what I want. Thanks for your answer! \endash   ngbl Sep 22 '11 at 16:28 \par
+add comment\par
+2 Answers\par
+activeoldestvotes\par
+up vote\par
+22\par
+down vote\par
+accepted\par
++150\par
+No you cannot know when another application is launched without some kind of hack. This is because application launches are not broadcasted.\par
+\par
+What you can do is creating a service running on fixed intervals , say 1000 milliseconds, that checks what non system application is on front. Kill that app and from the service pop a password input box. If that password is correct relaunch that application\par
+\par
+Here is some code sample\par
+\par
+    timer = new Timer();\par
+    timer.scheduleAtFixedRate(new TimerTask() \{\par
+        public void run() \{   \par
+           List<RunningAppProcessInfo> appProcesses= activityManager.getRunningAppProcesses();\par
+        for (RunningAppProcessInfo appProcess : appProcesses) \{\par
+            try \{\par
+            if (appProcess.importance == RunningAppProcessInfo.IMPORTANCE_FOREGROUND) \{\par
+            if (!lastFrontAppPkg.equals((String) appProcess.pkgList[0])) \{\par
+            apkInfo = ApkInfo.getInfoFromPackageName(appProcess.pkgList[0], mContext);\par
+                if (apkInfo == null || (apkInfo.getP().applicationInfo.flags && ApplicationInfo.FLAG_SYSTEM) == 1) \{\par
+                  // System app                                             continue;\par
+                        \} else if (((apkInfo.getP().versionName == null)) || (apkInfo.getP().requestedPermissions == null)) \{\par
+                    //Application that comes preloaded with the device\par
+                        continue;\par
+                     \} else \{\par
+                     lastFrontAppPkg = (String) appProcess.pkgList[0];\par
+                     \}\par
+    //kill the app\par
+    //Here do the pupop with password to launch the lastFrontAppPkg if the pass is correct\par
+                         \}\par
+                      \}\par
+                   \}\par
+                 \} catch (Exception e) \{\par
+                  //e.printStackTrace();\par
+                \}\par
+               \}                        \par
+             \}\par
+           \}, 0, 1000);\par
+And here is the ApkInfo.getInfoFromPackageName()\par
+\par
+    /**\par
+ * Get the ApkInfo class of the packageName requested\par
+ * \par
+ * @param pkgName\par
+ *            packageName\par
+ * @return ApkInfo class of the apk requested or null if package name\par
+ *         doesn't exist\par
+ * @see ApkInfo\par
+ */\par
+public static ApkInfo getInfoFromPackageName(String pkgName,\par
+        Context mContext) \{\par
+    ApkInfo newInfo = new ApkInfo();\par
+    try \{\par
+        PackageInfo p = mContext.getPackageManager().getPackageInfo(\par
+                pkgName, PackageManager.GET_PERMISSIONS);\par
+\par
+        newInfo.appname = p.applicationInfo.loadLabel(\par
+                mContext.getPackageManager()).toString();\par
+        newInfo.pname = p.packageName;\par
+        newInfo.versionName = p.versionName;\par
+        newInfo.versionCode = p.versionCode;\par
+        newInfo.icon = p.applicationInfo.loadIcon(mContext\par
+                .getPackageManager());\par
+        newInfo.setP(p);\par
+    \} catch (NameNotFoundException e) \{\par
+        e.printStackTrace();\par
+        return null;\par
+    \}\par
+    return newInfo;\par
+\}\par
+share|improve this answer\par
+edited Sep 13 '11 at 21:31\par
+\par
+answered Sep 6 '11 at 15:29\par
+\par
+weakwire\par
+6,01743260\par
+  \tab   \tab\par
+thanks, I'll try this and I'll let you know.. \endash   ngbl Sep 6 '11 at 20:37\par
+  \tab   \tab\par
+Thanks Weakwire! this is really useful! I need some work to do what I want, but is the general idea! Thank you! \endash   ngbl Sep 7 '11 at 21:16 \par
+  \tab   \tab\par
+you're welcome. \endash   weakwire Sep 7 '11 at 21:31\par
+  \tab   \tab\par
+@weakwire thank you very much man..you r life saver...! \endash   Indiandroid Nov 13 '13 at 5:10\par
+  \tab   \tab\par
+@weakwire how to kill the app???? Please give me any idea. Thanks, \endash   Ahmad Raza Dec 12 '13 at 11:42\par
+show 1 more comment\par
+up vote\par
+5\par
+down vote\par
+there is a way to do so . you can know when a application is launched. you can use packagemanager class to get all the information about any installed and inbuld application . and use the below code to know whwn that application is launched\par
+\par
+           @Override\par
+    public void run() \{  Log.i("test","detector run");\par
+        try \{\par
+            Process process;\par
+            process = Runtime.getRuntime().exec(ClearLogCatCommand);\par
+            process = Runtime.getRuntime().exec(LogCatCommand);\par
+            br = new BufferedReader(new InputStreamReader(process.getInputStream()));\par
+            String line;\par
+            // Check if it matches the pattern\par
+            while(((line=br.readLine()) != null) && !this.isInterrupted())\{\par
+\par
+                Log.d("Detector", "RUN"+line);\par
+\par
+                // Ignore launchers\par
+                if (line.contains("cat=[" + Intent.CATEGORY_HOME + "]")) continue;\par
+\par
+                Matcher m = ActivityNamePattern.matcher(line);\par
+                if (!m.find()) continue;\par
+                if (m.groupCount()<2)\{\par
+                    // Log.d("Detector", "Unknown problem while matching logcat output. Might be SDK version?");\par
+                    continue;\par
+                \}\par
+\par
+                if (mListener!=null) mListener.onActivityStarting(m.group(1), m.group(2));\par
+\par
+                Log.i("Detector", "Found activity launching: " + m.group(1) + "  /   " + m.group(2));\par
+            \}\par
+        \} catch (IOException e) \{\par
+            e.printStackTrace();\par
+        \}\par
+    \}\par
+share|improve this answer\par
+answered Apr 17 '13 at 10:44\par
+\par
+satya prakash\par
+18429\par
+  \tab   \tab\par
+is it working.... detect all other application???? \endash   Vikky May 14 '13 at 15:24\par
+3\tab   \tab\par
+yes...... is the only way to detect other applications on device \endash   satya prakash Dec 24 '13 at 5:14\par
+  \tab   \tab\par
+I m trying to use this code but there is something i am doing wrong. Please can you provide more code to use it. thanks. screenshot: oi57.tinypic.com/28b8gmd.jpg \endash   Amit Feb 14 at 13:25 \par
+  \tab   \tab\par
+i dont under stand what u actully wanna do......be brief \endash   satya prakash Feb 15 at 9:26\par
+\par
+\par
+How do you declare 4 components of android in mainfestfile?\par
+<activity>\par
+<service>\par
+<receiver>\par
+<provider>\par
+What are intent filters?\par
+Intents filter are used to register activity, services, broadcast receiver as being capable of performing an action on a particular kind of action.\par
+How many ways data stored in android?\par
+Shared preferences\par
+Internal storage\par
+External storage\par
+Sqlite database\par
+Network connetion\par
+User interface types?\par
+Views\par
+Notifications\par
+Types of notification in android?\par
+Tost notification\par
+Status bar notification\par
+Dialog notification\par
+How do you find any view element into your program?\par
+Findviewbyid\par
+What is handler class do in android?\par
+Handler allows yo to send and process message and runnable objects associated with a thread\rquote s message queue.\par
+\par
+Describe the APK format. \par
+The APK file is compressed the AndroidManifest.xml file, application code (.dex files), resource files, and other files. A project is compiled into a single .apk file. \par
+\par
+What is an action? \par
+The Intent Sender desires something or doing some task \par
+\par
+What is activity? \par
+A single screen in an application, with supporting Java code. \par
+\par
+What is intent in Android? \par
+A class (Intent) will describes what a caller desires to do. The caller will send this intent to Android's intent resolver, which finds the most suitable activity for the intent. E.g. opening a PDF document is an intent, and the Adobe Reader apps will be the perfect activity for that intent(class). \par
+\par
+What is a Sticky Intent? \par
+sendStickyBroadcast() performs a sendBroadcast (Intent) known as sticky, i.e. the Intent you are sending stays around after the broadcast is complete, so that others can quickly retrieve that data through the return value of registerReceiver (BroadcastReceiver, IntentFilter). In all other ways, this behaves the same as sendBroadcast(Intent). \par
+\par
+Example for sticky broadcast \par
+When you call registerReceiver() for that action -- even with a null BroadcastReceiver -- you get the Intent that was last broadcast for that action. Hence, you can use this to find the state of the battery without necessarily registering for all future state changes in the battery. \par
+\par
+How the nine-patch Image different from a regular bitmap? or Different between nine-patch Image vs regular Bitmap Image \par
+It is one of a resizable bitmap resource which is being used as backgrounds or other images on the device. The NinePatch class allows drawing a bitmap in nine sections. The four corners are unscaled; the middle of the image is scaled in both axes, the four edges are scaled into one axis. \par
+\par
+What Programming languages does Android support for application development? \par
+Android applications supports using Java Programming Language. which is coded in Java and complied using Android SDK. \par
+\par
+What is a resource? \par
+A user defined JSON, XML, bitmap, or other file, injected into the application build process, which can later be loaded from code. \par
+\par
+How will you record a phone call in Android? or How to handle on Audio Stream for a call in Android? \par
+Permissions.PROCESS_OUTGOING_CALLS: Will Allows an application to monitor, modify, or abort outgoing calls. So through that we can monitor the Phone calls. \par
+\par
+What's the difference between class, file and activity in android? \par
+Class - The Class file is complied from .java file. Android will use this .class file to produce the executable apk. \par
+File - It is a block of resources, srbitrary information. It can be any file type. \par
+Activity - An activity is the equivalent of a Frame/Window in GUI toolkits. It is not a file or a file type it is just a class that can be extended in Android for loading UI elements on view. \par
+\par
+Does Android support the Bluetooth serial port profile? \par
+A. Yes. \par
+\par
+\par
+\par
+Can an application be started on powerup? \par
+A. Yes. \par
+\par
+What is APK format. \par
+The APK file is compressed AndroidManifest.xml file with extension .apk, Which have application code (.dex files), resource files, and other files which is compressed into single .apk file. \par
+\par
+How to Translate in android \par
+The Google translator translates the data of one language into another language by using XMPP to transmit data. You can type the message in English and select the language which is understood by the citizens of the country in order to reach the message to the citizens. \par
+\par
+What is an action? \par
+A description of something that an Intent sender desires. \par
+\par
+What are the advantages of Android? \par
+The following are the advantages of Android: \par
+\par
+* The customer will be benefited from wide range of mobile applications to choose, since the monopoly of wireless carriers like Orange and AT&T will be broken by Google Android. \par
+* Features like weather details, live RSS feeds, opening screen, icon on the opening screen can be customized \par
+* Innovative products like the location-aware services, location of a nearby convenience store etc., are some of the additive facilities in Android.\par
+\par
+Introduction Android:\par
+Android is an operating system for mobile devices that includes middleware and key applications, and uses a modified version of the Linux kernel. It was initially developed by Android Inc..It allows developers to write managed code in the Java language, controlling the device via Google-developed Java libraries\'85..\par
+The Android SDK includes a comprehensive set of development tools . These include a debugger, libraries, a handset emulator (based on QEMU), documentation, sample code, and tutorials. Currently supported development platforms include x86-architecture computers running Linux (any modern desktop Linux distribution), Mac OS X 10.4.8 or later, Windows XP or Vista.\par
+Android does not use established Java standards, i.e. Java SE and ME. This prevents compatibility among Java applications written for those platforms and those for the Android platform. Android only reuses the Java language syntax, but does not provide the full-class libraries and APIs bundled with Java SE or ME\par
+What is android?\par
+Android is a stack of software for mobile devices which has Operating System, middleware and some key applications. The application executes within its own process and its own instance of Dalvik Virtual Machine. Many Virtual Machines run efficiently by a DVM device. DVM executes Java language?s byte code which later transforms into .dex format files.\par
+What are the advantages of Android?\par
+The following are the advantages of Android:\par
+* The customer will be benefited from wide range of mobile applications to choose, since the monopoly of wireless carriers like AT&T and Orange will be broken by Google Android.\par
+* Features like weather details, live RSS feeds, opening screen, icon on the opening screen can be customized\par
+* Innovative products like the location-aware services, location of a nearby convenience store etc., are some of the additive facilities in Android.\par
+Components can be reused and replaced by the application framework.\par
+*Optimized DVM for mobile devices\par
+*SQLite enables to store the data in a structured manner.\par
+*Supports GSM telephone and Bluetooth, WiFi, 3G and EDGE technologies\par
+*The development is a combination of a device emulator, debugging tools, memory profiling and plug-in for Eclipse IDE.\par
+Features of Android\par
+ Application framework enabling reuse and replacement of components\'a7\par
+ Dalvik virtual machine optimized for mobile devices\'a7\par
+ Integrated browser based on the open source WebKit engine\'a7\par
+ Optimized graphics powered by a custom 2D graphics library; 3D graphics based on the OpenGL ES 1.0 specification (hardware acceleration optional)\'a7\par
+ SQLite for structured data storage\'a7\par
+ Media support for common audio, video, and still image formats (MPEG4, H.264, MP3, AAC, AMR, JPG, PNG, GIF)\'a7\par
+ GSM Telephony (hardware dependent)\'a7\par
+ Bluetooth, EDGE, 3G, and WiFi (hardware dependent)\'a7\par
+ Camera, GPS, compass, and accelerometer (hardware dependent)\'a7\par
+ Rich development environment including a device emulator, tools for debugging, memory and performance profiling, and a plugin for the Eclipse IDE.\'a7\par
+Explain about the exceptions of Android?\par
+The following are the exceptions that are supported by Android\par
+* InflateException : When an error conditions are occurred, this exception is thrown\par
+* Surface.OutOfResourceException: When a surface is not created or resized, this exception is thrown\par
+* SurfaceHolder.BadSurfaceTypeException: This exception is thrown from the lockCanvas() method, when invoked on a Surface whose is SURFACE_TYPE_PUSH_BUFFERS\par
+* WindowManager.BadTokenException: This exception is thrown at the time of trying to add view an invalid WindowManager.LayoutParamstoken.\par
+Describe the APK format.\par
+The APK file is compressed the AndroidManifest.xml file, application code (.dex files), resource files, and other files. A project is compiled into a single .apk file.\par
+What is .apk extension? \par
+The extension for an Android package file, which typically contains all of the files related to a single Android application. The file itself is a compressed collection of an AndroidManifest.xml file, application code (.dex files), resource files, and other files. A project is compiled into a single .apk file.\par
+What is .dex extension \par
+Android programs are compiled into .dex (Dalvik Executable) files, which are in turn zipped into a single .apk file on the device. .dex files can be created by automatically translating compiled applications written in the Java programming language\par
+What is an adb ?\par
+Android Debug Bridge, a command-line debugging application shipped with the SDK. It provides tools to browse the device, copy tools on the device, and forward ports for debugging.\par
+What is an Application ?\par
+A collection of one or more activities, services, listeners, and intent receivers. An application has a single manifest, and is compiled into a single .apk file on the device.\par
+What is a Content Provider ?\par
+A class built on ContentProvider that handles content query strings of a specific format to return data in a specific format. See Reading and writing data to a content provider for information on using content providers.\par
+What is a Dalvik ?\par
+The name of Android\rquote s virtual machine. The Dalvik VM is an interpreter-only virtual machine that executes files in the Dalvik Executable (.dex) format, a format that is optimized for efficient storage and memory-mappable execution. The virtual machine is register-based, and it can run classes compiled by a Java language compiler that have been transformed into its native format using the included \ldblquote dx\rdblquote  tool. The VM runs on top of Posix-compliant operating systems, which it relies on for underlying functionality (such as threading and low level memory management). The Dalvik core class library is intended to provide a familiar development base for those used to programming with Java Standard Edition, but it is geared specifically to the needs of a small mobile device.\par
+What is an DDMS \par
+Dalvik Debug Monitor Service, a GUI debugging application shipped with the SDK. It provides screen capture, log dump, and process examination capabilities.\par
+What is Drawable? \par
+A compiled visual resource that can be used as a background, title, or other part of the screen. It is compiled into an android.graphics.drawable subclass.\par
+What is an Intent?\par
+A class (Intent) that contains several fields describing what a caller would like to do. The caller sends this intent to Android\rquote s intent resolver, which looks through the intent filters of all applications to find the activity most suited to handle this intent. Intent fields include the desired action, a category, a data string, the MIME type of the data, a handling class, and other restrictions.\par
+What is an Intent Filter ?\par
+Activities and intent receivers include one or more filters in their manifest to describe what kinds of intents or messages they can handle or want to receive. An intent filter lists a set of requirements, such as data type, action requested, and URI format, that the Intent or message must fulfill. For Activities, Android searches for the Activity with the most closely matching valid match between the Intent and the activity filter. For messages, Android will forward a message to all receivers with matching intent filters.\par
+What is an Intent Receiver? \par
+An application class that listens for messages broadcast by calling Context.broadcastIntent\par
+What is a Layout resource?\par
+An XML file that describes the layout of an Activity screen.\par
+What is a Manifest ?\par
+An XML file associated with each Application that describes the various activies, intent filters, services, and other items that it exposes.\par
+What is a Resource \par
+A user-supplied XML, bitmap, or other file, entered into an application build process, which can later be loaded from code. Android can accept resources of many types; see Resources for a full description. Application-defined resources should be stored in the res/ subfolders.\par
+What is a Service ?\par
+A class that runs in the background to perform various persistent actions, such as playing music or monitoring network activity.\par
+What is a Theme ?\par
+A set of properties (text size, background color, and so on) bundled together to define various default display settings. Android provides a few standard themes, listed in R.style (starting with \ldblquote Theme_\rdblquote ).\par
+What is an URIs? \par
+Android uses URI strings both for requesting data (e.g., a list of contacts) and for requesting actions (e.g., opening a Web page in a browser). Both are valid URI strings, but have different values. All requests for data must start with the string \ldblquote content://\rdblquote . Action strings are valid URIs that can be handled appropriately by applications on the device; for example, a URI starting with \ldblquote{\field{\*\fldinst{HYPERLINK "http://"}}{\fldrslt{\ul\cf1 http://}}}\f0\fs22\rdblquote  will be handled by the browser.\par
+Can I write code for Android using C/C++?\par
+Yes, but need to use NDK\par
+Android applications are written using the Java programming language. Android includes a set of core libraries that provides most of the functionality available in the core libraries of the Java programming language.\par
+Every Android application runs in its own process, with its own instance of the Dalvik virtual machine. Dalvik has been written so that a device can run multiple VMs efficiently. The Dalvik VM executes files in the Dalvik Executable (.dex) format which is optimized for minimal memory footprint. The VM is register-based, and runs classes compiled by a Java language compiler that have been transformed into the .dex format by the included \ldblquote dx\rdblquote  tool.\par
+Android only supports applications written using the Java programming language at this time.\par
+What is an action?\par
+A description of something that an Intent sender desires.\par
+What is activity?\par
+A single screen in an application, with supporting Java code.\par
+What is intent?\par
+A class (Intent) describes what a caller desires to do. The caller sends this intent to Android\rquote s intent resolver, which finds the most suitable activity for the intent. E.g. opening a PDF file is an intent, and the Adobe Reader is the suitable activity for this intent.\par
+How is nine-patch image different from a regular bitmap?\par
+It is a resizable bitmap resource that can be used for backgrounds or other images on the device. The NinePatch class permits drawing a bitmap in nine sections. The four corners are unscaled; the four edges are scaled in one axis, and the middle is scaled in both axes.\par
+What languages does Android support for application development?\par
+Android applications are written using the Java programming language.\par
+What is a resource?\par
+A user-supplied XML, bitmap, or other file, injected into the application build process, which can later be loaded from code.\par
+How will you record a phone call in Android? How to get a handle on Audio Stream for a call in Android?\par
+Permissions.PROCESS_OUTGOING_CALLS: Allows an application to monitor, modify, or abort outgoing calls.\par
+What\rquote s the difference between file, class and activity in android? \par
+File \endash  It is a block of arbitrary information, or resource for storing information. It can be of any type.\par
+Class \endash  Its a compiled form of .Java file . Android finally used this .class files to produce an executable apk\par
+Activity \endash  An activity is the equivalent of a Frame/Window in GUI toolkits. It is not a file or a file type it is just a class that can be extended in Android for loading UI elements on view.\par
+What is a Sticky Intent?\par
+sendStickyBroadcast() performs a sendBroadcast (Intent) that is \ldblquote sticky,\rdblquote  i.e. the Intent you are sending stays around after the broadcast is complete, so that others can quickly retrieve that data through the return value of registerReceiver (BroadcastReceiver, IntentFilter). In all other ways, this behaves the same as sendBroadcast(Intent).\par
+One example of a sticky broadcast sent via the operating system is ACTION_BATTERY_CHANGED. When you call registerReceiver() for that action \emdash  even with a null BroadcastReceiver \emdash  you get the Intent that was last broadcast for that action. Hence, you can use this to find the state of the battery without necessarily registering for all future state changes in the battery.\par
+Does Android support the Bluetooth serial port profile?\par
+Yes.\par
+Can an application be started on powerup?\par
+Yes.\par
+How to Remove Desktop icons and Widgets\par
+A. Press and Hold the icon or widget. The phone will vibrate and on the bottom of the phone you will see anoption to remove. While still holding the icon or widget drag it to the remove button. Once remove turns red drop the item and it is gone\par
+Describe a real time scenario where android can be used?\par
+Imagine a situation that you are in a country where no one understands the language you speak and you can not read or write. However, you have mobile phone with you.\par
+With a mobile phone with android, the Google translator translates the data of one language into another language by using XMPP to transmit data. You can type the message in English and select the language which is understood by the citizens of the country in order to reach the message to the citizens.\par
+How to select more than one option from list in android xml file? \par
+Give an example.\par
+Specify android id, layout height and width as depicted in the following example.\par
+What languages does Android support for application development?\par
+Android applications are written using the Java programming language.\par
+Describe Android Application Architecture.\par
+Android Application Architecture has the following components:\par
+\bullet  Services \endash  like Network Operation\par
+\bullet  Intent \endash  To perform inter-communication between activities or services\par
+\bullet  Resource Externalization \endash  such as strings and graphics\par
+\bullet  Notification signaling users \endash  light, sound, icon, notification, dialog etc.\par
+\bullet  Content Providers \endash  They share data between applications\par
+Common Tricky questions\par
+ Remember that the GUI layer doesn\rquote t request data directly from the web; data is always loaded from a local database.\'a7\par
+ The service layer periodically updates the local database.\'a7\par
+ What is the risk in blocking the Main thread when performing a lengthy operation such as web access or heavy computation? Application_Not_Responding exception will be thrown which will crash and restart the application.\'a7\par
+ Why is List View not recommended to have active components? Clicking on the active text box will pop up the software keyboard but this will resize the list, removing focus from the clicked element.\'a7\par
+Open Source\par
+What is the Android Open Source Project?\par
+We use the phrase \ldblquote Android Open Source Project\rdblquote  or \ldblquote AOSP\rdblquote  to refer to the people, the processes, and the source code that make up Android.\par
+The people oversee the project and develop the actual source code. The processes refer to the tools and procedures we use to manage the development of the software. The net result is the source code that you can use to build cell phone and other devices.\par
+Why did we open the Android source code?\par
+Google started the Android project in response to our own experiences launching mobile apps. We wanted to make sure that there would always be an open platform available for carriers, OEMs, and developers to use to make their innovative ideas a reality. We also wanted to make sure that there was no central point of failure, so that no single industry player could restrict or control the innovations of any other. The single most important goal of the Android Open-Source Project (AOSP) is to make sure that the open-source Android software is implemented as widely and compatibly as possible, to everyone\rquote s benefit.\par
+You can find more information on this topic at our Project Philosophy page.\par
+What kind of open-source project is Android?\par
+Google oversees the development of the core Android open-source platform, and works to create robust developer and user communities. For the most part the Android source code is licensed under the permissive Apache Software License 2.0, rather than a \ldblquote copyleft\rdblquote  license. The main reason for this is because our most important goal is widespread adoption of the software, and we believe that the ASL2.0 license best achieves that goal.\par
+You can find more information on this topic at our Project Philosophy and Licensing pages.\par
+Why is Google in charge of Android?\par
+Launching a software platform is complex. Openness is vital to the long-term success of a platform, since openness is required to attract investment from developers and ensure a level playing field. However, the platform itself must also be a compelling product to end users.\par
+That\rquote s why Google has committed the professional engineering resources necessary to ensure that Android is a fully competitive software platform. Google treats the Android project as a full-scale product development operation, and strikes the business deals necessary to make sure that great devices running Android actually make it to market.\par
+By making sure that Android is a success with end users, we help ensure the vitality of Android as a platform, and as an open-source project. After all, who wants the source code to an unsuccessful product?\par
+Google\rquote s goal is to ensure a successful ecosystem around Android, but no one is required to participate, of course. We opened the Android source code so anyone can modify and distribute the software to meet their own needs.\par
+What is Google\rquote s overall strategy for Android product development?\par
+We focus on releasing great devices into a competitive marketplace, and then incorporate the innovations and enhancements we made into the core platform, as the next version.\par
+In practice, this means that the Android engineering team typically focuses on a small number of \ldblquote flagship\rdblquote  devices, and develops the next version of the Android software to support those product launches. These flagship devices absorb much of the product risk and blaze a trail for the broad OEM community, who follow up with many more devices that take advantage of the new features. In this way, we make sure that the Android platform evolves according to the actual needs of real-world devices.\par
+How is the Android software developed?\par
+Each platform version of Android (such as 1.5, 1.6, and so on) has a corresponding branch in the open-source tree. At any given moment, the most recent such branch will be considered the \ldblquote current stable\rdblquote  branch version. This current stable branch is the one that manufacturers port to their devices. This branch is kept suitable for release at all times.\par
+Simultaneously, there is also a \ldblquote current experimental\rdblquote  branch, which is where speculative contributions, such as large next-generation features, are developed. Bug fixes and other contributions can be included in the current stable branch from the experimental branch as appropriate.\par
+Finally, Google works on the next version of the Android platform in tandem with developing a flagship device. This branch pulls in changes from the experimental and stable branches as appropriate.\par
+You can find more information on this topic at our Branches and Releases.\par
+Why are parts of Android developed in private?\par
+It typically takes over a year to bring a device to market, but of course device manufacturers want to ship the latest software they can. Developers, meanwhile, don\rquote t want to have to constantly track new versions of the platform when writing apps. Both groups experience a tension between shipping products, and not wanting to fall behind.\par
+To address this, some parts of the next version of Android including the core platform APIs are developed in a private branch. These APIs constitute the next version of Android. Our aim is to focus attention on the current stable version of the Android source code, while we create the next version of the platform as driven by flagship Android devices. This allows developers and OEMs to focus on a single version without having to track unfinished future work just to keep up. Other parts of the Android system that aren\rquote t related to application compatibility are developed in the open, however. It\rquote s our intention to move more of these parts to open development over time.\par
+When are source code releases made?\par
+When they are ready. Some parts of Android are developed in the open, so that source code is always available. Other parts are developed first in a private tree, and that source code is released when the next platform version is ready.\par
+In some releases, core platform APIs will be ready far enough in advance that we can push the source code out for an early look in advance of the device\rquote s release; however in others, this isn\rquote t possible. In all cases, we release the platform source when we feel the version has stabilized enough, and when the development process permits. Releasing the source code is a fairly complex process.\par
+What is involved in releasing the source code for a new Android version?\par
+Releasing the source code for a new version of the Android platform is a significant process. First, the software gets built into a system image for a device, and put through various forms of certification, including government regulatory certification for the regions the phones will be deployed. It also goes through operator testing. This is an important phase of the process, since it helps shake out a lot of software bugs.\par
+Once the release is approved by the regulators and operators, the manufacturer begins mass producing devices, and we turn to releasing the source code.\par
+Simultaneous to mass production the Google team kicks off several efforts to prepare the open source release. These efforts include final API changes and documentation (to reflect any changes that were made during qualification testing, for example), preparing an SDK for the new version, and launching the platform compatibility information.\par
+Also included is a final legal sign-off to release the code into open source. Just as open source contributors are required to sign a Contributors License Agreement attesting to their IP ownership of their contribution, Google too must verify that it is clear to make contributions.\par
+Starting at the time mass production begins, the software release process usually takes around a month, which often roughly places source code releases around the same time that the devices reach users.\par
+How does the AOSP relate to the Android Compatibility Program?\par
+The Android Open-Source Project maintains the Android software, and develops new versions. Since it\rquote s open-source, this software can be used for any purpose, including to ship devices that are not compatible with other devices based on the same source.\par
+The function of the Android Compatibility Program is to define a baseline implementation of Android that is compatible with third-party apps written by developers. Devices that are \ldblquote Android compatible\rdblquote  may participate in the Android ecosystem, including Android Market; devices that don\rquote t meet the compatibility requirements exist outside that ecosystem.\par
+In other words, the Android Compatibility Program is how we separate \ldblquote Android compatible devices\rdblquote  from devices that merely run derivatives of the source code. We welcome all uses of the Android source code, but only Android compatible devices \emdash  as defined and tested by the Android Compatibility Program \emdash  may participate in the Android ecosystem.\par
+How can I contribute to Android?\par
+There are a number of ways you can contribute to Android. You can report bugs, write apps for Android, or contribute source code to the Android Open-Source Project.\par
+There are some limits on the kinds of code contributions we are willing or able to accept. For instance, someone might want to contribute an alternative application API, such as a full C++-based environment. We would decline that contribution, since Android is focused on applications that run in the Dalvik VM. Alternatively, we won\rquote t accept contributions such as GPL or LGPL libraries that are incompatible with our licensing goals.\par
+We encourage those interested in contributing source code to contact us via the AOSP Community page prior to beginning any work. You can find more information on this topic at the Getting Involved page.\par
+How do I become an Android committer?\par
+The Android Open Source Project doesn\rquote t really have a notion of a \ldblquote committer\rdblquote . All contributions \emdash  including those authored by Google employees \emdash  go through a web-based system known as \ldblquote gerrit\rdblquote  that\rquote s part of the Android engineering process. This system works in tandem with the git source code management system to cleanly manage source code contributions.\par
+Once submitted, changes need to be accepted by a designated Approver. Approvers are typically Google employees, but the same approvers are responsible for all submissions, regardless of origin.\par
+You can find more information on this topic at the Submitting Patches page.\par
+Compatibility\par
+What does \ldblquote compatibility\rdblquote  mean?\par
+We define an \ldblquote Android compatible\rdblquote  device as one that can run any application written by third-party developers using the Android SDK and NDK. We use this as a filter to separate devices that can participate in the Android app ecosystem, and those that cannot. Devices that are properly compatible can seek approval to use the Android trademark. Devices that are not compatible are merely derived from the Android source code and may not use the Android trademark.\par
+In other words, compatibility is a prerequisite to participate in the Android apps ecosystem. Anyone is welcome to use the Android source code, but if the device isn\rquote t compatible, it\rquote s not considered part of the Android ecosystem.\par
+What is the role of Android Market in compatibility?\par
+Devices that are Android compatible may seek to license the Android Market client software. This allows them to become part of the Android app ecosystem, by allowing users to download developers\rquote  apps from a catalog shared by all compatible devices. This option isn\rquote t available to devices that aren\rquote t compatible.\par
+What kinds of devices can be Android compatible?\par
+The Android software can be ported to a lot of different kinds of devices, including some on which third-party apps won\rquote t run properly. The Android Compatibility Definition Document (CDD) spells out the specific device configurations that will be considered compatible.\par
+For example, though the Android source code could be ported to run on a phone that doesn\rquote t have a camera, the CDD requires that in order to be compatible, all phones must have a camera. This allows developers to rely on a consistent set of capabilities when writing their apps.\par
+The CDD will evolve over time to reflect market realities. For instance, the 1.6 CDD only allows cell phones, but the 2.1 CDD allows devices to omit telephony hardware, allowing for non-phone devices such as tablet-style music players to be compatible. As we make these changes, we will also augment Android Market to allow developers to retain control over where their apps are available. To continue the telephony example, an app that manages SMS text messages would not be useful on a media player, so Android Market allows the developer to restrict that app exclusively to phone devices.\par
+If my device is compatible, does it automatically have access to Android Market and branding?\par
+Android Market is a service operated by Google. Achieving compatibility is a prerequisite for obtaining access to the Android Market software and branding. Device manufacturers should contact Google to obtain access to Android Market.\par
+If I am not a manufacturer, how can I get Android Market?\par
+Android Market is only licensed to handset manufacturers shipping devices. For questions about specific cases, contact android-partnerships@google.com.\par
+How can I get access to the Google apps for Android, such as Maps?\par
+The Google apps for Android, such as YouTube, Google Maps and Navigation, Gmail, and so on are Google properties that are not part of Android, and are licensed separately. Contact android-partnerships@google.com for inquiries related to those apps.\par
+Is compatibility mandatory?\par
+No. The Android Compatibility Program is optional. Since the Android source code is open, anyone can use it to build any kind of device. However, if a manufacturer wishes to use the Android name with their product, or wants access to Android Market, they must first demonstrate that the device is compatible.\par
+How much does compatibility certification cost?\par
+There is no cost to obtain Android compatibility for a device. The Compatibility Test Suite is open-source and available to anyone to use to test a device.\par
+How long does compatibility take?\par
+The process is automated. The Compatibility Test Suite generates a report that can be provided to Google to verify compatibility. Eventually we intend to provide self-service tools to upload these reports to a public database.\par
+Who determines what will be part of the compatibility definition?\par
+Since Google is responsible for the overall direction of Android as a platform and product, Google maintains the Compatibility Definition Document for each release. We draft the CDD for a new Android version in consultation with a number of OEMs, who provide input on its contents.\par
+How long will each Android version be supported for new devices?\par
+Since Android\rquote s code is open-source, we can\rquote t prevent someone from using an old version to launch a device. Instead, Google chooses not to license the Android Market client software for use on versions that are considered obsolete. This allows anyone to continue to ship old versions of Android, but those devices won\rquote t use the Android name and will exist outside the Android apps ecosystem, just as if they were non-compatible.\par
+Can a device have a different user interface and still be compatible?\par
+The Android Compatibility Program focuses on whether a device can run third-party applications. The user interface components shipped with a device (such as home screen, dialer, color scheme, and so on) does not generally have much effect on third-party apps. As such, device builders are free to customize the user interface as much as they like. The Compatibility Definition Document does restrict the degree to which OEMs may alter the system user interface for areas that do impact third-party apps.\par
+When are compatibility definitions released for new Android versions?\par
+Our goal is to release new versions of Android Compatibility Definition Documents (CDDs) once the corresponding Android platform version has converged enough to permit it. While we can\rquote t release a final draft of a CDD for an Android software version before the first flagship device ships with that software, final CDDs will always be released after the first device. However, wherever practical we will make draft versions of CDDs available.\par
+How are device manufacturers\rquote  compatibility claims validated?\par
+There is no validation process for Android device compatibility. However, if the device is to include Android Market, Google will typically validate the device for compatibility before agreeing to license the Market client software.\par
+What happens if a device that claims compatibility is later found to have compatibility problems?\par
+Typically, Google\rquote s relationships with Android Market licensees allow us to ask them to release updated system images that fix the problems.\par
+Compatibility Test Suite\par
+What is the purpose of the CTS?\par
+The Compatibility Test Suite is a tool used by device manufacturers to help ensure their devices are compatible, and to report test results for validations. The CTS is intended to be run frequently by OEMs throughout the engineering process to catch compatibility issues early.\par
+What kinds of things does the CTS test?\par
+The CTS currently tests that all of the supported Android strong-typed APIs are present and behave correctly. It also tests other non-API system behaviors such as application lifecycle and performance. We plan to add support in future CTS versions to test \ldblquote soft\rdblquote  APIs such as Intents as well.\par
+Will the CTS reports be made public?\par
+Yes. While not currently implemented, Google intends to provide web-based self-service tools for OEMs to publish CTS reports so that they can be viewed by anyone. CTS reports can be shared as widely as manufacturers prefer.\par
+How is the CTS licensed?\par
+The CTS is licensed under the same Apache Software License 2.0 that the bulk of Android uses.\par
+Does the CTS accept contributions?\par
+Yes please! The Android Open-Source Project accepts contributions to improve the CTS in the same way as for any other component. In fact, improving the coverage and quality of the CTS test cases is one of the best ways to help out Android.\par
+Can anyone use the CTS on existing devices?\par
+The Compatibility Definition Document requires that compatible devices implement the \lquote adb\rquote  debugging utility. This means that any compatible device \emdash  including ones available at retail \emdash  must be able to run the CTS tests.\par
+\par
+\par
+\par
+\par
+}
+ 

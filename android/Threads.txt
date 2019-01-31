@@ -1,0 +1,510 @@
+What is Threads?
+A girlfriend after already having a wife..
+kidding
+As we all knows its basic lets skip bal bla bla..
+
+Android provide most basic to very comprehensive APIs for multithreading.
+You can acive this with diffrent-2 apis availiable.
+
+Most basic is 
+Runnable and Thraed
+And all other multithreading classess or systems are build over this two classes fot mltt.
+
+Very basic way for multt >>
+
+public class myt implement Runnable{ public void run() {....} }
+new myt().run() -->> This will always executes in diffrent tread.
+OR
+new Thraed(new Runnabe(){....}).start()
+All type of things in scope lke class, object, variable available in the run methode,
+But they cannot change anything in UI. UI element can only be changed by UI thread only.
+Why >> What happen if main thread says print 'main' and thread syas print 'my name' and at a time thousands more threads says print my name also. and finally system syas **** ***.
+
+This is Most basic approch but all the heigh leval APIS are builts over this aproach only.
+EX: Handler, HandlerThread, AsynchTask, IntentService, ThreadPoolExecutor
+
+-----
+Beauty Not:
+	if you open the source code of Thread class, u will find that this class implement the Runnable 
+	interface himself so you can say that Runnable class is actully a BABA ADAM [first in heirarchy] 
+	of all thread class
+
+-----
+
+AsynchTask >>
+Best to use for small running background work at once and send updates to main thread in between.
+You can also cancel it in between
+How >>
+	1.First you have to keep checking if(isCamceled()) in ur doInBackground()
+	2.now when you wants to cancel it just call as.cancel().it does not have any effect if you do not follow step-1
+	3. Afetr cancel, onCancelled() will be invoked not onPostExecutes()
+Major rules of using This : >>
+	1.	It can be INSTANTIATE and EXECUTE only in main thread otherwise will gives exception
+	2.	It can be used only once, try it second time will cause exception
+
+paraller vs serialexecution
+		Asynchtaask run apart from main thread, no matter what type of it is. But in the application if 
+		multiple asynchTask is run at a time than what will happen:
+		*	They all will run paraller to main thread
+		*	But w.r.t each other
+				After Honycomb: They will run serially one by one 
+				before Honycomb: They will run in paraller (max 5 at a time)
+		This change was made to make Asynchtask 100% thread safe wrt each other.
+		Q. Can you run them in paraller: 
+		A. Yes
+			if you really wnats to do this do it with 
+			as.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, params...);
+			By this your as will rum in paraller with other  Asynchtask
+			But this methodology is higly risky due to thread unsasfe and you can never gurantee which one will run first even they executs line by line.
+
+AsyncTask.SERIAL_EXECUTOR vs AsyncTask.THREAD_POOL_EXECUTOR			
+	First one is default for .execute() methode and run task in serialexecution
+	Second is use to run in paraller.
+		
+---------------
+
+	CASE Study
+	
+L1		//for (int i = 0; i < 1000; i ++)
+		for (int i = 0; i < 25; i ++)
+		{
+			final int x = i;
+			new AsyncTask<String, String, String>()
+			{
+				@Override
+				protected String doInBackground(String[] params)
+				{
+					try
+					{
+						Log.e("-----", x + "");
+						Thread.sleep(1000);
+					} catch (InterruptedException e)
+					{
+						e.printStackTrace();
+					}
+					return null;
+				}
+L2			//}.execute("");
+L3			//}.executeOnExecutor(AsyncTask.SERIAL_EXECUTOR, "");
+L4			//}.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, "");
+		}	
+
+L2 and L3 are noramal and serially executed 		
+Output 
+	1 2 3 4 5 6 7......
+	And they will print one by one, no any two will print together
+L4:
+	They will run parallerly at a time can run max 5 (Core Size ) together. nad never gurantee the sequence
+	of execution
+	output be like
+		3 5 1 0 13    4 1 17 19 6     7 8 16 22 12 ....
+		So there will be zero coupling together.
+		
+In a very general language we can says that: Asynchtask is used to make a one more thread apart from main
+ thread.
+
+
+AsyncTask.THREAD_POOL_EXECUTOR:  
+	This is a type of ThreadPoolExecutor() which is by default provide by application to rul anynchtasks in 
+	paraller or serial
+	When you use in paraller mode you must remember its limits 
+	so thereby the limits of Asysnctask are:
+			core pool size : 5
+			max pool size : 128
+			qued task : 10
+			So maximum asynchtask allowed to execute AT AMOMENT = 
+						max pool size + qued task = 128 + 10 = 138
+			imp : That 10 will not be actully running (though .executed() has been called), but they are 
+			added in 'qued task' only. so if you open 'methode profiling' you will see till 'AsynchTask#128'
+			only not 'AsynchTask#129'...'AsynchTask#138'
+			So
+			max AS execute at a time  =  138
+			max AS running at a time  =  128
+	more detail:    LATER AFTER ThreadPoolExecutor
+
+AsyncTask.SERIAL_EXECUTOR/default:
+	99% we use this,
+	Limits: at a time only one will be executes, but AsyncTask.SERIAL_EXECUTOR uses unbounded Que for task so u can add infinite As there.
+	So no limit here, but they all run one by one
+---------------	
+	
+CASE: AsynchTask is running and activity finished
+	Suppose a AsynchTask is running and somone just press back button, It will keep running in the background and as you 	
+	know that outer class of this is thread is any activity, That instance on the activity can not be garbage collected 	untill this thraed is finished.
+	 To resolve this you should do a littile more coding. change methode 
+	 onDestroy(){if(as != null) as.cancel()},  And of course u must check isCnacel() in doInBackground()
+
+Case: Making things more worse suppose, activity is restarting(eg screen orientation) now older asynch
+	 will 	keep 	running  and new asynch will also get started. Though older one will note make any diffrences on U, but it can certainly play with other variables and instances.
+	 if you may wants to handle this you can 
+	 1.	set android:configChanges="Orientaiion" in menifest but this is disastrous approch, 
+	 2.	Use fragment and its setRetainInstance(true) methode of that // use google for detail
+		
+
+Why Asynch can only be used as once :
+	this is because it is implemented over Thread Class of java.
+	and once you call start() methode of any thread object, you cannot call it again.
+	So as like Thread (start()) you can use AsynchTask(execute()) only once
+
+-------------------------------------------------------------------------------
+
+					HANDLER/LOOPER/MESSAGE/HandlerThread
+
+Ok
+There is  hell of mess among all this terminology, so what exactly they are?
+First we need to understand basics of 'Thraed of android'
+
+By default thread does not have anything at all it executes code in run methode and destroy himself.
+So how this mainThrad works and stay there for infinite times.
+This is done by Looper.
+
+In android main thread has its own looper attched to it by default, any other thread created by any way does not have looper and you have to create one if you wants (will do it later)
+
+To perform any opration in loop thread you will need to use Handledr, MessageQue, Messsage/Runnable properly 
+	MessageQue : This is a sequence of task that this thraed has to perform one by one
+	Handler : this is use to add and remove the task from MessageQue.
+	Messsage/Runnable : this is a task or a pice of code which is qued in messageQue by Handler and waiting for his number. This can be in messge(Simple String) or in Runnable (executable code) formate
+
+see the example below >>
+
+First we will make a thread 
+	class LooperThread extends Thread { public void run() {}}
+	This is unlooped thread and will run out immidiatly after run() returns
+	So lets make it loopable
+	Approach #1 Without Handler
+class LooperThread extends Thread { public void run() { 
+								....
+								Looper.prepare();
+								Looper.loop();
+							}
+						}
+	Now at here run() will not return instead it will went in a infinite for loop and keep running
+	if you open source code of Looper class you can observe 
+	loop() {... ... ... for(;;) {... ... ...} ... ... ...}
+	Now as long as you have not used  Handler  in LooperThread class.
+Now how we will ask use this thread to perform any opration : 
+	For this u will have to use Handler. 
+	First lets get bit about Handler: 
+		*	this is use to add and remove the task from MessageQue.
+		*	if it is instantiated default constructor, it will automaticcally attached to the the thread
+			in which it is instantiated.
+		*	it will deliver the tasks from message que in the attached Thraed only
+		*	it can deliver the message to attached trhead from any other thread also (but message will 
+			process in attached thread only)
+		* 	Thread may have multiple Handler but they all will have single messageQue and looper;
+		*	It deliver the message either in form of Runnable or message
+		*	if you are in thread1 and in this thread you wants to instantiate the handler of thread2
+			tha you have to use   new Handler(looperOfThread2), This is very useful in  HandlerThread(later discussed)
+How to use:
+		class LooperThread extends Thread { 
+				Handler hn;
+				public void run() { 
+								....
+								hn = new Handler();
+								Looper.prepare();
+								Looper.loop();
+							}
+						}	
+		Now you can start this thread by simple as Thraad : 
+			LooperThread lp = new LooperThread()
+			lp.start();
+		Now you can use 'hn' with runnable to perform anything in this thread like this:
+		hn.post(new Runnable(){
+				public void run(){}
+			})
+		Code in the run() will execute in LooperThread only.
+		you can also set delay and time to deliver this message by diffrent simillar functions
+		
+	Now with the help of androi.os.Message :
+		for this you just have to override a methode in handler 
+			hn = new Handler() { public void handleMessage(Message msg)
+		        {   super.handleMessage(msg); ... ... ...}
+	        };
+			msg: Thias is the object of  androi.os.Message  class this help handler to undersatnd what opration he needs to perform in  handleMessage()
+			This has two imp part 
+				1.	msg.what : a int to know quick info about task
+				2.	msg.arg1, msg.arg2 : two more for same
+				3.	msg.obj : any object that you may need
+				4.	msg.setBundle()/.getBundle() : bundle
+				
+			Use template 
+				Message msg = new Message()
+				msg.waht = 1;msg.arg1 = 45;msg.obj = getUser();msg.setBundle(bundle)
+				hn.senMessage(msg)
+				Now in 
+				handleMessage(msg){ swich (msg.what) { ... .... ... } }
+		
+	Is this thraed safe : 	
+	Handler is attached to the thread he is instantiated in, but its instance can be used in any thread.
+	A single looped thread may have many Handler belogs to him, but only one messageQue and that all
+	handler will deliver the message into that que only
+	So at a time many thread can add/remove message in messageQue but all of that message will be delivered to loop one by one only and never raced against each other.so it is thread safe
+					
+
+
+Big Question 
+Is there any way to stop this Looper thread 
+Ans Yes
+How?
+use this function Looper.myLooper().quitSafely()/quit();
+
+** A beautiful line whrere to use it : 
+	one genaerally need a thread attached to looper when he needs to perform some sequential execution of 
+	code one by one and need to keep thread alive for future tasks.
+
+	
+	------------------
+	
+	HandlerThread
+	creating a looping thread with above steps takes lot of coding and all, so  android provide a very easy and ready to use way to inplement this.
+	Use handlerThread for this
+		once instantiated, HandlerThread will automatically genetate a thread (apart from mainThrad) which has its looper and messageQue.
+		you just need to attach it with handler and u r done.
+	How to use
+	    HandlerThread ht = new HandlerThread("ss");
+	    ht.start();
+	    android.os.Handler hn = new Handler(ht.getLooper()){...};
+	  Now hn will deliver all message to ht only.
+	  Point to not:  ht.getLooper() will returns loopes of ht so hn will attached to that looper only even instantiated in other thread.
+	
+	*	HandlerThread simplaly extends Thread class of java, that is why hr also take string perameter in constructor.
+	
+	-------------------
+MainThread					
+Mainthread is also a type of Looper Thread and its all setup is done via framwork itself
+	*	Any point of time its looper can get by Looper.getMailLooper()
+	*	Any handler which are instantiated in main thrad will also attach to it.
+	*	Looper.getMailLooper().quitSafely()/quit() will throws exception, so main thread can never be quit.
+	*	runOnUiThread(runnable) deliver the runnable in this thread messageQue
+Can you get instance of handler attched to mainThread from inside of any other thread (eg.
+	doInBackGroung(){..},IntentService.onHandleIntent(){..}, Thread(){..})
+	Ans: Yes, use
+	mHandler = new Handler(Looper.getMainLooper()) {....}
+	
+
+Handler is attached to the thread only if it is looped thread;
+If you try to instantiat the  new Handler() (try to attach the handler with) in thread that is not looped
+ than it will gives following Exception 
+	"Can't create handler inside thread that has not called Looper.prepare()"
+	So this will never works
+	new AsynchTask)() {doInBackground() { .. Handler handler = new Handler(); ..}}
+
+Can you access UI thread call from any nonUithread withou context/view/activity ec.
+Yes
+How?
+By this
+	new AsynchTask)() {doInBackground() 
+	{ .. Handler hn = new Handler(Looper.getMainLooper()); 
+		hn.post(new Runnable() {.. ... This code will executes in UI Thread....})
+	..}}
+	
+		
+-------------------------------------------------------------------------------
+Beauty Note
+if you see source code of function runOnUiThread() you will see
+    public final void runOnUiThread(Runnable action) {
+        if (Thread.currentThread() != mUiThread) {
+            mHandler.post(action);
+        } else {
+            action.run();
+        }
+    }
+So it simpaly post the event in messageQue of UI thread by mailthread handler
+--
+AsynchTask vs HandlerThread : 
+	AsynchTask: use it if you wants to prform   do it and destroy   type of opration.
+		It is generated via main thread do the opration and then destroyed
+	HandlerThread: use it if you wants to perform   'do it and wait for later command'   type of opration
+		Here a thread is generated and loop itself, then keep acceptint the messages in the que, and if 
+		if que is empty it will wait. but never destroy itself
+Handledr vs HandlerThread: 
+		No comparioson at all actully 
+		Handler: use to oprate the messgaeque of looper thread
+		HandlerThread: use to create a loopedThread, it is atype of thread (it exteds Thread)
+--
+if you wants to see all the messages in the messageQue you can use hn.dump(printer) methode
+----
+Handledr: Android API
+AsyncTask: Android API
+ThreadPoolExecutor: Java API
+
+--------------------------------------------------------------------------------------------------------------------------------------------------------------
+									ThreadPoolExecutor 
+
+Why we need this: 
+first lets see what we have : 
+	AsyncTask in serial mode : best to use when you need to perfom one paraller operation in background
+		with main thread, and once its done we forget it.
+	AsyncTask in paraller mode : best to use when you need to perform couple of task in paraller mode 
+		but ready to use the share resources of application 
+	Handler: when we need to perform tsks on arrival (do it when available and wait till next command)
+	
+	But lets say we need to do this: 
+		Download 1000 images from network and save then in db.
+		Now diffrent solutiuon for this: 
+		AsyncTask in serial mode :  This will be desaster bro
+		Handler: same here
+		AsyncTask in paraller mode : this is better sol. but it will use the static shared pool executor so
+			*	it will share resourses from grneral pool thereby other asynchtask (like callin service, 
+				db opration) will has to wait till resources available.
+			*	there will laways chance of running out of resources like you add 100 ast, i also add 100
+				and now you have 200(>128) so you will get rejectionException
+				
+To solve such issue, when you need to perform lot of small tasks which are loosly couled to each
+ other, you can use ThreadPoolExecutor,
+ Basically it gives you pool of thread to executes them simultenously and a que to maintain upcoming tasks.
+ 
+ This has two physical part 
+	1.	Thread Pool :
+		A pool where threads are availiable to perform any task (via Runnable)
+	2.	Task Que
+		A supplier Que which will feed the tasks to Thread Pool
+	
+Control Perameter :
+		This are the major control perameter
+		1.	core pool size 	(c)
+		2.	max core size	(m)	
+		3.	que size		(q)
+		4.	max idle time	(t)
+
+		
+	SX1		|			SX2			 |				SX3					|		SX4
+------------c------------------------m---------------------------------m+q---------------
+			5					    128								128+10=138
+		
+C: 	This is the minimum number of thread in the pool, uto this point all tasks will directly submitted in
+ the pool, even some of the thread is sitting idle (mns running tasks < pool size)
+M: now if you keep adding tasks in a pool without even looking for idle threads, Man u will went out of 
+	resourses soon and bang crash. so you must limit this number. This is M.
+	So M is the maximum nuber of thread, pool can accomodate into. 
+	if new tasks come and 
+		> all thread are busy (running tasks >= M) then they will be added in the Que, and deliver later 
+		when there is thread available
+		> some thread are idle then they will be deliver to idle thread immidiatly
+		> max value of M can be Integer.MAX_VALUEbut it should be chossen humbely.
+Q: So when tasks arrive, all thread are busy and tasks added in the que.
+	now there should be limit to this que. this is Q.
+	This is a max number of tasks that can be added into the que.
+	Q can also be infinity. if we do not specify its size in constructor.
+T:	Suppose suddenly there is scarcity of arriving tasks than after somtime we shoul release the unused 
+	resources, this is set by T. once thread is idle than after T time it is set as free and removed from
+	the pool
+	
+	
+SX1:	All upcoming tasks will be deliverd to pool and assigned to new thread, even idle thread is
+		available	
+SX2:	Upcoming task will either deliver to idle thread if available or if not than a new thread will be
+		created and task will be delivered in it.
+	So up to SX1 and SX2: Que will be empty. 	
+SX3:	If all thread are busy than tasks will be delivered in the Que and Que will feed it into the 
+		pool depends on source availiablity on FCFS basis.
+SX4:	If too much tasks arrive and que limit reached than 'rejectedExecution' will be thrown		
+	
+--	
+	threadPoolExecutor.execute(r1)
+	threadPoolExecutor.execute(r2)
+	threadPoolExecutor.execute(r3)
+	threadPoolExecutor.execute(r4)
+			threadPoolExecutor never gurantee the execution of all r* will occure in a sequence it may 
+			occue in any sequence like
+			 2 3 1 4
+			 2 4 1 3.... etc.
+		So never confuse with term QUE that things will happen one by one
+	
+		But if you wants it to be in serial take C = M = 1;
+
+	
+threadPoolExecutor.execute() vs threadPoolExecutor.submit() : 
+		
+		
+Coding: 
+
+		BlockingQueue<Runnable> queue = new LinkedBlockingQueue<Runnable>(Q);
+// L1	BlockingQueue<Runnable> queue = new LinkedBlockingQueue<Runnable>()
+		final ThreadPoolExecutor threadPoolExecutor = new ThreadPoolExecutor(
+				C,       // Initial pool size
+				M,       // Max pool size
+				T, 
+				TimeUnit.SECONDS,
+				queue);
+
+		for (int i = 0; i < 25; i ++)
+		{
+			final int x = i;
+			threadPoolExecutor.execute(new Runnable()
+			{
+				@Override
+				public void run()
+				{
+					try
+					{
+						e("-----", x + " --- " + threadPoolExecutor.getActiveCount() + " ---- " + threadPoolExecutor.getTaskCount());
+						//Log.e("-----", x + "");
+						Thread.sleep(1000);
+					} catch (InterruptedException e)
+					{
+						e.printStackTrace();
+					}
+					return;
+				}
+			});
+		}		
+		
+* L1: if you use thuis than you will have infinite Que, so there will never be limits to add in it.
+			
+		
+		Q C M : 5 10 20 
+		 Than first 10 tasks will directly fall into new threads even some threads are sitting idle than 
+		 after 10, if new tasks arrive they will either 
+			fall into the new thread if all threads are busy (running thread in pool > 10)   OR
+			fall into idle thread if available at a time of task arrival
+			** so up this point Que will be empty 
+		 Now if suppose system is juicing out the recourses and all 20 (which is max thread in pool) thread 
+		 are busy and new tasks arrive than,
+		 They will be fall into the Que only and wait till resourses available in pool.
+		 Now Suppose you do not stop even here. 
+		 all threads are busy and Que is full (we used finite que) thaan again new tasks arrive, 
+		 What will happen than 
+			rejectedExecution will be thrown and tasks will not be added 
+
+How to hadle 'rejectedExecution' : 
+	Use this	
+	threadPoolExecutor.setRejectedExecutionHandler(new RejectedExecutionHandler(){
+		public void rejectedExecution(Runnable r, ThreadPoolExecutor executor){}  });
+	
+How to finalize it safely : 
+ 	once you are done with ThreadPoolExecutor u should call  'threadPoolExecutor.shutDown()' so that it 
+	will safely complete all running tasks first than close itself and release all resources
+	use  'threadPoolExecutor.shutDownNow()' to shut it immidiatly and dump all pending tasks.
+	
+--		
+So maximum number of running tasks at a time can never exceeds 	M;
+but min value can be 0;
+		
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------
+							INTENT SERVICE 
+
+As long as we are not discussing servie here so i will not go in much depth but 
+I will give you snapshot of source code of this class and then you will know how
+ google	play with our feelings :)
+
+in the IntentService class:
+
+    private volatile Looper mServiceLooper;
+    private volatile ServiceHandler mServiceHandler;
+    private final class ServiceHandler extends Handler {
+        public ServiceHandler(Looper looper) {super(looper);}
+        public void handleMessage(Message msg) {
+            onHandleIntent((Intent)msg.obj);
+            stopSelf(msg.arg1);
+        }}
+	....
+    public void onCreate() {
+	.....
+        HandlerThread thread = new HandlerThread("IntentService[" + mName + "]");
+        thread.start();
+        mServiceLooper = thread.getLooper();
+        mServiceHandler = new ServiceHandler(mServiceLooper);
+	....
+    }
+ 

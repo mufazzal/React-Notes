@@ -1,0 +1,171 @@
+Terminologies
+
+    Thumb Rule
+    Public key Encrypt
+    Private key Decrypt
+
+    enc/dec               public enc key                private dec key
+    Digital sig           public varification key       private signing key
+
+Asymmetric: 
+	Here we encode the data with one key but to dycrypt it you must have two key.
+	In this methodology we generate a KEY-PAIR not key. Each key pair would have two keys
+	Private Key and public key.
+	Public is known to all client which wants to communicate with the server and private key is hold only by server itself.
+	Data encrypted by this public key can only be decrypt with private key.
+	So when client send any data to the server it encrypt that data and now even someone in between network try to read this request, it must need that private key to
+	decode it.
+
+Hybrid CryptoSystem:
+    This is combination of Sym and asym crypyos
+
+    Data is encrypted with Sym Key at both side
+    Now both do PKI handshake
+    sym key of both side are encrypted with public key of their couterpart
+    both now share this PKI-Encrypted-Symmetric-key
+    other end will have private key so they will decrypt the data and get actual sym key
+
+
+
+    Analogies:
+        PKI is like a LETTER BOX of MINE anyone who knows my address (Public key) can drop message in my LETTER BOX
+        But its me only who has unlock-key of Letter box (Private key) so only i can read this.
+
+
+    So as you know that private key is kept scret and public key is distributed, so there comes a vulnerability that in intermediate
+    media while dilivering public key there was some attack and its changed.
+     So what would happen
+     Then come CA
+     CA auth. keep the public key<-->User map with them for all of its valid users
+
+
+     Three Major Use of Asym crypto
+      1.  Hybrid CryptoSystem
+      2.  HTTPS
+      3.  Digital Signature
+
+      Generally used public key length is :
+      1024, 2048, 4096
+
+      But 1024 is cracked and so not recommended to use so most of CA do not use this at all.
+      2048 is acceptable right now and as per NSA it is secure for next 5 yr also
+      4096 is said to be secure till 2030.
+
+      Issue:    Genrally public key of CA certificate is visible to all  so if a very enthusiastic hacker decide ti crack it
+        whithout even worry abouts year it takes and he finally does it in so, what then if he
+        crack the key of root certificate and get its private key he will do MITM on all server secured by this root
+        That is why we add EXPIRATION DATE in CA certificate, so certificate will be invaidate after
+        long priode of time to avoid such attack.
+        EXPIRATION never means you have to buy new certificate
+
+
+     the mose wildly used asym algo is RSA
+
+
+Why padding:
+    once you geenerated the RSA key pair and use it for encryption for message
+    each time u use it on same message it will gives same result, so RSA (pk, msg) = constants
+    So here there is 0 randomness
+
+    To avoid such problem we add padding value in message first and then do encryptuion for randoness
+    This is specially design padding standard called  PKCS1  padding.
+    Dont know internal but it add randomness in output
+    this is not simmillar to padding in block chiper insted it is like IV of sym crypto
+    In PKCS1 it add at least 11 random byte in message and then deliver it for enc
+    so
+    effective length of acceptable message will becom 128-11=117 for 1024 bit RSA
+    PKCS1 is global standard and implemented internally in java so u do not have wo worry about random value generation.
+    ** Using RSA withou padding is weak approach
+
+    Data size limit:
+    With the RSA you can encrypt data if and only if size of data is same as its key size so,
+    with  1024  bit RSA key you cab enc 1024 bit message which is 1024/8 = 128 byte
+    with  2048  bit RSA key you cab enc 2048 bit message which is 2048/8 = 256 byte
+    with  4096  bit RSA key you cab enc 4096 bit message which is 4096/8 = 512 byte
+
+    If you use NoPadding:
+    if data size is smaller or equal to key size, than system will take care of this and add extra bits.
+    But if size of data excedes key size than it will give exception ' javax.crypto.IllegalBlockSizeException: input must be under 128 bytes'
+
+    if you use PKCS1Padding
+    This will add at least 11 byte in message so actual message size must always be smaller or equal to 128-11 = 117 byte
+    otherwise Exception occure saying  'RSA_padding_add_PKCS1_type_2:data too large for key size'
+
+
+CODE:
+    Generating key pair
+        KeyPairGenerator kpg = KeyPairGenerator.getInstance("RSA");
+        kpg.initialize(1024/2048/4096);
+        KeyPair kpy = kpg.genKeyPair();
+    Fron String/Byte[] keyBytes:
+        X509EncodedKeySpec spec = new X509EncodedKeySpec(keyBytes);
+        KeyFactory keyFactory = KeyFactory.getInstance("RSA");
+        PublicKey publicKey = keyFactory.generatePublic(spec);
+        PublicKey private = keyFactory.generatePrivate(spec_pri);
+    Enc
+        cipher = Cipher.getInstance("RSA/ECB/PKCS1Padding"); or "RSA/ECB/NoPadding" or "RSA"
+    	cipher.init(Cipher.ENCRYPT_MODE, publicKey);
+        byte[] encBytes = cipher.dofins(dataBytes)
+    Des
+        cipher = Cipher.getInstance("RSA/ECB/PKCS1Padding"); or "RSA/ECB/NoPadding" or "RSA"
+    	cipher.init(Cipher.DECRYPT_MODE, privateKey);
+        byte[] decBytes = cipher.dofins(encBytes)
+
+
+
+Digital Signature:
+	Digital signatutre a process to send data securely
+    Process:
+	Suppose I want to send a file to my home from untrusted media, if i use symetric en-dc, i have to first send sym key their
+	and problem remail same. So what i will do.
+		Proble statment
+		Mufazzal ----a file--->  Home
+	That is Ds
+	1.  I will generate a PKI key-pair
+	2.  If message is large (>1024/2048) than i will get its message digest by MD5 or SHA*
+	3.  I will feed [Private Key + Message/Message Digest and generate DS at my side
+		at mufazzal
+		PKI-Framework[Private Key + Message/Message Digest] ----> DS
+	4.  Now i will send a packet of
+		[Public Key + message/Digest/Digest-Algo + DS]
+	5.  Now at they will receive it
+		they will generate Digest again if required now feed Public Key, message/Digest and DS in PKI-Framework 
+		and PKi will tells you that this is valid message or not.
+		So if somone has changed it than it will tells you
+   Problems here:
+	Suppose my courier is at Fatehabad and somone change it completely he put complete new VALID package of 
+	[Public Key + message/Digest/Digest-Algo + DS]
+	At home they will extract it and feed it for validity and finally they will find it valid, But this is not coz my package was replaced by 
+	some pervert
+		This problem is as smillar to   behaving-as-fake-domain   in SSLhandshake
+   Solution:
+	As like in SSL we need a CA authority we need same Authority here.
+	They issue a sets of certificate and i will purchase one.
+	Now instead of generating new keypair, i will get it from purchased certificate. 
+	now at my home they will ask that CA, if public we recwived is valid or not.
+	Now it is CAs responsibility that their public key and certificate are with valid users only
+	Ex of CA: DocuSign
+`	CA auth. keep the public key<-->User map with them for all of its valid users
+
+whenever u either hit a server or send a document MITM may take place a complete stranger may try to be a fake server or try to replace 
+a [msg+pub key+DS] packet. Just to avoid this CA or Docusign comes to picture
+
+
+
+
+
+pseudo random key generator
+CBC/ECB
+keywrap
+noncs
+keystore
+digital signature
+RFC
+X.509
+bOUNCY CASTLE
+key wrap/unwrap
+phishing
+SHA1PRNG
+SecureRandom  vs Math.Random()
+keychain
+bruteforce/rainbow/dictinary attack

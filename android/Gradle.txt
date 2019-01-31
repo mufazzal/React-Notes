@@ -1,0 +1,59 @@
+Gradle simplly combine all your code, resorce, libs and generate apk.
+It passes from diffrent phse as below
+
+
+
+To set perameter while building the apk u have to use configuration file which is 'build.gradle'
+There are more than one such file exists in the project.
+But to configure build process you have to deal wiyh only one such file wich lies at 
+module leval (Which is also calle  'app Module')
+in side bar:: 
+Project View >> project name >> app >> build.gradle
+Android View >> Gradle Script >> build.gradle (Module:app)
+
+open this file
+
+apply plugin: 'com.android.application'  >> 
+	declare to take android specific build process for compliling.
+
+android {...}
+	insode defines all android specific build options.
+
+compileSdkVersion: 19
+	specifies the compilation target.
+buildToolsVersion: 19.0.1
+	specifies what version of the SDK build tools to use. 
+	NOTE: That version of build tool has to bee installed in the android studio. and remember 'SDK build tool' is tottaly 
+	diffrent from 'SDK platform'. Never confuse among them.
+			And
+		buildToolsVersion always must be higher or equal to compileSdkVersion
+		otherwise it wont compile  
+			buildToolsVersion >= compileSdkVersion
+		To install it: open SDK >> Tool >> Android SDK Build Tool   <Version>
+
+
+defaultConfig: this configures core settings and entries in the manifest file 	(AndroidManifest.xml) dynamically from the build system. The values in 	defaultConfig override those in the manifest file.
+	it has a heigher priority than AndroidManifest.xml.
+	
+
+
+DEpendencies {..}:
+This defines all type of dependencies requires ti build the project either remote or local.
+
+In Android we have mainly three type of dependencies, Lets compare it by eclipse
+1.	Module Dependency : Library Project : add library project in eclipse
+		compile project(":lib") 
+2.	Local binary Dependency : : Library .Jar files : Place it in lib folder than right 		click on it and add to build path
+		compile files('libs/guava-r09.jar')
+3.	Remote Binary Dependency: Remote library is some special type of binary java which 		are installed 	at 'Android SDK' itself and lies at /sdk/extras/android/<lib name>
+	This are PLATFORM INDEPEDENT and its version coordinated with some maven bla bla.
+		compile 'com.android.support:appcompat-v7:21.0.0'
+		
+
+
+
+
+Note: When you make changes to the build files in your project, Android Studio requires a project sync to import the build configuration changes. Click Sync Now on the yellow notification bar that appears for Android Studio to import the changes.
+
+
+		

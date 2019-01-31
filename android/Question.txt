@@ -1,0 +1,123 @@
+Activities:
+	what is and its lifecycle
+	launch mode and onNewIntent
+	activity re-start on memory crisis
+	visible vs forgroung activity example
+	can we add array in bundle
+	how to show buttons over keypad
+	how to stop recreation of activity on orientation changes
+	
+View
+	dfrnce in getWidth and getMeasuredWidth()
+	getWidth in onDraw methode gives 0 why?
+	what is basic diffrence between Dialog and Toast?
+	
+	
+Service
+	bindService vs startService
+	what happen if i call startservice three times, will it open new service?
+	i called startservice and then bind it, now i called stopService what will happen.
+	return value of onStartCommand
+	bind service with another app and communicate data
+	i have 5 request in worker thread of IntentService and suddenly someonne stop the service by calling stopService,
+		what will happen here?
+	showing Toast in onHandleIntent()
+	Activity Service communication
+	
+	
+BroadcastRECve:	
+		why shdnt i do asynch opration in onRecevie()
+		i start asynchtask in onRecevie and is got killed immediatly after return. what happen to that asynchtask?
+		i send an broadcat with some intent, now i wants only some of app can respond to it even they all know the action.
+			what should i do?
+		i register a recevier and many apps know the Action string to invoke it, now i wants only some authorized app 
+		can invoke this brcvr even they all know that action
+		simple vs orderBroadcast
+		how to abort broadcast depend upon one of them
+		how to propogate data bw brcrvr
+		sticky vs simple broadcast
+		how to know if broadcast is from stickyCache: isInitialStickyBroadcast()
+		
+
+ShaderPrefrence:
+		is it possible to share with other app, how?
+		is it thread safe, what happen if multiple thread attempt to commit?
+		
+export
+		Permission vs uses-permission
+		exported
+		
+		
+Fragment:	
+		callbacks with addToBackStack and without it
+		
+		
+		
+		
+Net:
+			Downloading large bitmap 
+			lazy loading of images
+			XML vs JSON
+			diffren types of parser
+			
+
+			
+Layouts and View			
+	Importance of converview in adapterviews
+	weight vs weightsum
+	How to implement viewPager and what is its importance 
+	Padding vs margin
+	
+	
+	
+How to use GCM
+handling large size imgage with and withoup croping
+what is parcelable
+How to handle multi-touch and how to handle pointerIndex if one finger goes up
+	
+		
+
+			
+JAVA
+	Why multiple inheritance not possible
+	what is immutable
+	What is Wrapper classes and why it is used
+	overrid static methode	: remember it will call acording to REFRENCE not OBJECT	
+	What if i add existing key in set
+	check vs uncheck exception
+	throw vs throws
+	Can we instantiate an abstract class?
+	What modifiers are allowed for methods in an Interface? public and abstract
+		Interfaces may have member variables, but these are implicitly public, static, and final- 
+		in other words, interfaces can declare only constants,
+	return in try/catct/finally
+	
+	
+CF	
+	iterator vs listitrator
+	what is ConcurrentModificationException  and how to avoid it 
+		[use cocurrunt CF classes copyonWriteArrayList, CocurruntHashMap, Coll.getSyncSet(set)]
+	why cf is Generic
+	HashSet[eq,hash] vs TreeSet[comparable or comparator or generic]  
+	HashMap vs TreeMap
+	Non generic conditions
+		Treset 			t; t.add("1","1"); t.add(2,"2")  // classcastexeption in compare to function of KEY
+		Treset<String, int>	t --- -- - - - - - - - - - - - - - // Error
+	List vs set
+		List ls --> will allow all no error no exception
+		List<String> ls  nnot, give error
+	Diffrent ways to itrate over map
+	what if i make some change in List/Set/EnterySet
+	HashMap[not, faster] vs HashTable[synch]: 
+
+14. What will be the problem if you don't override hashcode() method ?
+You will not be able to recover your object from hash Map if that is used as key in HashMap.
+	
+	
+	
+	
+Session handling
+Design pattern
+MVC
+
+	

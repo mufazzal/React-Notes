@@ -1,0 +1,67 @@
+There is hell lot of buzz going aroud support-libs in android and god forgives us for confusions between this two library
+	com.android.support:  support-v4    :<Version>
+	com.android.support:  appcompat-v7  :<Version>
+	
+	First thing 
+	v4 - up to Android API4 1.6+ only
+	v7 - up to Android API7 2.1+ only
+	
+	Basic responsibility of support library :
+		You know android is keep evolving, each new android updates brings with him large set of new features, classes, Methods.
+		But what will happen to earlier versions of android how can a feature given in   lolipop  will support in  Eclairs  .
+		Here comes support library.
+		
+		Support library provides new features on android in older versions of android.
+		But There is a limitation :
+			You can not provide all new features in older version, bcoz there is lot of matrixes to fill.
+			So each support library provide support up to some API leval only
+			Ex.
+			com.android.support:support-v4:<Version>:
+						This library provide support till API4, means you can us this library with Android 1.6 and higher. It cannot give support to API3.
+			com.android.support:appcompat-v7:<Version>
+						This library provide support till API7, means you can us this library with Android 2.1 and higher. It cannot give support to API3.
+						
+v4 : 
+	This library is most comprehensive library in support framework and provide support for oldest APIS. and also contains largest set of classes.
+	It gives majorly following functionality to older versions
+		Fragment
+		NotificationCompact
+		ViewPager
+	When you use this library do use proper imports.
+	
+v7 :
+	This second most useful one.
+	but it gives support till API7+, Android 2.1+. It cannot be used with api6.
+	It gives majorly following functionality to older versions
+	ActionBar
+	etc.
+		VIMP: in background v7.ActionBarActivity extends v4.FragmentActivity
+	V7 library is built over the v4 library, so if you are using v7 than you must also include v4 in you library.
+	
+
+Include library by gradle	
+
+First open sdk >> Extra >> install 'Android Support Repository'
+It will download all support framwork like :
+	v4, v7, v13, v17
+for v4 : 
+	dependencies {
+		compile 'com.android.support:appcompat-v7:21.0.0'
+	 }
+for v7 : 
+	dependencies {
+		compile 'com.android.support:appcompat-v7:21.0.0'
+		compile 'com.android.support:support-v4:22.0.0'
+	 }
+	 
+	 
+If you are including the v4 support libraries in your application, you should specify a minimum SDK version of "4"
+If you are including the v4 support and v7 appcompat libraries in your application, you should specify a minimum SDK version of "7" 
+	 
+	
+		
+	
+	
+						
+						
+		

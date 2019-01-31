@@ -1,0 +1,96 @@
+Intent -
+
+An intent is an abstract description of an operation to be performed.
+--------------------------------------------------------------------------------------------------------------------------------------------------------------
+Intent Structure
+
+The primary pieces of information in an intent are:
+
+    action -- The general action to be performed, such as ACTION_VIEW, ACTION_EDIT, ACTION_MAIN, etc.
+
+    data -- The data to operate on, such as a person record in the contacts database, expressed as a Uri.
+
+
+In addition to these primary attributes, there are a number of secondary attributes that you can also include with an intent:
+
+    category 	-- Gives additional information about the action to execute. 
+				For example, CATEGORY_LAUNCHER means it should appear in the Launcher as a top-level application, 
+				while CATEGORY_ALTERNATIVE means it should be included in a list of alternative actions the user can perform on a piece of data.
+
+    type 		-- Specifies an explicit type (a MIME type) of the intent data. Normally the type is inferred from the data itself. 
+				By setting this attribute, you disable that evaluation and force an explicit type.
+
+    component 	-- Specifies an explicit name of a component class to use for the intent. Normally this is determined by looking 
+				at the other information in the intent (the action, data/type, and categories) and
+				matching that with a component that can handle it. If this attribute is set then none of the evaluation is performed,
+				and this component is used exactly as is. By specifying this attribute, all of the other Intent attributes become optional.
+
+    extras 		-- This is a Bundle of any additional information. This can be used to provide extended information to the component. 
+				For example, if we have a action to send an e-mail message, we could also include extra 
+				pieces of data here to supply a subject, body, etc.
+--------------------------------------------------------------------------------------------------------------------------------------------------------------				
+
+Intent Resolution
+
+There are two primary forms of intents you will use.
+
+    Explicit Intents : 	have specified a component (via setComponent(ComponentName) or setClass(Context, Class)),
+						which provides the exact class to be run. Often these will not include any other information, 
+						simply being a way for an application to launch various internal activities it has as the user interacts with the application.
+
+    Implicit Intents :	have not specified a component; instead, they must include enough information for the system 
+						to determine which of the available components is best to run for that intent. 
+--------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+Bundle
+
+	U can add any primitive 
+	Single :
+		Ucan add simpaly
+	Array : 
+		array of any primitive can be add simpaly
+	Arraylist
+		only Arraylist of Integer (not int) is allowed can be ad simpaly
+
+	String:
+		All three (Single, Array, Arraylist) of string allowed
+	
+	any Parclable object:
+		All three (Single, Array, Arraylist) of Parclable allowed
+
+PendingIntent:	
+	whenever u wants to invoke a component A/S/B/C, u build a intent and fire it.
+	But how could you schedule it for later
+	I mean suppose you dont wants to fire this intent right now but later some time when some action occure on somwhere in the device or time elapse.
+	To do this we use pending intent	
+	It enable us to invoke a component on some action in the device ocue 
+	EX:
+	When user click on notiication, With pendingintent we can set the action to play
+	same or alarammanager
+	Code:
+	use below static methodes
+		PendingIntent pi = PendingIntent.getActivity()
+		PendingIntent pi = PendingIntent.getService()
+		PendingIntent pi = PendingIntent.getBroadcast()
+	now use this pi t te notification or any other API to set this action
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	
+
+	 

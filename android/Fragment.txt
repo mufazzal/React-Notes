@@ -1,0 +1,636 @@
+Fragment
+
+Its almost impossible for me to define what is Fragment, but with all due respect i place somwhere between 
+View and Activity.
+Why View:	it is place where u can place any UI element 
+Why not:	it doesnt extends view class, nither it has any shape of itself
+Why Activity:	see ^1
+Why Not		:	Activity must occupy whole screen
+	
+	ACtivity give u control over whole screen
+	Fragment give the same for a section of sccreen.
+	
+	Fragment is simply a view wihich have there own lifecycle methode and controller for navigation
+	adv
+	User	
+	1.	excellent user experience so user can navigate inside a particular part of screen [section of screen] 
+		never need to leave the screen
+	Dev
+	2.	that section can be developed in modular way, every section is developed for a specific goal like list, detail
+	Des
+	3.	simply we can follow Header, Footer, sidebar, Content concept for design, where only content will be variable
+
+	^1
+	Like an activity Fragment can
+	*	handle its own backstact, [for back button]
+	*	handle re-creation either by systen or by configuratu=ion changes [savedInstanceState]
+	*	it has diffrent states, so to handle diffrent scenarion
+			LIke	Stoped, Paused, Destroyed
+	*	has function like popBackStact() === ACTIVITY_CLEAR_TOP [simmilar not same]
+	
+	
+	*	Fragment can only be used in FragmentActivity, coz they only provide getSupportFragment().. etc not Activity
+		* IMP hierarchy
+				Context --> Activity --> FragmentActivity --> ActionBarActivity
+	
+	FRagment = View + Activity
+	
+	
+	
+	Frgament class 
+		DOES NOT HAVE SETID() and SETAG() methodes
+		BUT DO HAVE  GETID() and GETAG() methodes
+		id it have is of is the id of its container view   Eg. R.id.content_frame
+		Tag it has is striing that was passed at sfm.replac/add/remove(..., "tag") methode
+	
+	_____________________________________________
+	|i1		|	i1.1 -> i1.2 -> i1.3 -> i1.4	|
+	|i2		|									|
+	|i3		|									|
+	|i4		|									|
+	|i5		|									|
+	|i6		|									|
+	|i7		|									|
+	|i8		|									|
+	---------------------------------------------
+	
+	in figure lets assume:
+		i1, i2.. are sidebar item which lead use in.1 section. which further goes inside as i1.1, i1.2
+		
+	
+	
+	States:
+	1.	Resumed:	host activity is in forground and fragment is on the actovity
+	2.	Paused:		host activity may be covered by forground activity
+	3.	Stopped:	either host activity is stopped or fragment is removed and placed in backstack
+		
+		
+	onAttach():  to tell that activity instance is now availiable.
+	onCreateView(): 	to creater and return view heirarchy
+	onActivityCreated():	to tell that onCreat() methode of activity is returned.
+						[Generally we do setContentView(id) for activity on onCreate() methode of it, 
+						so at this point we could be sure that getActivity().findViewById(id) wont returns null]
+						*	though this function will always be called at least once for any fragment even if activity is not actully creating
+				getActivity().findViewById(id): may returns not-null in some cases but in case of Activity re-creation it will gives null for sure.
+		
+	LifeCycle:
+		Frahment have hell lot of methode in his lofecycle
+		For this lets assume a scenarion
+		we have our app as
+		 Dsh -> F1 -> F2
+		
+		Dsh : is like home fragment and shows first as user open app
+		when user first time open app backstack will be empty and no fragment is shown to user.
+		So we add thds fragment in the screen first by calling 
+			replace(Dsh)/add(dsh); sddTobacStack(); Commit() in onCreate()[why? will explain u later]
+			replace() and add() are same here coz nothing is to remove here, it is first fragment
+			addTobacStack(): doesnt make any difrrences coz no any fragment yet visible, dsh will be first so nothing to remember
+			Commit(): 
+		As here the activity will pass from its lifecycle as usual and 
+		dsh is created at first time so it will be
+		
+	ACT:		onCreate() -> onStart() ->																					-> onResume()
+	Dsh:									onAttach() -> onCreate() -> onCreateView() -> onActivityCreated() -> onStart()					-> onResume()
+	>> after this complete transaction backstack would remain empty.
+	
+		now suppose we open F1 from dsh with addToBackStack()
+	Dsh:		onPause() -> onStop() -> onDestroyView()
+	F1:													 -> onAttach() -> onCreate() -> onCreateView() -> onActivityCreated() -> onStart() -> onResum()
+	>> after this complete transaction backstack size will be 1. with entry of dsh.
+	
+		now suppose we open F1 from dsh without addToBackStack()
+	Dsh:		onPause() -> onStop() -> onDestroyView() -> onDestroy() -> onDettache()
+	F1:													 								-> onAttach() -> onCreate() -> onCreateView() -> 
+																										onActivityCreated() -> onStart() -> onResum()
+	>> after this complete transaction backstack size will remain 0..
+	
+	
+		** see at here even if activity is not created   onActivityCreated()   got called.
+		
+	
+	screen orientation change [without onConfigCange()]
+		In this condition as we know host activity will be re-created with saveinstance.
+		So all the fragment ATTACHED [mns whose onAttached() is called for this activity] to yhis activity will also be destroyed and re-created.
+		even if they are in backstack they will also be destroyed and re-created
+		supppose we rotate screen at F1 and Dsh is in backstack
+		
+ACT:	onPause() --> onSaveInstance()												--> onStop()	
+Dsh:					-->	onSaveInstance()
+F1:		onPause() -->														 -->  onSaveInstance()				 --> onStop()
+
+
+ACT:	onDestroy()  
+Dsh:				-->  onDestroy() --> onDettach()
+F1:										 			--> onDestroyView() -->  onDestroy() --> onDettach()
+
+
+ACT:	onCreate() 													--> onStart()															--> onResume()
+Dsh:			  onAttach --> onCreate()																			
+F1:										--> onAttach --> onCreate()					-->  onCreateView() -->  onActivityCreated() --> onStart				-->onResume()
+	
+	
+	All fragment in either in backstack or visible will call their onSaveInstance()
+	All will pass through  onDestroy() --> onDettach();
+	backstack framents wont call    onStop()	as they are already in stopped state. they will call their onStop and other once they are poped ou.
+	
+	navigatingBack:
+		scenario 1: addToBackStack() was used
+			F1:			onPause() -> onStop() -> onDestroyView() -> 						   											-> onDestroy() -> onDettache()	
+			Dsh:													 onCreateView() -> 	onActivityCreated()	-> onStart() -> onResume()
+		Now Dsh will be poped back from the backstack and F1 will be detroyed 
+			backstack final status:	EMPTY
+			
+			
+		scenario 2: addToBackStack() wasnt used
+			Since u dnt use addToBackStack() so Dsh was not added in backstack, so no methode of this one will be called, it simply doesnt exist now
+		
+		
+		
+	When host activity is paused:
+	
+		Act:					onPause()
+	^1	Dsh:										
+		F1:		onPause() ->
+
+	^1 in the backstack [no changes or callbacks occure here]
+	
+	
+	
+	When host activity is stopped:
+		Act:					onPause() -> onStop()
+		Dsh:										 
+		F1:		onPause() ->							-> onStop()
+		
+	
+	
+	When host activity is destroyed:
+ 
+		
+		
+	
+	Backstack Managment:
+		when you do any transaction to a/r/r the fragment u will have to handle its back situation also. mns what will happen
+		when user press back button.
+		suppose u go to frg as  		A --> B --> C
+		so on back button it shoulg be  A <-- B <-- C
+		for this u just need to call addToBackStack(tTag) b4 commit. 
+		A: replace(cid,B,tagOfB); addTobackStack();commit()   
+		B: replace(cid,C,tagOfC); addTobackStack();commit() 
+		if you do not put this function than this transaction will not be refect at navigating back
+		Ex
+		C: replace(cid,D,tagOfD); Commit
+				A --> B --> C --> D
+		in back
+				A <-- B <-------- D
+		
+		When you do a transaction backstack will simply add the current visible fragment in its stack, 
+		and pop it back at navigating back.
+		but if you avoid addToBackSatck(), it will simply forget the current visible fragment
+		*	so u can simply say that addToBackSta() is use for adding current Fragment in stack.
+		
+	
+	
+	remove(f):
+		this is use to remove the fragment from the container.
+		IMP it reomoves from the container not from backstack or memory.
+		would it be added to backstack or not will simplt depend upon wheater u called addTobackStack() b4 commit or not.
+	
+	add(id, f, tag) vs replace(id, f, tag) :
+		add: this will simply push the fragment in the container, so if any other fragment is already in the container then
+			 that older one fragment will shown up in the behind the new one [so very undesirable],
+			 so u will have to call remove(f) first. so that older fragment will be removed from the container first that 
+			 will 	be added.
+	replace:	
+		 replace = remove for older + add for new 
+	
+	
+	Tag in add/replace:		is tag for FRGAMENT	: useful with findFragmentByTag()
+	Tag in addToTransaction:	is tag for Transaction	: useful with popBackStack()	
+	
+	
+		
+	
+	multiple instances of some Fragment are completely independent of each other. Just like two view (any) are totally 
+	diffrent from each other.
+	Dash d1 = new Dash();
+	Dash d2 = new Dash();
+	
+	if u add d1 than u must only use d1 to remove it
+	add(d1) --> remove(d1)   will remove d1
+	add(d1) --> remove(d2)   will not remove d1
+	Same also apply on add and remove functions
+		if d1 is already prsents in backstack and we try to add/replace d2 [anothe instance of same class]
+		tha there will be no any effect on d1
+	
+	
+	perameters in add/replace:	
+		id:	id of the container view in activity where we will place the Fragment[framlyout mostly]
+		f:	instance of fragment
+		tag:tag set over that fragment so that it can be retrived with FragmentManager.findFragmentByTag(tag) ^1
+				
+	Transaction occure with this three function could be rememberd in the backstack simply by calling addToBackStack() b4 commit.
+			 
+	
+	
+	Set ID of fragment:	
+		it is IMPOSSIBLE, we can only set the Tag of fragment not id, 
+		the id of fragment will always be equal to id of its container, which is taken care by framwork itself.
+		
+	
+	
+	findById(id);
+		this function is used to get fragment of desired id, now as you know you can not set the id by yourself and it 
+		always be same as id of container, 
+		now you may have added and replace many fragment in that container so multiple fragment can have this id,
+		dont confuse alot with this here bcoz findById(id) will always return the latest result, the fragment
+		which is added/replaced at the last in container.
+		*	in short u can use this function to get currently visible or last visible fragment in the container
+		never try this function to get earlier fragments, which are removed and in backstack
+		
+		
+		Case of stattically added fragment in XML ui derectly:   ^^4
+			in this case it will return Fragment would be correspond to that id in xml
+			Ex:  layut.xml[  <Fragment id="sf1">   <Fragment id="sf2"> ]
+			getSupportFragmentManager().findFragmentById("sf1")  will return first one
+			getSupportFragmentManager().findFragmentById("sf2")  will return second one
+		
+		
+	findByTag():	
+		As the name say it gives us fragment of desored tag(set at here ^1),
+		This function will give you result from the backstack as well, so it will query among the all previously displayed 
+		fragment which are in backstack and finally give resuled fragment.
+		*	As said it query in backStack [plus current fragment], so fragment must have been commited with addToBackStack()
+		*	in example given above
+				getSupportFragmentManager().findFragmentByTag(tagOfC) :> will return null
+				getSupportFragmentManager().findFragmentByTag(tagOfA/B/D) :> will return its fragment
+					coz A,B are in backstack and D is current fragment but at the the time of transaction 
+					of C to D we choose to not to remember this by not calling addToBack(), C will not be rememberd and 
+					destroyed immediatly.
+			If fragment returns here is from backstack and now you call  some methode like
+				sf.findByTag("profile").updateUi();
+			This will not change any thing in UI, coz fragment is already in stopped state and there is no View Heirarchy attachet to it.
+			But sf.findByTag("profile").setPerson();  will work and change the data [but not UI].
+
+		
+	
+	
+	
+	
+	poping fragment from the backstack
+		*	for back botton framwork do it by himself unless u override it
+		*	to do it by code use FragmenyMager.popBackStack() or FragmenyMager.popBackStackImmediat()
+		
+		
+	
+	FragmenyMager.popBackStack():
+		it will simply same as pressing a back button once, will destroy the current fragment and brought the fragment which is on top of stack.
+			it like 	Eqivalant of finish for fragment
+
+	Transaction and popBack with Tag :
+		when you add any transaction in the backstack, u can set a tag over it.
+		now this tag could be used in popBack() methode to tell the framwork that up to which 
+		transaction we need to pop the fragment back from backstack and then stop.
+		
+		addToBackStack(tag)
+			tag:	tag to set for this transactiom
+		popBackStack(tTag, pflag)
+			all the backstack transaction up to tag   tTag   will be pop back. and once its arrived in backstack that entry will also be poped out or not it will
+			depend upon pflag
+			set it POP_BACK_STACK_INCLUSIVE, if you wants to pop out the tTag entery itself, 0 otherwise.
+			
+			The final last entery come out of back stack will be shown the fragment 
+			
+			Dsh 			--->			F1			-->				F2			-->			F3					-->			F4
+		fm.replace(F1)					fm.replace(F2)				fm.replace(F3)			fm.replace(F4)
+		addtobacst("D F1")				addtobacst("F1 F2")			addtobacst("F2 F3")		addtobacst("F3 F4")				popBackStack(tTag,pflag)
+			e0								e1								e2					e3									e4								
+		
+		in short:
+			if you are at F4 and wants to come backward
+			set first perameter is tag of that transaction be like
+				tTag = "F1 F2"
+			second one pFlage 
+				if POP_BACK_STACK_INCLUSIVE than it will remove all entry till "F1 F2" including him itself. so the final last entery came
+				out will be    e1    which means fragment    F1   will be shown.
+				if 0 than it will remove all entry till "F1 F2" but not itself so the final last entery came
+				out will be    e2    which means fragment    F2   will be shown.
+				POP_BACK_STACK_INCLUSIVE --> will decide the faith of fragment which is added in that transaction
+				**	that is why we always set pFlag to POP_BACK_STACK_INCLUSIVE.
+				
+				
+			
+		
+	1.	popBackStack("nothere", pflag)
+			if tTag is not found than nothing will pappen here, so no changes over screen or backstack.
+			pflag:	doesnt make any diffrence
+			
+	2.	popBackStack(null, pflag)
+			if tTag is null than whole backstack will be emptied till last entery arrive. than pFlag will decide wheather last entry should be removed or not
+			pflag: FragmentManager.POP_BACK_STACK_INCLUSIVE:	than last entry will also be pop out, so final entry came out will be    e0,
+			so 	  Dsh    will be shown.  [very useful for navigating back to home fragment]
+			pflag:	0:	last entery wont pop out so final cmae out is     e1,     so    F1     will be shown.
+	3.	popBackStack("F1 F2", pflag)
+			pflag: FragmentManager.POP_BACK_STACK_INCLUSIVE:  final come out is   e1  so  shown is F1
+			pFlag:0: final come out is e2  so  shown is F2
+			
+			
+			
+			
+	
+	Fragment.getView():	
+		this function return the view heirarchy genetrated after onCreatview, basically it returns what we had returns in onCreateView();
+		After onDeatroyView it will gives you null, so for all stopped/destroyed/in-backstack Fragment it will returns nul
+	
+			
+			
+	Communication between fragment:
+		1:	From active Fragment[f1] to Stopped fragment[f2]:
+			first get instace of f1 by
+				f1 = (F1)getActivity().getSupportFragmentManager().findFragmentByTag("f1");
+				now call its public methode here 	f1.methodeInF1();
+				IMP:	in its public methodes do remember that f2 is in stopped state so onStop and onDesrtroyView have executed.
+					so even if some UI element refrence not null, doesnt means it exist there.
+					[any ui changes made in such public methode if they are called in stopped state have no meaning]
+		
+		2:	From active Fragment to active Fragment:   [see ^^4]
+			it could be done only through activity.
+				declare interface in f1
+				implement it in activity
+				call public methodes of f2 in implemented methode of activity
+			
+			
+			F1  { 
+			interface CI{commFn(a);}    
+			CI ci
+			
+			....
+			...
+			.
+			ci.commFn(a);
+			
+				}
+			
+			F2
+			{
+				public f2pubfn() {....};
+			}
+			
+			Activity implement CI
+			{
+				commFn(a)
+				{
+					f2.f2pubfn(a)
+				}
+			}
+	
+	
+	
+	
+	get view of activity in the Fragment:	
+		use getActivity().getFragment();
+		But there are couple of rule attact to this coz at many point there could be activity no attached or view tree of activity not created
+		1.	never use in Fragment Counstructor [for non xml fragment], coz here getActivity() will return null most probably.
+		2.	it may or may no be possible for activity to create view tree for activity is done before onAttach() and onCreate()
+			so never use it in both of this function.
+			*	analysis says in case of screen rotation, view tree is not implemented till onAttach() and onCreate(), but availiable after that.
+		*	so best precautuon is that use this function in    onCreateView()		and after
+		
+		^Assunption:	we call setContentView(id)		in activity onCreate()
+	
+		
+	If you do not call addToBackStack() when you perform a transaction that removes a fragment, then that fragment is
+	destroyed 	when the transaction is committed and the user cannot navigate back to it.
+	Whereas, if you do call addToBackStack() when removing a fragment, then the fragment is stopped and will be resumed if
+	the	user navigates back.
+	
+	
+	
+	popBackStack: 
+		it uses Handler and Schedule a runnable to make changes on UI
+		this is asynchronus function so once called it will not make any changes immidiatly, instead it will first complete the event loop then 
+		processt this request that is why:
+		
+	mFragmentManager.getBackStackEntryCount()  --> 6
+	mFragmentManager.popBackStack(null, 0);
+	mFragmentManager.getBackStackEntryCount()  --> 6   will still gives 6
+	but once this event is done and Handler executes that Runnable it will be   0
+	
+	
+	popBackStackImmediate:
+		it do it without hadler synchronusly, so reflect it immediatly after call
+	mFragmentManager.getBackStackEntryCount()  --> 6
+	mFragmentManager.popBackStack(null, 0);
+	mFragmentManager.getBackStackEntryCount()  --> 0
+	
+
+	
+	
+	
+	
+	viewPager:
+		It uses 	android.support.v4.view.PagerAdapter 	to populate fragments in itself
+		PagerAdapter is abstract and has two implementation 
+		1.	FragmentPagerAdapter:
+			The fragment which are not visible to user will be STOPED
+			so it is less memory friendly but faster
+			Good if number of fragment are less and all have diffrent page functionality
+		2.	FragmentStatePagerAdapter:
+			The fragment which are not visible to user will be DESTROYED ane re-created using savedInstance
+			so it is more memory friendly but slower
+			Good if number of fragment are large and all have simillar page functionality (like search list)
+			
+			**	in both cases view tree in fragment are destroyed but fragment itself destroyed or not it depends upon type.
+	
+	
+	In both of the condition at a time there could be 3 fragment in the RESUMED state in the viewpager
+	
+	
+	when you set the adapter for the first time TWO fragment can be created at 0 and 1 index [0 displayed]
+	after u swipe 2nd will be created [1 displayed]
+	after next swipe 3rd created/started and 0th is detroyed/stop 
+	after next swipe 4th created/started and 1st is detroyed/stop 
+	.. so go on...
+	
+	so at any moment when nth fragment is showing, 
+	n + 1   and   n -1    is also in resumed state and all other are destroye/stopped
+	
+
+			............. n-2,   			  n-1,   	n,   	n+1,       		 n+2........
+		stopped/destroyed-------->			<-------Resumed--------->			 <--------stopped/destroyed[may be not created even first time]
+	
+	
+	
+	setAdapter 											[0   1   2   3   4]
+	0 --> created and resumed
+	1 --> created and resumed
+	
+	swipe 0 => 1
+	0 --> NOTHING HAPPEN[remain resumed]
+	1 --> NOTHING HAPPEN[remain resumed]
+	2 --> created and resumed
+	
+	swipe 1 => 2
+	0 --> Destroyed/stopped
+	1 --> NOTHING HAPPEN[remain resumed]
+	2 --> NOTHING HAPPEN[remain resumed]
+	3 --> created and resumed
+	
+	swipe 2 => 3
+	0 --> NOTHING HAPPEN[remain stopped/destroyed]
+	1 --> Destroyed/stopped
+	2 --> NOTHING HAPPEN[remain resumed]
+	3 --> NOTHING HAPPEN[remain resumed]
+	4 --> created and resumed
+	
+	.. goes on...
+	
+	
+	swipe 3 => 2
+	0 --> NOTHING HAPPEN[remain stopped/destroyed]
+	1 --> RE-Created/started
+	2 --> NOTHING HAPPEN[remain resumed]
+	3 --> NOTHING HAPPEN[remain resumed]
+	4 --> Destroyed/stopped	
+	
+	
+	
+	** 
+	Issue with notifyDataSetChanged():
+		It works fine if no of element to show in the fragment is change, so getCount() returns diffrent value then it reflect the chages occured in 
+		no of fragment.
+		position of the resumed window of fragment may or may not change depend upon the wether current resumed item position still lesser than getCount() or not.
+		
+		
+		problems arrives when we wants to change the data inside any fragment, than it does not reflect
+		Solutions:
+			1.	Create an object of adapter once again and use setAdapter(ad)
+			2.	overrige in ___Adapter
+					public int getItemPosition(Object object) {   return POSITION_NONE;}
+			*	Both of this actully very bad approch bcoz
+					it destroy the VIEW [not fragment itself] of all RESUMED fragment and recreat there view once again
+					this is very very undesirable from prformance and user experice point of view
+		
+		Good workaround is
+			http://stackoverflow.com/questions/10849552/android-viewpager-cant-update-dynamically?lq=1
+	
+	
+	
+	** 
+	Can we show simple view in viewpager not fragment
+	YES, we can
+	how
+	For this we will have to use PagerAdapter.
+	PagerAdapter is quite diffrent from simple ViewAdapter, we have to add view in viewpager by ourself.
+	Internally it works in some key-value mapping of views.
+	and override its methodes
+		1.	Object instantiateItem(vg, pos)
+				here u have to create a view for given position, then add it in vg (which is viewpager itself)
+				by calling vg.addView(view);
+				and return proper key for this view [generally view itself]
+				IMP: what we return here is an refrence of Object not view this returned object going to be used as key for added view
+				* never call super.instantiateItem() here else exception
+		2.	destroyItem(vg, pos, obj):
+			here we remove the view from position pos in vg
+			the view to remove can be get from obj which is key for that view
+			if our key is our view itself then
+			container.removeView((View) object); 
+			* never call super.destroyItem() here else exception
+		3.	isViewFromObject(view, obj)
+			this methode is used intenally by framwork but overried properly
+			view: it is view added in the instantiateItem
+			obj:	it is key returned in the instantiateItem
+				it will return true if this key value pair is match mns this   key   have a value as   view
+				if our key is our view itself then
+					return view == obj
+		
+	As pagerAdapter is parent of Fragment____Adapter also, so this mtd availiable there too.
+	but it should never be used with fragment
+		
+	>> notify data changes
+	
+	
+	
+	In viewPager by default each child occupy whole space in it, even though u have given width and height of view, so at at time only one child will be shown in it which is a current child (by getCurruntChild()).
+	bt u can control the space taken by it
+	just ovverride this function of Adapter(any)
+		float getPageWidth(int position)
+			return  1.0f <--> 0.0f
+	then it will occupy the space in ratio returned
+	occupied space measurred form left only. so view from the right will get displayed [partialy or fully]
+	
+	.9 -->  10% of right view
+	.5 --> 1st and second view
+	
+	getCurrentChild() will always be the index of Left most child
+	
+	if u want to show left view too then u can use vp.setPageMargin(i)
+	
+	
+	
+ViewPager inside a Fragment itself: 	
+	If you have viewpager inside a fragment as container than a neew issue arrive That is:
+	Suppose your activity is running and so your contaner fragment and therby viewpager in it
+	Now another frahment pushed over container, so it will destroy its view for sure.
+	But viewpager will still hold the loose refrence of 'ViewPagerAdapter' and thing will mess up later.
+	To avoid such issue use   'Fragment.getChildFragmentManager()' instead of 
+				  'Activity.getSupportFragmentManager()' in the constructor of ViewPagerAdapter/ViewPagerStateAdapter 
+		
+		
+			
+	
+	
+----------------------------------------------------------------------------
+
+	getArgument(bundle): 	use to send bundle as like activity
+	VIMP:	getArgument() and savedInstanceState are two bundle use by fragment class, but thae have no relation with each other
+	getArgument:	To get the bundle which was set with setArgument()
+	savedInstanceState:		to get a bundle saved for re-creation.
+	
+	
+	constraint for using   setArgument():	
+			it could only be called before fragment is attached to activity, if u try to do it after onAttach() is done, or when fragment is active 
+			then it will gives you 		IlliGalStateException  	
+	
+	subclass fragment custructor:
+		if you create custom fragment then it must--must have default constructor so if u craete a perameterized constructor than eclipse will give u ERROR
+		and force u to write deafult constructor.
+		But why google did it:
+			bcoz when framwork re-create the activity and so fragment in it, it call the DEFAULT constructor of fragment only for instatiating the fragment.
+			so any perameter u pass and set [or do any other coding] in perameterized constructor it will reflect very first time when fragment is CREATED
+			but later when RE-CREATED it will go in dafault constructor and can cause many uncertainity.
+			
+			that is why it is strongly suggested that never ever create any constructor in the subclass cunstructor [apart from overriding default one]
+			
+		How to resolve the proble of initilization:	
+			aways use FACTORY PATTERN 
+			
+			clsss MyFragment extends Fragment
+			{
+					public static MyFragment newInstance(int someInt) {
+						MyFragment myFragment = new MyFragment();
+
+						Bundle args = new Bundle();
+						args.putInt("someInt", someInt);
+						myFragment.setArguments(args);
+
+						return myFragment;
+					}
+			}
+			
+			The peramter u thought to pass in custructor, should now be passed through bundle only so that at a time of
+			recreation thaey coud be retrived with getArguments().
+			The arguments supplied here will be retained across fragment destroy and creation.
+			[whatvcer you set in setArgument(), will become a final constant in that Fragment and will exist from the instatiation to finalization of Frgament object
+			, we can simply say value returned in getArgument() doesnt depends on Fragment Lifecycle but on it BOJECT LIFECYCLE]
+			you can not set Argument after it is attached to activity, though u can change values in bundle of that argument whenver u wants,
+			with getArgument().setInt("sad",9);
+	
+			*	when activity is recreated and so fragment:	then u can use use both to see saved states and first arguments with wich fragmant is started
+	
+	
+	
+	add/replace the already existing [in backstack] fragment
+		replacing the already psent fragment (in backStack) cause exception[reason: adding null enteries in backstack]
+	viewPager
+	flow of onKeyPress and onBackPress
+	

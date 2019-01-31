@@ -1,0 +1,630 @@
+What is node and why its useful:
+
+NodeJs is a server which is written using Javascript and chrome js engine.
+
+NodeJs use only and only one thread, while all other used multiple thread.
+fundamental design of NodeJs to process the request only wheares the fundamental design of all other server is for reading the file content on server
+
+Main fundamental of NodeJs server is Thread Pool (The concept of android/Java too)
+Thread pool contains bunch of small working-thread which take command from main thread, run chunk of code, produce result and finally add this result in que of thread
+
+VVVIMP:
+Most of the time takem by any server request (~80%) is in IO operation like Databse, File reading, web service call.
+Other most of the coding part like manuplating varibale and string does not take any time. 
+Now problem with normal server is that they perform both taks (IO-operation and code execution) in the same thread and spent lot of time while waiting.
+Node JS simpaly byforgate this two task. 
+	code execution will be done in Event-loop (main thread)
+	IO-operation will be done in pool of working thread
+
+They both communicate with their ques.
+
+In very core of NodeJs sever lies a event loop, Which is same as Looper.loop of android(This work ike a main thread here)
+Snippet if like
+for(;;) {... callbacks() .. continue;}
+This for loop is bootstrap of main thread of Node sever.
+
+This handle two major thing
+1. Request from HTTP
+2. Event form working thread.
+
+
+So I have an understanding of how Node.js works: it has a single listener thread that receives an event and then delegates it to a worker pool. 
+The worker thread notifies the listener once it completes the work, and the listener then returns the response to the caller.
+
+Why it is useful: 
+To understand this lets suppose we have one apache server (or any non-node server)
+How they run: 
+They get the request 
+A new thread is created to serve this process
+They than map it to proper file in server
+This file start processing this request 
+Now untill and unless this processing finish, This thread does not take any further requests.
+Now lets assume you have set up the limit of 20 thread in your server, Than once all of them are full your server 
+	is out of resiurce and que of request start to forming there
+	
+Now here comes the NodeJs. 
+This solve the broblem of waiting by completely new way to hadling request.
+Ltes see How
+They get the request(R1)	[Same]
+Now he pass it to its only existing thread Event-loop 	[No new thread is created]
+Then it map to proper path map by : app.get('/', (req, res) => { .... res.send('Hello World!'):)	[Did not map to exact file system]
+Now it check if it contains any time expensive operation/blocking-io (e.g. file read, BD) 
+If No
+	Event-loop himself process it and produce result and sent it as response.
+	Now Event-loop take next HTTP request
+If Yes
+	Event-loop pass this operation to any free working-thread(lot of available) and forget it completely
+	While this working-thread is processing request(R1), Event-loop thread will take next request and start processing it....
+	It never stop for any moment to take umpcoming request request..
+	after some time working-thread in the picture produce the IO-operation-result for Request(R1)
+	This IO-operation-result now will be passed in the event-que of Event-loop thread.
+	Once this IO-operation-result come into the Event-loop from event-que, it will again process it if needed and finally produce result and send response 
+	
+Now lets see how it process the request:
+First it check if it need nay blocking-io (DB, file read, web service call) operation.
+If yes then Event-loop will pass it to Thread-pool and one of the free working-thread will take this task.
+Meanwhile this working-thread complete Event loop thread keep taking and processing the upcoming requests.
+Once taks of working thread is complete, It will add a callback in the event que of Event-Loop, 
+Once Event-loop get this task from que, It will execute it.
+And this process keep continue
+
+---In node all things are paraller except your code----
+
+NodeJS is intentinally build for Real-time-data-driven application, Who mainati lagre data note in Datbase or some file but
+in variables. And you really do not need to to very large and complex databse access.
+Though if you still need DB than mongodb is best choice because it is very lightweight DB.
+Example of such app is
+Chat app, score app, stock updates, live video call, audio call, streaming, multiplayer game
+
+Nodejs is very useful for application who need to maintains persistence connection with clients.
+Study socket.io for this
+
+Where not to use it: 
+If you have blocking-IO operation like DB, File than fine use it.
+But if you have any other CPU-intensive operation line processing the graphics, image color reading etc. than do not use it.
+because Node.js do not have capability to pass such heavy work to working thread exept the one we discussed in blocking-IO operation section
+
+See the diffrence here
+Database query-
+In Nodejs =>
+exeSql(query, function(res, error) {..this is callback after IO done..})
+In PHP/Java=>
+res = exeSql(query)
+
+Reading a file-
+Node=>
+readfile('file.txt', (content)={})
+PHP\Java
+content = readfile('file.txt')
+
+-------------------installing node------------
+download exe
+install it
+now open the project director directory on cmd 
+run this command
+	'npm init'	->This will leads you to take some inputs from you put all values of your choice, we will discuss imp values later
+finally it will create the package.json in the respective directory and you can see all your inputs in this file.
+now your project itself also become one small node module
+
+its look like :
+
+{
+  "name": "mufaModule",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"  
+  },
+  "author": "",
+  "license": "ISC"
+}
+
+description/version etc. -> all are static and
+name: name must be unique if you wants to upload your package on npm repository and it is used ti identify your module for import.
+main: This is the entry point for your module(mufaModule), if someone import it by require('mufaModule') or import obj from 'mufaModule' it retun the exported item of respective js file
+scripts: This accept a key-value pair of shell commands. 
+This key value pair of commands are the commands which can be executed with npm for current projet.
+
+Lets suppose you open your project directory in command prompt(directory of package.json file)
+Now at here you can execute all the commands which are prsent in script object of package.jsson file.
+for this you have to use following syntax
+npm run <key of command>
+  scripts: { "commandMuf": "echo this is mufazzal && exit 1"  },
+  >> npm run commandMuf
+  --this is mufazzal
+when you run 'npm run <key of command>', it has following path in it PATH variable: ./node_modules/.bin/ (This is relative to the file package.json)
+So here you can also put .cmd file, who has shell script in it and then execute it with 'npm run' 
+
+E.G. 
+if you have mufShellFile.cmd in this folder, and you wants to run this file with npm run
+mufShellFile.cmd-
+echo "Hello from shell file"
+package.json-
+scripts: { "commandFileMuf": "mufShellFile"  },
+
+	>>npm run commandFileMuf
+	--Hello from shell file
+You can put multiple pair of command here like: 
+
+scripts : 
+{
+	"commandFileMuf": "mufShellFile",
+	"commandFilehus": "husShellFile",
+	"justprint": "echo here is justprint",
+}
+and then run them by  nom run <Key>
+
+What if you try to run no exeisting key --
+Error :  missing script 
+
+But npm also provide shortcut for 3 specific key as command that are start, stop, test
+'npm run start' is 100% same as 'npm start' ans this is also applicable for remaining two
+
+scripts : 
+{
+	"start": "mystartfile",
+	"test": "echo this is tes",
+}
+'npm run start' or 'npm start' will produce same thing
+
+Bin of node module-
+#`
+intresting 
+script: { start: "webpack-dev-server"} 
+>>npm start
+This will run the file ./node_module/.bin/webpack-dev-server.cmd
+
+
+If You install the webpack, eslint, jest etc kind of libs that do the build task on the code. then you will see that 
+in the folder '/node_module/.bin' you will executable file will appear for each of this lib 
+now supose you do this in package.json:-
+	build: "npm run eslint && npm run jest && npm run webpack"	
+Now it will go in the .bin directory of node module and run the respective binary file
+for npm run eslint it run the 'node_module/.bin/eslint.cmd'
+for npm run jest it run the 'node_module/.bin/jest.cmd'
+for npm run webpack it run the 'node_module/.bin/webpack.cmd'
+eg-
+	script: { build: "webpack"} 
+
+Now go in that directory and lets open webpack.cmd:
+You will see this code->
+This code will execute the node js executable file for the webpack, that is prsent in webpack lib. here you wil see how the webpack actuly run with node
+
+	@IF EXIST "%~dp0\node.exe" (
+	  "%~dp0\node.exe"  "%~dp0\..\webpack\bin\webpack.js" %*		--> If node is installed in local project directory then do this
+	) ELSE (
+	  node  "%~dp0\..\webpack\bin\webpack.js" %*					--> If node is installed globally then do this
+	) 
+
+dependencies and devDependencies : 
+this shows us which libraries of NPM is used in the current project.
+dependencies- lib used in prod and dev enviormrnt both
+devDependencies- lib used in dev enviormrnt only
+You should not edit this manually instead you must always use 'npm install' command for this.
+syntax
+dependencies/devDependencies {'<packegaeName>' : '<version>'}
+
+
+-----------
+
+npm run-
+We will see in detail how the npm run **** command actully work and respond to diffrent kind of configurations.
+You should also remember just doind 'npm run ****' does not mean that you are running somthing in nodejs, actully npm run will just find the script in
+package.jsonn and run that script, that script ither be a simple shell script or a node functionality.
+Lets dive in-
+
+first of all, this will do two thing
+  1.  It will run the script written in "script" tag of package.json, if script of that name is not found then throw error.
+  2.  Once the script is found then it will execute those script, Now How it will be executed? It will depend on the script there. 
+	  We will analyze most common scnario-
+	  1.  When script is simple and have simple shell command eg. echo
+		  Suppose you have the script tag as-
+		  "script" { "mufScript": "echo 'i am simple shell script'" }               //#SCPETN1
+		  You do-
+		  >>  npm run mufScript
+		  This will simply print 'i am simple shell script'
+			  Does Node come in picture here?
+				Not at all. Its a simple shell command.
+				
+	  2.  Passing a binary file (shell script file)-
+		  "mufaaamufFull": "path/of/exec.cmd",
+		  Now if you do
+			>>  npm run mufaaamufFull
+		  Now it will execute that binary file on that path.
+		  Does Node come in picture here?
+				Depend on how the shell script written in 'exec.cmd' file.
+				  if it is somthing like
+					  echo 'I am in the file'
+				  Then No
+				  But if it is somthing like
+					  node  path/to/some/file.js
+				  Then Yes						
+				
+	  3.  When the script have 'node ***' in it.
+		  "script" { "myNodeSc": "node path/to/jsfile.js" }                       //#SCPETN1
+		  If you wants to execute a js file in node then do it.
+			  Does Node come in picture here?
+				of course yes.
+	  4.  When the script have 'npm run mufScript' in itself too.
+		  "script" { "mufScriptRunner": "npm run mufScript" }
+		  In that case it will recursivly do the same thing, find out the 'mufScript' in script tag and run it.
+		  So if you do this-
+		  >>  npm run mufScriptRunner
+		  It will aslo run the same thing, output wll be 'mufazzal'
+			  Does Node come in picture here?
+				Depend on how the 'mufScript' is written? for #SCPETN1 No, for #SCPETN2 Yes
+				
+	  5.  Now if he do not find any of above two, it will do the one magic.
+		  suppose your script in package.json is-
+			"script" { "randomSc": "myRandomScript" }
+		  It will fint the binary file of name 'myRandomScript' in the './node_module/.bin' path
+		  If he found this then it will execute that binary with the params passed.
+		  If both of the above two condition failed then npm will try fo find the boinary of same name in './node_module/.bin' path.
+		  If found then execute it, otherwise throw an error.
+		  So behind the scene    "script" { "randomSc": "myRandomScript" }    will be coverted to    "script" { "randomSc": "node_module/.bin/myRandomScript" }
+			eg of 'myRandomScript' -> webpack, eslint, jest etc.
+			  Does Node come in picture here?
+				Depend on how the shell script written in 'node_module/.bin/myRandomScript' file.
+				  if it is somthing like
+					  echo 'I am in the file'
+				  Then No
+				  But if it is somthing like
+					  node  path/to/some/file.js
+				  Then Yes
+DO NOT CONFUSE-
+  npm run myComm -> will not try to find the './node_module/.bin/myComm'
+  rather it will first go in package.json's script tag.
+  then he will first find 'myComm', if not fond throw error, 
+  if yes  EG->[  "script" { "myComm": "myCommSc" }   ]
+  then
+  it will try to find 'node_module/.bin/myCommSc' and run it.
+  if here also it failed to fint that file then throw error.
+  
+	
+--------
+
+Binary VS NODE executable-
+  How to run a binary file by npm->
+    scripts: {binaryRunner: "path/of/exec.cmd" }
+    >>  npm run binaryRunner;
+    This will execute 'path/of/exec.cmd'
+    -
+    scripts: {binaryRunner1: "myLib" }
+    >>  npm run binaryRunner1;  
+    This will execute './node_module/.bin/myLib.cmd'
+  
+  Formate of binary file->
+  myLib.cmd/exec.cmd ->
+    For linux and window you need two seprate file.
+    On the top: #!/bin/sh [only for linux not required for windows]
+    ...
+      node  "$basedir/../aaa/aaaexec" "$@"      --> This line may prsent if you wants ti run somrthing on node, but it is not at all complusory nad syntex may differ for windows.
+    ...
+  
+  How to run a NodeJS executable file by npm->
+  ipts: {nodeRunner: "node path/of/mynodeExec.js" }
+    >>  npm run nodeRunner;
+    This will execute 'path/of/mynodeExec.js' with node
+    
+   Formate of NodeJS executable file->
+  mynodeExec ->
+    On the top: #!/usr/bin/env node
+    ...
+      <Typical javascript code>
+    ... 
+  
+  What is diffent in in between JS written in those two file
+  1.  A js file that load at client browser and run on chrome/firefox engine
+  2.  A js file run on nodejs
+  
+  A. Both have all th JS function avilable t you, EG. console, String, Array etc. 
+  B. first also have 'window', 'Document' etc. too, second not
+  C. second can use file system, DB, and create a sever too, first not.
+  D  ${''} will work in first, not in second.
+------------------------
+How to import it 
+Node.js ->
+var obj = require('mufaModule');
+ES6
+import obj from 'mufaModule'
+
+Ok! we imported it, but what is actully exported from our module.
+Ans:
+Whatever that is return form index.js (against main)
+
+index.js>>
+export myVar;
+OR
+module.exports = {myVar, myFun, myClass}; or exports = {myVar, myFun, myClass};
+OR
+exports.nameForOutWorld_myVar = myVar;
+OR
+export default myVarDef;
+
+How to import
+Plz look into 'imp exp.txt'
+-------------------NPM-----------------------
+
+Npm is a comlete ecosystem of Node, it is a great healthy repository of hundreds of libraries which can be used through Node.js.
+This all libraries may have or have not dependency on one another, but this all are taken care by npm itself and you do not have to worry about it.
+
+npm is also a node module, which come with nodejs package. 
+Where this all repository lies:
+www.npm.com
+
+How to download/install/use lib from npm ecosystem
+dependencies- 
+	>>npm install <lib package> --save    or   npm install <lib package> --save-prod    or    npm install <lib package> -P
+This will download all lib files and in the end update packa.json:
+	dependencies: {"webpack": "^4.4.1"}
+	
+devDependencies- 
+	>>npm install <lib package> --save-dev  or npm install <lib package> -D
+This will download all lib files and in the end update packa.json:
+	devDependencies: {"webpack": "^4.4.1"}
+
+4.4.1: if vwersion is not specified than it will take the latest version	
+^: what this is doing here, for this study semver
+
+--save: this tag update the package.json also and save us of one manual step.
+As you know that npm posses a large set of libraries in his ecosystem, to use any of such lib we need to run following 
+This two tag is same except one thing 'dependencies' will add fine in production and dev both, 'devDependencies' will add in dev enviormenyt only
+
+uninstalling any package
+>>npm uninstall <packagename>
+
+npm vs yarn vs bower:-
+They all are package manager, we will compare them>
+1.	bower is dead
+2.	yarn itself is installed by npm by 'npm install yarn', but it is an alternative to install other packages in project
+	why yarn?
+	
+
+
+	
+-----------------------------------------------------------
+installing all dependency from package.json:-
+	for this just run npm install in directory and it will install all required dependency.
+package-lock.json >>
+	The biggest issue come when you do 'npm install' is below-
+	suppose a package.json has dependency as devDependencies { react: '^1.1.1'}
+	today the latest version of react is 1.1.1
+	But tommarow a new version come as 1.1.2
+	So if now a developer do 'npm install' then he will get a diffrent version of react lib
+	This cause lot of unstability and when you observe deeply, you find that you may have deep nesting of dependency and 
+	due to a large dependency libs and there internal dependency the problem will be worse.
+	Every time developer do 'npm install' to set up the code on his machine, he may end up with a diffrent set of dependency lib.
+	
+	To resolve this a new thing was introduce in npm5 that is 'package-lock.json'-
+	this file contains the exact information with precise version number (without semevar) of all the directed or nested dependency
+	this file will be changed if developer install/update any new dependency by 'npm install myLib'
+	
+So when you de 'npm install' on any package.json it will respond
+1.	if package-lock.json not there-
+		versions of dependency wil be determine from 'package.json' and after proper calculation of semevar those will be installed.
+		Definatly it will be time dependent and could have seprate version of dependecies on diffrent machines
+2.	if package-lock.json is there	
+		versions of dependency wil be fetched from 'package-lock.json' and that exact version will be installed.
+		Definatly it will be time independent and have exact version of dependecies on all machines
+
+	
+-----------------
+IMP functions of Node
+
+__dirname: This is the global variable and available eveywhere in NODE enviorment.
+Its value is the absolute LOCAL path of directory of package.json:
+__dirname == C:/muf/project/debateApp
+if debate app contains package.json
+
+path = require('path')
+path.resolve(...string): 
+This methode return the the absolute path formed by all input strings. This path may exisst or not it doesnt matter. 
+
+path.resolve(__dirname) --> C:/muf/project/debateApp
+path.resolve('muu') --> C:/muf/project/debateApp/muu
+path.resolve('muu', 'sha') --> C:/muf/project/debateApp/muu/sha
+path.resolve(__dirname, 'hsss') --> C:/muf/project/debateApp/hsss
+path.resolve('asd', 'src', 'corein') --> C:\muf\debateApp\asd\src\corein
+BUT BUT BUT
+path.resolve(__dirname, '\src\core\framework\api')  --> errorneous output
+This will not work at all, u should give all folder name separatly, u must use below only
+path.resolve(__dirname, 'src', 'core', 'framework', 'api') --> C:\muf\debateApp\src\core\framework\api
+console.log(path.resolve(__dirname, 'react')); -->  C:\muf\debateApp\react  [NOT toward the react lib]
+
+Ques: 
+If we are in node and now in any internal .js file we wrute this
+path = require('path')
+$.onclikc = ()=> {console.log(path.resolve('mmmm'))}; 
+Will it not be security threat, will it print the server directory path?
+
+Ans: No
+because at a time of bundling this statement will only be compiled but not RUN. so this statement as it is prsent in bundle.js file.
+And gives error 'path not define'
+AS long AS i KNOW, Only two keword will be compile + RUN at a time of building :
+import and require
+Rest of the all are treated as JS for client side not to consumed at a time of build.
+-------------------------------------------------------------------
+
+'npm run' VS 'node'
+There is two way to run the node module 
+
+npm run webpack: This will run the npm module via main entry of package.json in 'webpack' module by default.
+But if you wants to use diffrent entry point then you ca use below
+node node_modules/webpack/bin/webpack.js 
+
+
+If you wants to run a javascript in the node then this is the most basic way to do iy-
+If node is installed globally then-
+	node path/of/myjs.js --arg1=muf --arg2=hus
+
+-------------------------------------------------------------------
+
+Setting up node project without Node.js installtion: 
+	Download node.js.zip from the node website and extract it
+	in cmd go to the path of 'npm' file in the extracted folder
+	now either create the new project here by 'npm init' or 
+	copy the existing project file here as such that 'package.json' remain parraller to the 'npm'
+	'node_module' may be prsent on both side if you copy, then you can take any one of them, and at a tin=me of running 
+	you can install the missing packages by 'npm install ---'
+	
+	
+---------------------------------
+
+semver :-
+This is not specific to the NOde but a protocol established to handle versioning of diffrent libs in software world.
+it sayy u must have three level versioning numbers denomunating the MAJOR, MINOR, PATCH level changes in every next release.
+
+so all the livbs version ccomes in below formate - 
+		{MAJOR}.{MINOR}.{PATCH}
+		1.2.3
+		3.2.4
+		etc.
+
+When you install anything with npm you can specify the version to install with it-
+
+1.	Tilde ~ :-
+		~mj.mn.pt
+			This will allow chnages in 'pt' but will not allow changes in 'mn' and 'mj'.
+			~1.2.3	-->		from 1.2.3 included to 1.3.0 (excluded)
+			~1.2  	-->		from 1.2.0 included to 1.3.0 (excluded)
+			But if 'mn' is not specified then it will allow changes in mn too-
+			~1		-->		from 1.0.0 included to 2.0.0 (excluded)
+2.	Caret ^ :-
+		^mj.mn.pt
+			This will allow chnages in 'mn' and 'pt' but will not allow changes in mj.
+			^1.2.3	-->		from 1.2.3 included to 2.0.0 (excluded)
+			~1.2  	-->		from 1.2.0 included to 2.0.0 (excluded)
+			~1		-->		from 1.0.0 included to 2.0.0 (excluded)
+			
+99% of the times all the libs has all 3 numbers in versioning and it is >1.0.0
+so for all those cases you can say
+	~ let you allow to vary the PATCH value to higher one but not other two.
+	^ is relaxed one, which allow you to vary PATCH and MINOR both to  higher one, but not the MAJOR.
+	
+3.	X range:-
+	You can also use X, x or * in plavce of this three number for makeit to vary in any way-
+	1.2.x	will allow 1.2.0 to 1.3.0 (excluded)
+
+4.	@: use this to install exact version.	
+
+
+--------------------------------------
+
+Running any node module indivisully :-
+Whenever you install any module say 'xyz' by npm install in globle ( -g ) or locals scope, in the end you will have an directory create with name 'xyz'
+in 
+'C:\Users\hmufa\AppData\Roaming\npm\node_modules\xyz' if installed globally with -game
+or in 
+'E:\work\recttuto\prj\node_modules\xyz' if installed locally in project.
+
+Now inside folder 'xyz' you will have one more folder name 'bin' wherein you will have a binary file.
+name of this file could be vary and may be more than one could be there. it depend on module u installed.
+you can run this file simply in node enviorment.
+
+to run it just open command promt in directory of that bin folder.
+then run the appropiate command in that binary files
+
+> cd path/to/xyz/bin
+> node <command> <inputs>
+
+------------------------------
+
+
+Running a javascript file with node--
+	First create a js file 'mufexec.js' in src/script/nodescrip.js and put below line on the top, this line is must for any node executable file.
+		#!/usr/bin/env node
+	Now add some code-
+		console.log('Hello from script')
+	now run it-
+		node src/script/nodescrip.js
+Afetr this you will see the output in command promt.
+	Hello from script
+Now lets pass some aggument-
+	node src/script/nodescrip.js muf hus
+now to get then in js file do this-
+	console.log(process.argv.slice(2))  //2 because 0th and 1 will be 'node' and 'src/script/nodescrip.js'
+The output here is-
+	[muf, hus]
+Now if you place the 'mufexec.js' in 'node_module/.bin/' directory 
+and u add script tag in packagejson as below
+	"nodescriptsc": "nodescrip.js"
+you can run it via this command also
+	npm run nodescriptsc muf hus
+
+-------------------
+
+  ---------------------NODE and libraries-----------------------
+  For any kind of client side javascript application developmemt you will come across 2 kind of librare
+  1.  Those who actually load at client browser and manuplate the browser behaviour. React, Jquery, loadash, Jquery-datePicker etc,
+  2.  Those who run  over the source code for varification, violation, transformation etc.
+  
+  If you were the Civil Engineer and building Home
+    The first one we the cement, concrete, brick, sand etc. Those are the mateiral from which the building is made of, though after couple of transfromation and validation. But in the end the house are left of this material(in some form).
+    The second one were the Water, Hammer, phawda, tagadi, labours. You must need all of them at the time of construction and to transform the 
+    material of type one. but in the end they all not a part of constructed Home.
+  
+  First one:-
+    These are libs which will in the end load to client side browser, may be possible that it will validated and transformed before actully being ready
+    to load on client browser. but it do go to client browser in the end.
+    this kind of libs are designed to run on browser. But not design to run on Node
+    How to use them-
+      This kind of libs generalluy integrated and used in code with 'import <name> from 'libName'' OR vat vv = reqire('libName') methodes.
+  Second one:-
+    these kind of libs never go to the client browser, they are actully the code that transform and analyze the source code of developer.
+    These code lies on production/developmemnt server but never end up on client browser.
+    this kind of libs are designed to run on Node. But not design to run on Browser
+    How to use them-
+    the way to uses this libs are varies and depend on the way that lib is written-
+    Way 1-
+      By import/require [In node enviorment]
+        EG- 
+          const CleanWebpackPlugin = require('clean-webpack-plugin');
+          const WatchTimePlugin = require('webpack-watch-time-plugin');    
+        If in view side JS ifle lets say loginPage.js, you write thosse two line and later use it. then it will give some kind of error.
+        Those line will ran only in Node.
+        For this case specifically, it should in webpack.config.js,, which also run in Node enviorment 
+        
+        All the libs of this type can be used with this way, but it is very complicated. that is why many libs provide advance way to use then
+        the next two way we dscussed below, are build on the TOP of this approach
+    Way 2-
+      By node command  [In node enviorment]
+      If the lib is widely used and have lot of common configuration in the world. then this feature is very good.
+      You can run those libs with the Node directly.
+      For this you need to have basic understanding of those libs.
+      Suppos you have a lib name 'mufLib', installed via npm install and now lying in './node_module/muLib'
+      Lets say the entry point of this lib is './node_module/muLib/bin/doTheTask.js'
+      Now you wnats this tool to ope=rate on the source code file './src/login/loginView.js'
+      then first go to project directore(at package.json)
+      And do this
+      node ./node_module/muLib/bin/doTheTask.js ./src/login/loginView.js
+      EG:
+      ESlint-
+        node ./node_modules/eslint/bin/eslint.js  ./src/path/to/my/file.js
+      Webpack-
+        node ./node_modules/webpack/webpack.js --config=webpack.config.js
+      In above commands the files, doTheTask.js, eslint.js, webpack.js are designed to run in Node enviorments.
+      Proof-
+      If you open any of those file you will see this line on the top- '#!/usr/bin/env node'
+      
+    Way 3-
+      By 'npm run '
+      This one is actully designed on the top of way-2
+      See this command of way-2 'node ./node_module/muLib/bin/doTheTask.js ./src/login/loginView.js'
+      the problem with above line is that, developer who aspire to use this lib must know the path '/node_module/muLib/bin/doTheTask.js' for doing the task. He may also need to send some params there.
+      Diffrent lib have diffrent path and cofig to paas, and remembering all is a hell.
+      Then the node team come up with beautiful solution.
+      They says, Why developer have to remember that path for all the libs he wants to install, why not come up with some common solution.
+      That is-
+      When the developer install the lib, the lib wil automatically add(but no compulsory) a binary executable file in './node_module/.bin' folder.
+      So now developer can use this in its script tg of package.json
+      lets say you install the lib 'husLib' by   npm install husLib, this lib will put a file name 'husLib' in './node_module/.bin' folder
+      Now developer will add this script tag in package.json-
+        "script" { "husLibRunner": "husLib" }     
+      When he run it as
+        >>  npm run husLibRunner
+      It will try to find the './node_module/.bin/husLib' and run it. 
+      *** Do not confuse: it will not try to find the './node_module/.bin/husLibRunner', when you ran 'npm run husLibRunner'
+      
+      
+			  

@@ -1,0 +1,526 @@
+hash function/messagedigest: 
+	To understand this first see, what is digest(Pachana), simplay a process whrw we eat somthing and 
+	body digest it. This is irreversible process. Same thing is messagedigest
+	In this process we consume raw data (as string, byte file etc) and process it with some Algo which will
+	gives us a FIXED SIZE output (depends upon algo) which is called messageDigest.
+	for a given Algo messageDigest of the particular string will always be same 
+	Ex. if you find Algo(m) = "asdasdads" than it will be same across all the system, time, location etc.
+	the output of this algo must have some criterion: 
+	1.	This must be irreversible, this must be impossible to get back the message from messageDigest
+	2.	two diffrent message can never have same messageDigest Algo(m1) == Algo(m2) must be impossible
+	
+	* 	Generally if we changes the very littile information in message than it reflect as drastic changes
+		in its digest.
+	This process is also called hashing.
+
+	There are lot of Algo available for this, though none of them are 100% perfect but they have high 
+	tolerance against diffrent attacks. Eg. SHA-*, MD5
+	
+Real Time Use: 
+	1.	Validity of data after Tx/Rx: Checksum
+	2.	HashMap in java
+	3.	Generally you will find that a messageDigest(SHA1/MD5 fingurprint) is provided with large file
+		after download, to check for any data loss.
+	4.	GIT/SVN uses hashing for every commit to identify them uniqeuly.
+	5.	Most digital signature just verify the digested message of the actual message to be signed.
+
+
+    hashCode() in Java:
+        Hash code in java provide the hash function for the related object, for each state of object it will have unique value and two diffrent state
+        can never have same hash value.
+        Though by default java does not provides its implementation, you can ovveride its algo for you.
+                this is very useful in hashmap.
+
+NOw we will dive into the detail of some widely used Hashing Algo: 
+
+		MD5
+	MD5 takes in variable length input raw and produce output in fixed length 128bit formate 
+	this 128 bit reprsents in 32 hexadecimal digits.
+	128bit -- 128/8 = 16 byte -- 16 * 2 = 32 Hex digit OR [128/4=32]
+	This is also called MD5 checksum
+	So u will find that this checksum will be string of length 32 which will contains [0-9][A-F] only.
+	Algo: This is very complex algorythm to dive in, we may do it later but lets see it superficially
+		1.	it takes the variable length raw data 
+		2.	now devide them in 512 bit block size
+		3.	add padding (Bit padding) if requird to make len%512 = 0
+		4.	this bit block of length 512 futther devided in 16 blocks of length 32bit each (16*32=512)
+		5.	hell of math and bla bla
+		6	output: 128bit long string [32 HEX digit]
+		
+		input : any size
+		rounds : 
+		output : 128 bit (128 / 4 = 32 HEX Digit)
+		
+		SHA
+	SHA repsent the faimily of algorythm designed by NSA, 
+	The oldest one is SHA0 and SHA1 
+	SHA1: 
+		input : any size
+		rounds : 
+		output : 160 bit (160 / 4 = 40 HEX Digit)
+	SHA2
+		This contain many diffrent algo. most prominent are 
+		SHA256
+			input : any size
+			rounds : 
+			output :  256bit  256/4 = 64 HEX Digit
+		SHA512
+			input : any size
+			rounds : 
+			output :  512bit  512/4 = 128 HEX Digit
+		
+	
+
+
+------
+Quick tuto about HEXADECIMAL : 
+	As you know hexadecimal has base 16 as like decimal hase base 100%
+	and this reprsent as 
+	0  1  2  3 .... 10  11  12   13   14    15   16........
+	0  1  2  3       A	 B   C    D    E     F   10 
+	
+	generally we reprsent 8bit/1byte in 2 hexcode digit like that 
+	
+binary	1111 1111 
+Decimal	15	  15
+HEXAD	F	   F
+			FF
+	
+	so 1 byte in 2 hex digit
+	   8  bit in 2 hex digit
+	
+	
+----------------------------------------------------------------------------------
+PADDING: 
+	In cryptography padding is the process where we add redundant information to achive exact block size for
+	processing them.
+Most used paddings are: 
+	1.	Bit padding: A single 1 is added first then 0 is added till block size is achived.used in 
+		SHA and MD5
+	2.	Byte padding: Bytes (not bit) are added to achive block size
+			ANSI X.923
+			ISO 10126
+			PKCS7: in this padding value of each added byte is equal to number of byte required to add.
+				Example: if block size = 8 bytes and padding is required for 4 bytes
+					... | DD DD DD DD DD DD DD DD | DD DD DD DD 04 04 04 04 |
+																-----------
+			PKCS5: problem with PKCS7 approch is that maximum value for padding is FF (256) here so the
+			max size of block is 256 bit. what if our block size is >256 (eg. 512). For this we will use 
+			PKCS5 padding who supports block size of 1 to 255 BYTES
+			PKcs7 is actuuly a subset of PKCS5
+			 												
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+                    ENCRYPTION DECRYPTION
+
+As you you know there are two type of Encryption in the world
+    1.  Symetric    : same key used for encrypt and decrypt
+    2.  Assymetric  : two diffrent keys are used for encrypt and decrypt
+
+SYmetric :-
+    this is agin two type
+      Block Chiper  : divide the message in small blocks than apply encryption on it
+      Stream Chiper : apply algo on each bit/byte one by one
+        Today, most of common algo uses Block Chiper.
+
+    MAjor Algo in the market:
+        AES, DES, 3DES
+
+DES: This is oldest
+    Block Size  :  64 bit
+    key Size    :  56 bit(+8 pairity bit)
+    round:      :  16
+
+    ** it is broken and very unsafe now
+
+AES: This is majorly used today
+    Block Size  :  128 bit
+    key Size    :  128  192  256
+    round:      :  10   12   16
+
+    So in AES you can have a choice to have large(by size) and complex key (by round)
+    high of this value give high security
+    if you takes key size 128 u will have only 10 rounds
+     ..                   192                  12
+     ..                   256                  16
+
+3DES:   This is advace form of DES.
+        In DES we uses only one key.
+        Block Size  :  64 bit
+        in 3DES we use multiple key
+        if we use only one key it will be same as DES       least secure
+        if we uses 2 key
+            key size will be 2*56 = 112     more secure
+        if we uses 3 key
+            key size will be 3*56 = 168     most secure
+            Mostly we use all three key, and this is also called DESede.
+            So at here data is encrypted with DES three diffrent time.
+            It is encrypted with  key1
+            then decrypted by key2
+            finally encrypted with  key3
+
+
+
+MODE of block chiper:
+    There are two major mode for any type of enc/dec in the whole universe
+     1. ECB (Electronic code book)      Paraller
+            In this each block is enc/dec parallerly. so no doubt this is fast. But it has very big security threat, that is,
+            it will give very simmillar(or same) result for very simillar(or same) blocks in messsage. so message confidentiality is compomised.
+                That is why this is not recommended to use. And IV(innitilization vector cannot be used with this so with same key and same message will
+                always give same result)
+     2. CBC (Chiper Blick chaining)     Series
+        In this blocks are processed one by one and Nth block is XOR woth N-1th block, so this is slower, but security that is very good here.
+
+
+
+
+
+JAVA Crypto Framwork:
+    this framwork provide API for all security aspects like
+    digital signature, messageDigest, certificate, certificate validation, encryption (sym/asym), key generation, seure random number.
+
+    Java crypto is very abstrct and comprehensive API for en/de. This uses simple String as a input perameter for diffreny algo.
+    Below first see what are most useful String peramter which are feed into the framwork with its API at diffrent stages of using
+    this framwork.
+
+    P#1
+    Encryption Algos:
+        AES
+        DES
+        DESede
+        RSA
+        ...
+
+    P#2
+    Mode:
+        CBC
+        ECB
+        ...
+
+    P#3
+    Padding
+        NoPadding       0 padding/no paddin at all
+        PKCS5Padding
+        SSL3Padding
+        ...
+
+    P#4
+    KeyGenerator:       RSA not included here
+        AES
+        DES
+        DESede
+        ...
+
+    P#5
+    KeyPairGenerator:
+        RSA
+        ...
+
+    P#6
+    MessageDigest:
+        MD5
+        SHA-1
+        SHA-256
+        SHA-384
+        SHA-512
+
+    P#7
+    SecretKeyFactory:    RSA not included here
+        AES
+        DES
+        DESede
+        ...
+
+    P#8
+    Signature Algo:      / is or so expand the metrix in mind
+        NONEwithRSA
+        MD2/MD5withRSA
+        SHA1/256/384/512withRSA
+        ...
+
+---------------------------
+
+Interface   Key
+interface   KeySpec
+interface   SecretKey       implements   Key                        Useful for   String <-> byte[] <-> Key
+class       SecretKeySpec   implements   SecretKey, KeySpec,
+class       PBEKeySpec      implements   KeySpec,
+
+Interface   PublicKey       extends      Key
+Interface   PrivateKey      extends      Key
+---------------------------
+    KEY GENERATION :
+    Here we read about how to generate the random key only, we do not worry about how to encrypt with it or where to store it etc.
+    Oue sole gole for key generation is to ACHEIVE HIGH RANDOMNESS
+    JCA provide vaery customezed way to generate key for diffrent algos, They all generated by same classes andapis,
+    but descriminated with input perameters only
+
+1.  Most Common and Simplest,
+    KeyGenerator keyGenerator = KeyGenerator.getInstance(P#4);
+    keyGenerator.init(size);
+    SecretKey sk = keyGenerator.generateKey();
+    P#4:    This can be any common algo available. when you use this u must fit properly in Algo and size matrix
+            DES     -->  size= 56
+            AES     -->  size= 128/192/256      //Code will pass from here successfully but will give 'InvalidKeyException' Unsupported key size: 8 bytes at cipher.init(,)
+            DESede  -->  size= 112/168          //otherwise:Exception: DESede key must be 192 or 128 bits long.
+                               128/192
+                NOTE:   DESede accept all four key size above but produce size only of 192 or 168
+                        bcoz it take effect of Pairity bts also
+                        112 --> 2 pairity byte --> 112 + 2*8 = 128
+                        168 --> 3 pairity byte --> 112 + 3*8 = 192
+
+        Set custom Random Source (only prior to 4.2):
+            To generate a key Keygenerator must have some source of randomness, it uses SecureRandom class for this.
+            By default it uses its default implementation. but we can change its seed like that
+			    SecureRandom secureRandom = new SecureRandom();
+			    secureRandom.setSeed(new byte[] {any random bytes of any size});
+			    keyGenerator.init(keysize, secureRandom);
+        After 4.2:
+        		This functionality is removed after some Bitcoin disastour, and now even you use it, it will not have any effect
+        		And SecurRandom will use some system Entropy for getting seed
+        		Another problen with this is that if seed are same all the time than generated keys may have narrow range of randomness
+        		and so feeble to brute attack.
+
+2.    Generate from allready provided byte[]/String
+	As long as SecretKeySpec behave as both SeceretKey and KeySpec
+        SecretKeySpec secretKeySpec OR SeceretKey secretKey = new SecretKeySpec(str.toByte()/byteArray, P#4);
+            If you are sure that  str/byteArray  fits thae key size for P#4
+        or
+        SecretKeySpec secretKeySpec OR SeceretKey secretKey = new SecretKeySpec(str.toByte()/byteArray, offset, keySize, P#4)
+            If you are not sure ...
+	and now this can be used as a key.
+
+    KeyGenerator class: This class is static factory class who provides ways to generate keys for diffrent symetric algos
+    SecretKey:  Most basic interface for any key, it has most imp function .getEncoded() (in paranent interface Key)
+    SecretKeySpec:  This hs dual role KeySpec and Key itself, Use it if you have raw key as String or byte[]
+
+    The biggest problem with this two aprroch is that in both way we have to sore key somwhere for later use (Decrtyption)
+    This is very very risky, and highly depends on system vulnerability.
+    And this is expected from system that same key should never be generated again. So we cannot generate that key again by keygenerator
+
+    So Again Geuiuses come together and decide we need to do something.
+
+3.  PBKDF2: Password Based Key Derivation Function
+    Why we need it:
+        All above method for Key generation uses some system generated entropy or seed to create password.
+        It never involve security already provided by user.
+        Password given by user in mobile is never be stored anywhere and it is complete immune.
+        So geniuses gather and share their thought:
+        1.  Can we use Hash(MD5/SHA) of password:   U can, but you know with the brute attack and hifi system
+            With common password vs has db attacker can crack it.
+            And as password id usually max 10 AscII-char long so attacker will have big advantage.
+            So no here
+        2.  Use password as seed for SecureRandom:
+            This is completely impossible after 4.2
+            But on earlier: It is very bad idea, each time wwe gives sme password for seed, generated keys will have very narrow band.
+            As password size is small band will shrink. and brute force + db of common password vs key will finish u
+        3.  So after this two they come with ideas called
+                1.  PBKDF2  (Password Based Key Derivation Function)
+                2.
+                3.
+            Currently JAva provide only PBKDF2's implementation
+
+            Simple concept is mix password with random bytes (salt) and rotate it lot of time (rotationCount)
+            password will be user defined so                        its ban is very small
+            password + larger the salt                              cause larger the band
+            password + larger the salt + larger the rotation        cause even larger the band
+            But With same
+            Password + salt + rotation                              will always gives same result
+            And
+            You just have to store salt and rotation (and without any encryption) not password.
+
+            NOTE:    Even this things is breakable at some point but it will need very very wast system.
+            Very intentionly this PBKDF is design to work slow by adding salt and rotation, so that even a very fast and large
+            computers will takes lot of time to crack them
+		
+
+            PBKDF2(passkey, salt, rotation, size) = constant
+            for each value of constants there is one and only one pair of left variable exists
+
+       Code:
+                             //Getting salt bytes, best way is to use  SecureRandom  to get true random.
+  				SecureRandom secureRandom = new SecureRandom();
+    			salt = new byte[256];               or salt = getSalt() if already exists
+       			secureRandom.nextBytes(salt);
+
+       			KeySpec keySpec = new PBEKeySpec("passkey".toCharArray(), salt, rotation, size);
+       			SecretKeyFactory secretKeyFactory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA1");
+       			SecretKey secretKey = secretKeyFactory.generateSecret(keySpec);
+
+       			size:   size given here is depends on what type of algo u are using it must meet their demand.
+       			        Otherwise it will gives exception in   chiper.init(ipher.ENCRYPT_MODE, secretKey)
+
+--------KEY GENERATION ENDS HERE--------------
+
+
+--------KEY GENERATION ENDS HERE--------------
+
+    DATA ENCRYPTION:
+
+    For this first we have to get Chipher instance, This is static factory class
+        Cipher cipher = Cipher.getInstance("ALGO / MODE / Padding ");
+        Algo:       P#1
+            can be any algo sym/asym
+        Mode:       P#2
+            ECB/CBC mode is used, if you use CBC then u should also provide IV (initial vector), discussed later
+        Padding:    P#3
+            Mostly used PKCS5/Nopadding
+                If you use Nopadding then u must be confident that data fits to block size,
+                otherwise it gives   BadPAddinException:data not multiple of block length  Exception
+
+    Initilize Chiper
+        cipher.init(Cipher.ENCRYPT_MODE, secretKey);
+        secretKey:  Secret key must meet the axpectation of Algo used. So its keysize and all must be allign to Alo
+
+    Encrypt:
+        byte[] encrypted = cipher.doFinal(inputByteArrai);
+        input:  byte[] this is raw data to input, for string use "fs".getBytes()
+
+    Optianl:
+        This encrypted data is in raw ormate s it is recommended that u shoud
+         encode it to base64 string
+         String encryptedString Base64.encodeToString(encrypted, Base64.DEFAULT);
+
+    CBC and initilization Vector(nonce):
+        This is algo optinal and only used with CBC mode
+        As you know in CBC while encrypting  Nth block is XOR with N-1th block. but if n = 1 then
+        So for first block what would be he XOR with?
+        IV is simplay a random byte array of length = block size of algo
+        By default it is byte[] array of length block size of algo with all 0 value. So by default it is same all the time and create a loophole
+        in randomness, so it is better to change it every time.
+        JCA prvide api to customize it
+
+    Importance of initilization Vector:
+        Suppose you are DBA and have access to all db entery, they all are encrypted with same key
+        so if some message may repeat in db, and if you already know any one of message among them you can predict other.
+        So large db with multiple same entries will have same data and so it will be vulnerable.
+        IV solve this issue, we use same key on the message but at the time of encryption we also passes diffrent IV each time
+        so that it will result in diffrent output
+	The size of the IV is dependent on the cryptographic primitive used; for block ciphers, it is generally the cipher's block size. Ideally
+
+        Simple encry:
+            ( Key + Msg ) = Constant
+        Use IV for randomness
+        ( Key + Msg ) + IV  = Depends on IV
+         Change the IV and u will get diffent outpu for diffrent IV
+         IV is not a security perameter who should be kept secret, Rather it is Randomness vendor
+          so that it create ramdomness among (same msg + same key) combinations
+
+        Code:
+            byte[] iv = Use SecureRandom Like salt above for length = block size of algo
+                Otherwise gives exception at   cipher.init(Cipher.ENCRYPT_MODE, sk, ivspec);   'expected IV length of ***'
+            IvParameterSpec ivspec = new IvParameterSpec(iv);
+            cipher.init(Cipher.ENCRYPT_MODE, secretKey, ivspec);
+
+        Does it needed at the time of Decryption:
+            YES you should have,
+            But
+            There is magic here
+            If you have it it will gives you exact decryption output
+            if not and u use any IV
+            Then itl will gives you wrong result for first  block  and right for all other
+            So for AES
+            First 256bit 16byt will be wrong and all other will be right.
+            So if you use redundant 16byte in the start of the message, U do not have to
+            remember IV at all for dycr
+
+
+
+------------------------- DATA ENCRYPTION ENDS-----------------
+
+
+------------------------- KEY STORAGE -----------------
+
+Key generated above is wrapped in Key interface.
+You can get raw key by Byte[] keyByte = key.getEncoded();
+now best way is convert it in Base64 string and save it 
+....
+
+to regenerate it do the reverse, and regenerate byte[] from Vase64 String
+
+
+-------------------------KEY STORAGE END-----------------
+
+         DATA DECRYPTION:
+    For Decryption u have to follow the same stages as in enc
+
+    First you have to get the key, Generally it is in form of Base64
+        byte[] keyb = Base64.decode(bString, Base64.DEFAULT);
+    Then
+        SecretKeySpec secretKeySpec = new SecretKeySpec(keyb, P#4);  // keyb  fits thae key size for P#4
+
+    Key generation process is 100% same as discussed above, here most of the time key is avilable in string/byte formate. so just
+    do ltl coding for this
+    If key is generated by PBKDF2 than you must have
+    password, salt, rotaion and size exactly.
+
+    Now Decryption:
+         cipher.init(Cipher.DECRYPT_MODE, key);
+    in case u have used IV:
+        byte[] iv = ...
+        IvParameterSpec ivspec = new IvParameterSpec(iv);
+        cipher.init(Cipher.DECRYPT_MODE, key, ivspec);
+    Finally
+        byte[] decData = cipher.doFinal(encrypted)
+
+         This raw data can be image or file or string or anything
+         if it is string than
+         String newData = new String(decData);
+
+
+
+------------------------- LARGE FILE-----------------
+
+Encryption:
+    generate Key as above
+    initilize chiper as above
+
+    Now
+    input byte --> FileInputStream
+    output byte --> FileInputStream : CipherOutputStream
+
+CODE:
+    FileInputStream fis = new FileInputStream(INPUT_FILEPATH);
+    FileOutputStream fos = new FileOutputStream(OUTPUT_FILEPATH);
+
+    Key sharedKey = ...get Key..
+    Cipher cipher = ..get it and initilizze..
+
+    CipherOutputStream cos = new CipherOutputStream(fos, cipher);
+
+    int inputBytereadCount;
+    byte[] outputByte = new byte[buffersize];
+    while ((inputBytereadCount = fis.read(outputByte)) != -1) {
+        cos.write(outputByte, 0, inputBytereadCount);
+        Log.e("endecCheck" ,  " red : " + fis.getChannel().size() + " Written: " + fos.getChannel().size()  );
+    }
+    cos.flush(); cos.close(); fis.close();
+
+    buffersize: This has nothing to do with  block size and all,
+        increase it for fast process but larger it is more memory it will consume, Very large value f this may cause OutOfMemory
+        and should be power of 2 for fast processing.
+
+----------------------------------------------------------------------------------
+Encryption vs hashing/messageDigest : 
+	Encryption is reversible process. the one who is encrypted can also be decrypt again to get orignal
+	message
+	hashing is irreversible, onece it is hashed, it is impossible to get it back.
+	
+---
+pseudo random key generator
+CBC/ECB
+keywrap
+noncs
+keystore
+digital signature
+RFC
+X.509
+bOUNCY CASTLE
+key wrap/unwrap
+phishing
+SHA1PRNG
+SecureRandom  vs Math.Random()
+keychain
+bruteforce/rainbow/dictinary attack
+------

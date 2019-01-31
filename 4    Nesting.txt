@@ -1,0 +1,205 @@
+Nesting is something confused everyone. Nesyting could be of nay level and type: 
+like:	
+	var in var
+	this in var
+	var in this
+	this in this
+	
+To understand nesting you must know the closure in detail first u must read 'closure.txt'.
+
+Nesting mns function inside function/constructor.
+
+Any variable declare with 'var' will have tricky effect, but variable declared with 'this.' will have straightforward effect.
+
+Just remember two thing:-
+
+Variabele declared with 'Var'
+	Are avilable in same block + all the child function either declared with 'var/this.', so basically all the function who has access of closure if 
+	fnction in which the variable is declared.
+Variabele declared with 'this.'
+	Closure play no role in the accesibility of the variable declared by 'this.'
+	Variable declared with 'this.' will be avialable only if 'this.' is prsent and point to the proper object.
+	So all the methode wich are declared and called with 'this.' will have 'this.' defined in it and so all the variable 
+	declared with 'this.' also be avialble in that function.
+	Though if function declared with 'var' but used with 'bind' can also have 'this.' defined, we will dive in it in bind.txt
+
+
+In the function 'City' [but not in its inner function]
+	>	U can declare variable with 'this.' and 'var' both
+	>	U will have access to all the variable declared with 'var' in the 'City' constructor
+	>	Variable declare here with 'var' will be avialable in all the inner function(vHome, tHome, vRoom, tRoom, vMemberIntHome) of 'City' through its closure.
+	>	U will not have access to any variable declare with 'var' in any inner function(either declared with 'var' or 'this.') of 'City'
+	>	'this.' will always be available here. So you have access of all the variable who are declared with 'this.' anywhere [but after that one initiated proerly]
+
+In the function 'vHome' [but not in its inner function]	[vHome is Called without 'bind']
+	>	U can declare variable with 'var' but not with 'this.'
+	>	U will have access to all the variable declared with 'var' in the 'City' and 'vHome' function 
+	>	Variable declare here with 'var' will be avialable in all the inner function(vRoom) of 'vHome' through its closure.
+	>	U will not have access to any variable declare with 'var' in any inner function of 'vHome'
+	>	U will not have access to any variable declare with 'var' in any inner function of 'tHome', 'tRoom' because thier closures are not avialable here
+	>	'this.' will not be available here. So you have No access of all the variable who are declared with 'this.' anywhere
+
+In the function 'vRoom' [but not in its inner function]	[vRoom is Called without 'bind']
+	>	U can declare variable with 'var' but not with 'this.'
+	>	U will have access to all the variable declared with 'var' in the 'City', 'vHome' and 'vRoom' function 
+	>	U will not have access to any variable declare with 'var' in any inner function of 'vRoom'
+	>	U will not have access to any variable declare with 'var' in any inner function of 'tHome', 'tRoom' because thier closures are not avialable here
+	>	'this.' will not be available here. 
+	
+In the function 'tMemberInvHome' [but not in its inner function]
+	>	As i said above in 'vHome' this. is not aavialable so such function is impossible to define.
+	
+	
+In the function 'tHome'
+	>	U can declare variable with 'var' and 'this.' both
+	>	U will have access to all the variable declared with 'var' in the 'City' and in anywhere with 'this.'
+	>	Variable declare here with 'var' will be avialable in all the inner function(tRoom, vMemberIntHome) of 'tHome' through its closure.
+	>	U will not have access to any variable declare with 'var' in any inner function of 'vHome', 'vRoom' because thier closure are not avialable here
+	>	U will not have access to any variable declare with 'var' in any inner function of 'tHome'
+	>	'this.' will be available here. So you have access of all the variable who are declared with 'this.' anywhere [but after that one initiated proerly] 	
+
+
+In the function 'tRoom'
+	>	U can declare variable with 'var' and 'this.' both
+	>	U will have access to all the variable declared with 'var' in the 'City' and 'tHome' also anywhere with 'this.'
+	>	U will not have access to any variable declare with 'var' in any inner function of 'vHome', 'vRoom' because thier closures are not avialable here
+	>	'this.' will be available here. So you have access of all the variable who are declared with 'this.' anywhere [but after that one initiated proerly]	
+	
+
+In the function 'vMemberIntHome'
+	>	U can declare variable with 'var' but not with 'this.'
+	>	U will have access to all the variable declared with 'var' in the 'City' and 'tHome'.
+	>	U will not have access to any variable declare with 'var' in any inner function of 'vHome', 'vRoom' because thier closures are not avialable here
+	>	'this.' will not be available here. 		
+
+	
+var City = function () {
+	var inCityByVar = 'inCityByVar';
+	this.inCityByThis = 'inCityByThis';
+	
+	console.log('con1 - ' + inCityByVar);
+	console.log('con4 - ' + this.inCityByThis);
+	
+	var vHome = function() {
+		var inVHomeByVar = 'inVHomeByVar';
+		this.inVHomeByThis = 'inVHomeByThis';  					//Error : this. is undefined here
+		
+		console.log('con5 - ' + this.inCityByThis);				//Error : this. is undefined here
+		
+		console.log('con5 - ' + inCityByVar);
+		console.log('con34 - ' + inVHomeByVar);
+		
+		this.tMemberInvHome = function() {}						//Error : this. is undefined here
+		
+		var vRoom = function() {
+			var inVRoomByVar = "inVRoomByVar";
+			this.inVRoomByThis = "inVRoomByThis";  				//Error : this. is undefined here
+			
+			console.log('con5 - ' + this.inCityByThis);			//Error : this. is undefined here
+
+			console.log('con37 - ' + inVHomeByVar);	
+			console.log('con43 - ' + inTHomeByVar);				//Error : Closure of 'this.tHome()' not prsent here 
+			console.log('con61 - ' + inVRoomByVar);
+
+		}
+		vRoom();
+	}
+	this.callvHome = function() {vHome();}
+	
+	
+	this.tHome = function() {
+		var inTHomeByVar = 'inTHomeByVar';
+		this.inTHomeByThis = 'inTHomeByThis';
+		
+		console.log('con9 - ' + inCityByVar);
+		console.log('con12 - ' + this.inCityByThis);
+		
+		console.log('con42 - ' + inTHomeByVar);
+		console.log('con48 - ' + this.inTHomeByThis);	
+		
+		console.log('con69 - ' + this.inTRoomByThis);		
+		
+		var vMemberIntHome = function(va) {
+			var inComplexByVar = 'inComplexByVar';
+			this.inComplexByThis = "inComplexByThis";		//Error: this is undefined
+
+			console.log('con24 - ' + inCityByVar);
+
+			//console.log('con39 - ' + inVHomeByVar);		//Error : Closure of 'vHome()' not prsent here 	
+
+			console.log('con45 - ' + inTHomeByVar);
+			console.log('con81 - ' + inComplexByVar);
+			
+			//console.log('con63 - ' + inVRoomByVar);		//Error : Closure of 'vRoom()' not prsent here 	
+		}
+			
+		this.getvMemberIntHome = function() {return vMemberIntHome};
+		getvMemberIntHomeGlbExpo = function() {return vMemberIntHome};
+		
+		this.tRoom = function() {
+			var inTRoomByVar = "inTRoomByVar";
+			this.inTRoomByThis = "inTRoomByThis";
+			
+			console.log('con16 - ' + inCityByVar);
+			console.log('con19 - ' + this.inCityByThis);	
+			
+			console.log('con38 - ' + inVHomeByVar);			//Error : Closure of 'vHome()' not prsent here 	
+			console.log('con44 - ' + inTHomeByVar);	
+			console.log('con50 - ' + this.inTHomeByThis);
+
+			console.log('con62 - ' + inVRoomByVar);			//Error : Closure of 'vRoom()' not prsent here 	
+			console.log('con65 - ' + this.inTRoomByVar);
+			
+			console.log('con71 - ' + this.inTRoomByThis);
+		}
+		
+	}
+}
+
+-----------------------------------------
+	function City() {
+		var vHome = function() {
+		}
+		this.vHomeExpo = vHome;
+	}
+	this.vHomeExpo();
+	
+This may appear very confusing but
+This one is basically 100% same as below one :
+
+	function City() {
+		this.vHomeExpo = function() {
+		}
+	}
+	this.vHomeExpo();
+	
+----------------------------------------------
+
+See the 'Nesting.png' for better understanding.
+Now note this: 
+
+If you are inside a function and declare two function like this : 
+
+	City() {
+		var vHome() = {...}
+		this.tHome() = {....}
+	}
+	
+Here variable 'vHome' will have refrence of the methode code, and vHome itself was defined in function/constructor 'City()'
+So 'vHome' will have access of closure of '__City()_cityObjBar_Closure__'
+But 'vHome' is not declaredr with 'this.' so context will remain null in it so this. == null
+
+	vHome 	--YES----> {'__City()_cityObjBar_Closure__'  ......}
+			--No ----> {this.  .......}
+And for tHome
+	tHome 	--YES----> {'__City()_cityObjBar_Closure__'  ......}
+			--YES----> {this.  .......}
+-------------------------------
+
+All the methode we have declared with the 'var' (vHome, vRoom, vMemberIntHome), their behaviupr will be changed dramatically if they are called with 'bind'
+We will discuss it in the chapter of 'bind'
+
+-------------------------------
+
+	
+Also see #REFCLOSUREMINI in closure.txt

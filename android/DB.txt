@@ -1,0 +1,2 @@
+Sqlite do not support true/false
+in sqlite query  select * from myTable === select * from MYTABLE

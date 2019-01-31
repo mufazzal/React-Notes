@@ -1,0 +1,38 @@
+Storage
+
+
+SharedPreferences: this is simple class that contain key-value pair enteries.
+u can create many sharedprefrence file with diffrent name and store key-value pair in it.
+for each SharedPreferences file in app a single object of SharedPrefrence is return by  getSharedPrefrence() or getPrefrence() so change at onne instance will reflect at other instance of that SharedPreference.
+jst assume that SharedPreferences have such static map in it
+	HashMap<String, SharedPreferences>  sMap;
+	getSharedPrefrence(st, md) {retturn sMap.get(st);}
+	
+	
+	sp file loc == /data/data/com.package.name/shared_prefs/com.package.name ;
+CONTEXT.getDefaultSharedPrefrence() vs CONTEXT.getSharedPrefrence(st,md) vs  ACTIVITY.getPrefrence() :
+1.	first one return default sp file which will be accesible to any part of app with any context.
+		loc = loc + "_prefrence"
+2.	second one will give simple sp of that name file which will be accesible to any part of app with any context.
+		loc = loc + "_prefrence" + st;
+3.	third  one will give u default sp file for activity and it is  private to activity so cant be used with other component.
+	inside it simply call  CONTEXT.getSharedPrefrence(st, md) with   st =  class name of that activity.
+		loc = loc + class name of that activity;
+ SharedPrefrnceChangeListener :  Use this interface to listen for any changes in SharedPrefrnce.
+ 
+ MODES: 
+ 1.	_PRIVATE : only accsseble inside app 
+ 2. _WORLD_READABLE : + can be read outside app
+ 3. _WORLD_WRITABLE : + can be write outside app
+ 
+ access outside app : 
+	provider app: jst creat sp file with mode == MODE_WORLD_READEBE/_WRITABLE; getSharedPrefrence("sharefile",MODE_WORLD_READEBE/_WRITABLE )
+	client app:	  pctx = CONTEXT.creatPackageContext("provide app package name");
+				  sp = pctx.getSharedPrefrence("sharefile",MODE_WORLD_READEBE/_WRITABLE);
+ 
+ WRite array, arraylist or class object:
+ 	it does not provide any support for this
+	u can use serilize deserlize for them to store it in string formate
+	u can use GSON to store as json.
+	it does not support PARCLABLE
+------------------------------------------------------------------------------------------------------------------------

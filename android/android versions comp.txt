@@ -1,0 +1,14 @@
+LOLIPOP android 5.0
+
+This is one of most significant change in android after 3.0.
+it brings lots and lots of changes 
+
+Design related:-
+	1.	Material
+	2.	ART replaces Davelik
+	3.	New Notification APIs
+
+	
+
+
+

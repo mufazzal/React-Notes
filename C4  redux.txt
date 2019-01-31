@@ -1,0 +1,839 @@
+When you heared Redux u think its a part of React. No man its more than that. 
+Its a state management system. Not only the state of React but also of many other JS libs.
+
+So hwt is it?
+It is a library that hep to manage state of application. this state is simple JS object.
+
+Concept
+I have a object cloud
+If i wants to make some change in it.
+It has three main player:
+1.	Store  - 	A actual imutable data source
+2.	Action - 	A signal to store for changing somthing 
+3.	Reducer - 	A kind of connection in between Store and Action. Oprate an incoming action over the Store.
+Redux state managemeny plays among this three things and keep updating the store object.
+
+when somthing happen, We ask 'Action' to triger somthing, Now this action will then appear in 'Reducer', where according to action type and playload of action 
+the new state is gnerated.
+Reducer always generate a new state after action is operated. and older state is get destroyed. this is because in Redux the store is immutable
+
+
+Suppose you have a data:
+	_store	=	{name: 'Mufa', lName: 'Huss'}
+You need to do two operation. Change FName and LName.
+
+So for this two operation create two diffrent actions: 
+	_actions = {
+		changeFName(_v): return {type: 'changeFName', playLoad: {value: _v}}
+		changeLName(_v): return {type: 'changeLName', playLoad: {value: _v}}
+	}
+this two function is called the actionCreator, and the value they return are called action.
+
+	
+Finally a Reducer who will provide platform to this actions to execute:-
+	
+	_reducer(state={}, action) {
+		switch(action.type) {
+			case changeFName:
+				nState = {...state, fname: 'mur'}
+			return nState;
+			case changeLName:
+				nState = {...state, lname: 'daw'}
+			return nState;
+		}
+	}
+-------
+
+We will create an application like a real one to understand redux
+Suppose you have a application with login, post and friend functionality.
+So in single application we have three diffrent submodule-
+	Login
+	Post
+	friends
+If you have n module in your app, then you should create n *action.js, n *reducer.js and n state variable.
+In redux state variable of lies in reducer mostly. In reducer only you initilize and hange the state. no where else you should use state.
+
+So lets begin with reducer, create one folder name reducer and three file in it.
+	/reducer
+		/LoginReducer.js
+		/PostReducer.js
+		/FrindsReducer.js
+In all this reducer lies the initial state of those module, this state actully a model in MVC pattern it define the data structure of module.
+	LoginReducer.js >>
+		const initState = {uName: '', pass: '', errorU: '', errorP: ''}
+	PostReducer.js >>
+		const initialState = {postList: [], time: 0,};
+
+
+Now we have snippet of data ready as initial state in reduce, 
+Now make the actions, lets create a folder action and make three js file in it for three module + one file for action constant
+	/action
+		/LoginAction.js
+		/PostAction.js
+		/FrindsAction.js
+		/actionConst.js
+
+actionConst.js file contains the constant which will be used as 'type' string in action object. 
+	actionConst.js>>
+		export const PostActions =  {like: "like_post", getPosts: "getPosts"};
+		export const LoginActions = {validateUsername: "validateUsername", validatePass: "validatePass" };
+
+	
+Now we will create the set of action to be performed on this data.
+actioncreator function will create those action.
+	LoginAction.js>>
+		import 
+		const validateUsername 	= (uName) => {type: LoginActions.validateUsername, playload: {isSucess: uName === 'muf', errorU: uName === 'muf' ? '' : 'wrong username'} }
+		const validatePass 		= (pass)  => {type: LoginActions.validatePass, playload: {isSucess: pass != undefined, errorP: pass != undefined ? '' : 'wrong password'} }
+		export {validateUsername, validatePass}
+	PostAction.js>>
+		import { PostActions } from "../actions/actionConst";
+		const getPost  = 	   () => {return {type: PostActions.getPost, playLoad: {...post list...} }}
+		const likePost = (postId) => {return {type: PostActions.likePost, playLoad: {postId: postId} }}
+		export {getPost, likePost}	
+
+This actionCreator function take input of external event, like user type the username and pass so doLogin will take this two variable as input.
+If user perform any action on UI then this functions will be the first point to entery of this user-driven-evrnt in redux ecosystem.
+Now this actioncreator function will examin the upcoming input of external event and create a action object.
+1.	Here it can manuplate data to know what actully happen and create a action object.
+2.	Eveluate somthing from incoming event and call webservice with that data, read the service response and finally with this service-response create a 
+	action object 
+3.	incoming data + file IO data and produce a action object
+This action object contains two thing-
+	type: what type of action is performed: a constant string
+	playLoad: metadata for that action.
+So actioncreator is connection between External event and Action object.
+For now we have not called the webservice, we will do it later as it will need some more changes. we will see it later.
+
+As you can see above we import the constant file and use it for 'type', thuis will later to be mapped with reducer. 
+all *action.js file of each module contain a set of methode that can be operate on the state (that lies in reducer of that module).
+This all methode are exporten (better to export them by name so that import will be easy and clean)
+
+So RULE:- ACTIONCREATOR TAKE UI EVENT AND GENERATE ACTION
+
+SO now we have created the actions for diffrent module, next we will see how reducer consume this action and process it.
+So lets go back to reducer again-
+-- 
+
+In each reducer we must export one function which will have two input and one output:
+	Input
+		state
+		action
+	Output
+		a brand new state
+
+so lets create new function in each reducer:-
+
+	LoginReducer.js >>
+		const initState = {uName: '', pass: ''}
+		export default (state = initState, action) => {... return newState}
+	PostReducer.js >>
+		const initialState = {postList: [], time: 0,};
+		export default (state = initState, action) => {... return newState}
+
+If you see in formal params u understand that how reducer actully define the initial state of the component.
+This is how the body of this function will look like, this will have a switch case in which filteration occure for each action type.
+for every action type a playload also exist, so playload and current state mix together and generate a new state.
+and this new state is now retuned.
+
+Most imp thing is this reducer function must and must be a pure function, ie it will return a same value for same set of input. Irrespective
+of time, place, external enviorment or anything else.
+That is why u should never call web service in reducer. neither call function like new Date(), math.random() etc.
+	var t = v + u //this is pure, bcoz for each set of v and u a unique value of t exist
+	var t = v + u + new Date().getTime() //	is impure. bcoz for each set of v and u multiple value of t will exist
+	
+Also ever ever reyurn the same state. instead do the deep copy of the state object and return it. but never mutate the current state.
+We return the same previous state (not copy) in the default case. It's important to return the previous state for any unknown action.
+
+SO lets create a body of this function
+
+	LoginReducer.js >>
+		export default (state = initialState, action) => {
+		  switch (action.type) {
+			case LoginActions.validateUsername:
+				return {...state, uName: action.payload.uName, errorU: action.payload.errorU};
+			case LoginActions.validatePass:
+				return {...state, pass: action.payload.pass, errorp: action.payload.errorp};
+			default:
+				return state;
+			}
+		}	
+		
+	PostReducer.js >>
+		export default (state = initialState, action) => {
+		  switch (action.type) {
+			  case PostActions.getPosts:
+					return {...state, postList: action.payload.posts};
+			  case PostActions.doLike:
+					var nState = ... return nstate;
+			  default:
+					return state;
+			}
+		}
+
+Now we have both reducer ready, in our app we may have multiple reducer. but in the end we have to combine al of then in one wrapper.
+For this 'redux' library provide the api 'combinereducer'. 
+careate one file name as anything like mainReducer.js in reducer folder
+	reducer/mainReducer.js >>
+	import {combineReducers} from 'redux';
+	import postReducer from './postReducer';
+	import loginReducer from './LoginReducer';
+
+	export default combineReducers({postReducer: postReducer, LoginReducer: loginReducer});
+This exported itenm will serve as single entry point for all the reducer, and so hide all the reducer behind him		
+
+
+Connection between reducer and action/actioncreator:-		
+	Connection between this two is done in intetnal redux lib, you do not have to worry about hot flows. just remeber that 
+	actioncreator craete the action and redux lib propogate this sction to reducers and process with appropiate one.
+
+So till now you have state for each module (data model) is ready in its reducer file, and all of thm are spited properly in diffrent file
+so things are very neat and clean. state of module name 'login' lies in reducer of module 'login' and so on..
+
+So now we have multiple state of all the reducer is ready for use, they all are not at conected with each other.
+But now time come to wrap then in single packet. 
+In this packet they lies as smaller packet and isolated from each other. 
+SO how we create this wrapper packet?
+Ans:
+Store
+
+Store:-
+store is actully a collection of data model that lies in app, state of all the reducer lie in it but they all are isolated from each other.
+As i said it is wrapper of all the state that lies in reducer, it is clear that we need al our reducer also to build the store. 
+So reducer provide the state and redux create store by combining all of them.
+in our example All of our reducer lie in 
+  
+so now lets create store:-
+create one file store.js
+	store.js>>
+		import { createStore  } from "redux";
+		import mainReducer from "./reducers/mainReducer";
+		export createStore(mainReducer);
+		
+	
+So we have following thing ready-
+1.	actioncreator and action file for each module
+2.	action constant file
+3.	reducer file for each module, also intial state of that module lies in its reducer file.
+4.	a mainReducer for single etry for reduce
+5.	store which is wrapper around state of all the reducer.		
+
+Now fundamental building block of redux is ready to use, and you can use to erite an UI application with above state management syatem.
+You can use above code with React, Angular, ext or any js lib.
+
+Lets see how:
+Firsy get the object of store by import:
+	import store from './store'
+As you know that our data lie in state variable of reducer, and that we can get from inside the store
+So Now to get data from the store use below function:-
+	store.getState().<reducername>
+	ie
+	store.getState().postReducer
+	store.getState().loginReducer
+	
+For making any chages in state function as we know already we must use aaction, we will pass this action in store and store will take help of 
+reducer to oprate according to that action.
+So for making chages u must dispatch an appropiate action in the store like below:-
+For login-
+	store.dispatch(validateUsername('muf'));
+	store.dispatch(validatePass('789'));
+For post-
+	store.dispatch(getPost());
+	store.dispatch(likePost(45));
+After calling dispatch with appropiate action, store and so its inner state get updated. that updated value now can be retrived via store.getState().<reducername>
+
+So you can together combine all of them in below JS code-
+
+	import store from './store'
+	import {likePost, getPosts, bookMarkLocal} from './actions/postActions';
+	import {validateUsername, validatePass} from './actions/loginActions';
+
+	$.ready(()=>{ $('#pr2')[0].innerHTML = JSON.stringify(store.getState().loginReducer);})
+
+	$('#btDef').click(()=> {
+	  store.dispatch(validateUsername('hus'));
+	  store.dispatch(validatePass(''));
+	  $('#pr1')[0].innerHTML = JSON.stringify(store.getState().loginReducer); 
+	});
+
+	$('#btDef1').click(()=> {
+	  store.dispatch(validateUsername('muf'));
+	  store.dispatch(validatePass('789'));
+	  $('#pr2')[0].innerHTML = JSON.stringify(store.getState().loginReducer);
+	});
+
+So above you can see how you can create a app out of it. you can use any kind of JS lib with it.
+For reacy just change line  
+'innerHTML = JSON.stringify(store.getState().loginReducer)'  
+to  
+this.setState({login: store.getState().loginReducer});
+You can make complete app with this functions, but redux provide sarter way to do it via a library 'react-redux', we will see it in next part 
+Before lets see two imp function of store :-
+	var uns = store.subscribe(()=> {...})  //Use this to register an listener for each time store changes., this function return another function
+	which late can be used for unsunscription.
+	uns() //calling this function will unregister above one.
+	
+
+react and redux connect:
+	
+Though you can write complete react application with all above building block. But there is very smart way to integrate rect with redux,
+This is to use 'react-redux' library, this provide smarter way to connect react and redux.
+
+First install react-redux by nom install.
+
+Best way to buil application with redux and react, is to make one container component for each module and then make many of the presentational component 
+as a child of each container component.
+Now All the container component now lies in one file that may be our app.js,
+In this file we initiate store and attach it to containers
+
+For any given module container is the top point in UI heirachy from where the data flow in below pesentational component.
+Below component never ever should change the data at any cost.
+All data flow through the props of react.
+No where in the hieracrchy the react state should come inti picture.
+Evenn container component should not have a state.
+Container component get the data in form of props too. How? we will look next.
+
+
+lets create loginContainer.js:
+In the container you will use the 'connect' api of react-redux lib to connect the upcoming state form store to props of container.
+SO note:
+CONTAINER COMPONENT CONNECT THE UPCOMING STATE FROM STORE TO PROPS OF HIMSELF(container compo)
+So do this:-
+	import { connect } from 'react-redux'
+Now lets write an empty function to export as we do in all react comp
+	const v = (props)=> {return <div>{props}</div>}
+Now here come the main part of container, Connecting state of redux to props of react
+For this call the below function in proper manner.
+	const mapStateToProps = (state) => {
+	  return {
+		loginData: state.loginReducer
+	  }
+	}
+In this function at return statement left side (loginData) is the props of the LoginContainer.js and right side (state.loginReducer) is
+one of the state in the store of redux(That came from reducer) that you wants to map to this container.
+Basically we attach a reducers (so its state is also attached by default) to this container here.
+If you print the state.loginReduce u will see this:
+	{uName: 'muf', pass: '123', errorU: '', errorP: ''}
+Now finally call the conect function and export its return value.
+	export default connect(mapStateToProps)(LoginContainer)
+
+Now finally pass this props to the descendent child.
+So finally-
+
+	import React from 'react';
+	import { connect } from 'react-redux'
+	import LoginPanel from '../view/loginPanel'
+
+	const LoginContainer = (props) => {
+	  return <LoginPanel loginData={props.loginData} />
+	}
+
+	const mapStateToProps = (state) => {
+	  return {
+		loginData: state.loginReducer
+	  }
+	}
+
+	export default connect(
+	  mapStateToProps,
+	)(LoginContainer)
+
+---
+Now in next step is very common one, here we will create a file where we will wrap all our container in single file 
+Most of the time this file uses react-router as most app need routing between diffrent module in some way.
+But here we will not use as it is out of scope.
+
+ModuleWrapper.js>>
+	import React from 'react';
+	import LoginContainer from './containers/loginContainer'
+	import PostContainer from './containers/postContainer'
+
+	export default (props) => (
+		<div>
+		  <LoginContainer />
+		  <PostContainer />
+		</div>
+	);
+####Que: Point to note: in above code why do we ned to import 'react' if it is never used, 
+	Ans: No we have to use it, bcoz its used internally by Provider.
+
+	
+Till now all the thing related to static implementation done, but now lets put them in action.
+lets see how we will dispatch the action and other thing.
+
+As you know data in react flow top to bottom and so we map state in store with props in react.
+Now from the react side bottom to top UI events come.
+and in react it flow from bottom to top via props function.
+So now we will map props function with action.
+for any UI event coming from the bottom, we will map a dispatch function against it.
+
+
+For this we will show live value on login usename and password as user type.
+
+lets make one small live view panel:
+	
+	loginliveview.js>>
+	export default ({uName, pass}) => (
+		<div>
+		  Username: {uName} --- Password: {pass}
+		</div>
+	);
+impelent it it with loginpanel.js>>
+	...
+	const loginPane = (props) => {
+		const v = <input value={props.loginData.uName}/>;
+		const lv = <Loginliveview uName={props.loginData.uName} pass={props.loginData.pass} />
+		return <div> {v} {lv} </div>;
+	}
+	...
+
+Also in loginpanel.js track the changes in uName and password element and pass it to parent.
+so do littile change and send the changes in username to above parent till it reaches to container of loginn
+All this propogation from bottom to top will be carried out via props function	
+
+	...
+	const v = <input type="text"  value={props.loginData.uName} onChange={(e)=> {onChangeFun(e, props)}}/>;
+	...
+	function onChangeFun(e, props) {
+	  props.onChangeUName(e.target.value);
+	}
+	...
+Now send this change till top of container, so in loginContainer.js>>
+	...
+	<LoginPanel loginData={props.loginData} onChangeUName={props.onChangeUName}/>
+	...
+	
+Now the container is the last point, from here thins we be handed over to redux,
+for this you will have to map the props function with appropiate action with dispatch function.
+
+So first of all import the proper action creator function in container-
+
+so do the import in loginContainer.js>>
+	import {validateUsername} from '../actions/loginActions'
+	...
+
+map dispatch+actioncreator function with props function in loginContainer.js:
+	...
+	const mapDispatchToProps = dispatch => {
+	  return {
+		onChangeUName: uName => { dispatch(validateUsername(uName))}
+	  }
+	}
+	...
+VVVVIMP: This 'dispatch' function called here may be from store itself(10% chances) or a wrpper of dispatch function of store if middleware is applied.
+On the store if you have applied 'applymiddileware', which you do most of the time, the 'dipatch' function will be wrappere of store.dispatch.  
+We will look in this in middkeware tuto.
+
+-
+Now here is our final step. connection of complete app with store, A connection of react to redux store.
+So in App.js>>
+	import React from 'react';
+	import ReactDOM from 'react-dom';
+	import { Provider } from 'react-redux'
+	import store from './store'
+	import ModuleWrapper from './ModuleWrapper'
+
+	ReactDOM.render(
+	  <Provider store={store}>
+		<ModuleWrapper> </ModuleWrapper>
+	  </Provider>,
+	  document.getElementById('app')
+
+	);
+
+This is our last point. 
+
+	THATS ALL! 
+	
+--------
+
+The whole above code we develope so far work perfectly when we do the synchronus operation, but thing will go tricky when we talk aboubt
+asynch calls like API call, settimer etc.
+
+
+How to use thunk-
+Thunk is applied around the dispatch function of store.
+So this is the one time set up in ur code-
+	store.js>>
+	import { createStore, applyMiddleware  } from "redux";
+	import mainReducer from "./reducers/mainReducer";
+	import thunk from 'redux-thunk';
+	export default createStore(mainReducer, applyMiddleware(thunk));
+	
+so when we are creating the store, we will pass applymiddileware with thunk, just remember it. 	
+	
+-----
+loginContainer.js	:	connection of all lower presentational component of login module to respective reducer [maping of redux-store-state to react-props and props-fucntion to dispatch-action, connect function called]
+ModuleWrapper.js	:	wrapper of all module [mOst of the time has Router]
+App.js				:	connection of redux store to react [has Provider, has store, Actual point of renderring in document.getElementById()]
+store.js			:	A centralized store [collection of all the states in reducers]
+mainReducer			:	All reduccer combined and make a single entry pint among all [combineReducers called and exported]
+**Reducer			:	A reducer for each module
+**Action			:	A action creator filr for each module.
+actionConst			:	A const file for action type
+
+----------------------
+Q.	What if  2 action have same action type?
+		In that case they both will actully be same action, only playload is diffrent. they both will be consumed in same reducer-switch. 
+	
+Q.	What if one action is hanled in multiple reducer.
+		This is perfecty fine, both the reducer-switch will answer this action. even redux says that a single action can be handled with multiple reducer.
+	
+Q.	Can we get current state in actioncreator file		
+		Yes, there is three way
+		1.	import store from './store.js'
+			...
+			var vv = store.getState().<Reducer>.**
+			..
+			But this is strongly unrecomendded as it is antipattern in singlton store.
+		2.	use redux thun. nd this is better way.
+
+--------------------
+Redux + React-Router :
+Best way is in App.js:- 
+	<Provider store={store}>
+		<Router>
+		  ....all the code of router......
+		</Router>
+	 </Provider>
+
+--------------------------
+
+So as you can see that all the UI event move up to container and finally dispatched to the redux store.
+So dispatch function is called in container only.
+But with below smart fix you can do it in inner dull react componenet tooo
+
+	...
+	<LoginPanel 
+		loginData={props.loginData} 
+		onChangeUName={props.onChangeUName}
+		dispatch={props.dispatch}/>
+	...
+	const mapDispatchToProps = dispatch => {
+	  return {
+		onChangeUName: uName => { dispatch(validateUsername(uName))}
+		dispatch: (action)=> {dispatch(action)}
+	  }
+	}
+No in LoginPanel.js :>>
+	...
+	onClickFun(props) {
+		props.dispatch(myAction)
+	}
+	...
+	
+--------------------------------------------------------------------------------
+So when you finally see the whole picture in its miniature form:
+
+Store is simply a collection of strucured data.
+
+Action:-
+Action is collection of diffrent function which have type and playload. Action do not have any kind of connection with store. 
+it is simpaly a defination of what need to change in store. defination of all this actions will be implemented in reducer.
+Action just described what happen, but do not describe how it will impact store
+
+Reducer:-
+Reducer in its most basic form a function, who receive current store(fstore) with action, and according to that action reducer create a new store 
+and return it. IT NEVER EVER CHANGE THE CURRENT STORE.
+Every time reducer perfor any action, it create complete new store and delete older one. finally return new one.
+This describe how application state change for any action.
+
+
+Now lets 
+
+----------
+Lets dive in.
+
+Action:-
+Action are called when some event occure on UI, we capture this data and process t in action creator, We may call external API here to find the 
+result of this UI event. Now after the result of this api we calculate the action that is 'type' + 'playload'
+
+In projects we generaly have a folder contain diffrent actions:-
+/action
+	/loginActions
+		export {validateUser, valdateSession}
+	/postAction 
+		export {likePost, getPost, deletePost}
+	/friendsAction
+		
+
+----------
+Reducer:-
+As you know reducer is pure function, role of reduced come when the UI event performed + action is done and then so new action is generated.
+This new action will now be passed in reducer with old state. the reducer along with action and current state, generate the new state.
+
+Redducer is pure function, mns it will generate the same output for given set of same input, so it will never ever do below thing in its body-
+1.	mutating its formal parameters
+2.	calling any web service
+3.	calling nonpure function like new Date(), Mathe.random() etc.
+
+In the project we generaly have multiple reducers, we can use combinereducer api to resolve among them.
+
+/reducer
+	/loginReducer
+		switch vld_user...
+		switch vld_session...
+	/postReducer
+		switch like_post...
+		switch get_post...
+	/friendsReducer
+	
+		
+----------------		
+
+-----------------------
+redux: main library (independent from React)
+redux-thunk: a redux middleware which helps you with async actions
+react-redux: connects your redux store with ReactComponents
+
+In Redux reducers produce the state. The state is not something you create by hand.
+
+A reducer is just a Javascript function. 
+A reducer takes two parameters: the current state and an action (more about actions soon).
+
+The second principle of Redux says the only way to change the state is by sending a signal to the store.
+This signal is an action. “Dispatching an action” is the process of sending out a signal.
+The reassuring thing is that Redux actions are nothing more than Javascript objects. 
+This is what an action looks like:
+{
+  type: 'ADD_ARTICLE',
+  payload: { name: 'React Redux Tutorial', id: 1 }
+}
+It is a best pratice to wrap every action within a function. Such function is an action creator.
+
+by using this specific middleware, an action creator can return a function instead of an action object. This way, the action creator becomes a thunk.
+
+
+Actions are plain JavaScript objects. Actions must have a type property that indicates the type of action being performed.
+
+When an action creator returns a function, that function will get executed by the Redux Thunk middleware. This function doesn't need to be pure; 
+it is thus allowed to have side effects, including executing asynchronous API calls. 
+The function can also dispatch actions—like those synchronous actions we defined earlier.
+
+------------------
+
+REdux and server side rendering :-
+This is almost same as discussed at #REFRECSERVERREN in reactnotes.js
+most imp thing you can do here is that we can set a preloaded state also.
+
+	import React from 'react';
+	import { renderToString } from 'react-dom/server';
+	import App from 'App';
+	import reducers from './reducers'					
+	import { createStore } from 'redux'					
+	import { Provider } from 'react-redux'				
+
+
+	server.get('/', (req, res) => {
+		...
+		const store = createStore(reducers)
+		const body = renderToString(<Provider store={store}>
+									  <App />
+									</Provider>
+									);
+		const preloadedState = store.getState()
+
+		...
+		
+		res.send(
+			<htm>
+				<head> </head>						
+				<script> window.__PRELOADED_STATE__ = ${JSON.stringify(preloadedState)) </script> 
+				<meta>.....
+				<div id="contet">
+					....							
+						<div id="app"> ${body} </div>
+					....
+				</div>
+			</html>
+		);
+	}
+
+As you can see server side rendering with React+Redux is almost same as server side rendering with React only.
+Only we set store in a window also.
+After this one more step we need to do is to call 'React.hydrate' function at client side. 
+see it at 'https://redux.js.org/recipes/serverrendering'
+Actully server side rendering hardly ever used. so no need to dive in it
+--------------
+
+preloadedState:-
+You can assign a preloaded state in reducer by two way.
+1.	in reducer file itself  (used 99.9% of the time)
+		function loginReducer(state = {...}, action) {...}
+2.	by passing the object in createstore function at at time of biolerplating.
+		createStore(reducers, {....}, mdlwares)
+First approch is best as it give you very prcise picture of code arch.
+----------
+
+Reading state of reducer in anywhere in app:-
+just import './store'
+But never do the changes in it, as it will be mutation
+
+------------
+Changing state of other Reducer:-
+First of all reducer should be a pure function. it should only calculate the next state from the payload. thats it.
+So changing state of other reducer directly is anti-pattern.
+Even though you wats to do it then do it like below:-
+	import './store'
+	..
+	store.getState().<otherReducer>.name = 'blablabla'
+Also above one is direct mutation of state so this is very very risky.
+--------------
+Dispatching action from reducer:-
+again here is same, reducer should be a pure function. it should only calculate the next state from the payload. thats it.
+so doing this is illigal-
+	loginReducer(state={}, action) {
+	...
+		store.dispatch({...})
+	...
+	}
+Though you can schedule the dispatch in reducer, this is completely file:-
+----------
+Do I have to put all my state into Redux? Should I ever use React's setState()?
+
+There is no “right” answer for this. Some users prefer to keep every single piece of data in Redux, 
+to maintain a fully serializable and controlled version of their application at all times. 
+Others prefer to keep non-critical or UI state, such as “is this dropdown currently open”, inside a component's internal state.
+
+-------------
+
+Calling dispatch in 
+
+in synch :-
+	dispatch(actA)
+	dispatch(actB)
+	dispatch(actC)
+in Asynch :-
+	dispatch(actA)
+	fetch/setTimer(..., () => {
+		dispatch(actB)
+	});
+	dispatch(actC)
+	
+
+	1.	React container/tempalte componenet
+		How TO :-
+			in container- 
+				use mapDispatchToprops here for synch and asynch both
+					mapDispatchtoPRops{....mypropfun: {...dispatch()...}...}.
+				in tempalte:-	
+				use props for synch and asynch both- 
+					this.props.dispatch();
+				In any user driven event you call one of this.
+		What happen:-
+				Its natural.
+				in react part we just do the data display and mapping of events to dispatch. so asynch and any complex 
+				operation involving multiple dispatch should be avoided.
+		output in tamplate/container:
+			syn:-   A->B->C
+			Asyn:-	A->C->B
+				
+	2.	Action creator:-
+		How to :-
+			in synch :-
+				use thunk
+					dispatch(A)
+					return (dispatch) => {
+						dispatch(B)
+					}
+					dispatch(C)
+					flow-
+						A->B->C
+			in asynch :-
+				use thunk
+					dispatch(A)
+					return (dispatch) => {
+						dispatch(B)
+						fetch(...).then(()=>{...dispatch(D)...})
+					}
+					dispatch(C)
+					flow-
+						A->B->C->D
+		What happen:-
+	
+	3.	Reducer :-
+		Reducer should be a pure function and shoud not contains dispatch then its ok. just use store.dispatch
+		How to :-
+		
+		What happen:-
+	
+	4.	Middleware :-
+		How to :-
+			in synch/asynch:- U will got it as formal param in function always -
+				myMiddlwareFun = (state, fispatch) => next => action => {....}
+		
+		What happen:-
+		First thing you must remeber, that if you place the dispatch without ant 'if' condiotion then it will turn into a infinite loop.
+		bcoz every time subsequent dispatch occure then a new dispatch will begin.		
+		(state, fispatch) => next => action => {
+			  if(action.type=='t1')  {
+				dispatch({type: 'fmdb4nxt1'})
+				dispatch((dis, getstate) => {
+					dispatch({type: 'fmdb4nxt2'});
+					setTimeout(() => {
+					  dispatch({type: 'fmdb4nxt3'});
+					  }, 0);
+				});
+			}
+			  next(action);
+			  if(action.type=='t1') dispatch({type: 'fmdafnxt1'})		
+		}	
+
+		suppose you call this in UI:- dispach({type: 't1'})
+		frst it will pass ti middleware.
+		here it will now read the dispatching of 'fmdb4nxt1' so before 't1' reach to reducer, this one will execute first
+		then dispatchung of action-function occure, thunk will execute this function first. and 't1' yet to reach to reduce.
+		so next 'fmdb4nxt2' will come.
+		now 'fmdb4nxt3' will be set up in asynch operation, and it will go in waiting state becz of timeout. so 'fmdb4nxt3' will not come.
+		Now in 'nest()' function the 't1' will reached to reducer finally. here the 't1' will come.
+		after that 'fmdafnxt1' will come as it is obvious.
+		Finally when the waiting of 'fmdb4nxt3' ends, it will also come.
+		Out-
+			fmdb4nxt1
+			fmdb4nxt2
+			t1
+			fmdafnxt1
+			fmdb4nxt3
+			
+		
+----------
+
+dispatch vs store.dispatch:-
+First both of them are same thing, but you should use 'dispatch' all the time.
+for store.dispatch just import your store file.
+
+for other, you get the dispatch in the container viaa mapDispatchToprops funtion. 
+you can pass down this function down to template hirarchy via props.
+also from  		
+
+-----------
+Can i monitor the state change at anywhere:-
+yes! use store.subscribe(()=>{...})
+-----------
+
+Does action and reducer have one-to-one mapping.
+No! a single action can be handled by multiple reduce.
+
+rdf1.j :>
+	...
+	case myActType:
+	...
+	break;
+rdf2.j :>
+	...
+	case myActType:
+	...
+	break;
+
+Also a single reducer can be handle multiple action :-
+	
+rdf2.j :>
+	...
+	case myActType1:
+	case myActType2:
+	case myActType3:
+	...
+	break;
+---------
+
+

@@ -1,0 +1,291 @@
+Scope is what make JS a very complex to understand so lets dive in a hell:
+
+Be any type of Js (Plain/Node/es6/tyescript..)
+There is two (but we say 3) type of scope only 
+	1. Global scope : scope which are attached to 'window' object
+	2. Local scope : scope which are attached to custom object
+	3. Closure	:	Will look sepratly
+
+To understand the scope we will start with plain Javascript.
+No es5 etc. here.
+
+------------inline js or linked .js-------------
+Now we will first understand the behaviour of js in HTML doc <script> tag and .js file which is directly linked to html doc:
+[Plain Js without Node/es5]
+
+Variable declaration: 
+Variable declarion in plain js can be done by 'var' or directly without keyword
+	var byVar = 'mufavar'
+	dir = 'mufdirect'
+
+Lets assume we have an .html file as ->
+
+index.html>>
+	<script> ...JS content... </script>
+	OR
+	<script src="./index.js"> </script>
+	<script src="./index1.js"> </script>
+
+...JS content... and content inside the index.js, index1.js,  behave in 100% same way.
+
+Both of the code will have 'this.' === window object.
+
+Both of the js above is plain js (no es6 or node can play any role) you can declare variable with two type of scope as you know-
+
+Global scope: 
+If you declare a variable outside of any function, at root of .js file or in <script> tag of .html doc. 
+OR
+If you declare a variable inside of any function but without the 'var' keyword. 
+		
+...JS content... >>	
+	<script>
+		var gvInHtml = 'gvInHtmlMuf';
+		gvInHtmlDir = 'gvInHtmlDirMuf';
+	</script>
+
+index.js 
+	var gvInLjs = 'gvInLjsMuf';
+	gvInLjsDir = 'gvInLjsDirMuf'; // BOTH of this line is at root level not in any function.
+	
+
+All this 4 line will become a global variable so you can use them anywhere you wants, they are in the window object.
+So in index1.js >>
+	console.log(gvInHtml); 			//gvInHtmlMuf
+	console.log(gvInHtmlDir); 		//gvInHtmlDirMuf
+	console.log(gvInLjs); 			//gvInLjs
+	console.log(gvInLjsDirMuf);		//gvInLjsDirMuf
+	
+As this are lying in the 'window' object you can aso do this:
+index1.js >>
+	console.log(window.gvInHtml); 			//gvInHtmlMuf
+	console.log(window.gvInHtmlDir); 		//gvInHtmlDirMuf
+	console.log(window.gvInLjs); 			//gvInLjs
+	console.log(window.gvInLjsDirMuf);		//gvInLjsDirMuf
+	
+Aslo as you know 	
+Both of the code will have 'this.' === window object. you can aso do this:
+index1.js >>
+	console.log(this.gvInHtml); 			//gvInHtmlMuf
+	console.log(this.gvInHtmlDir); 			//gvInHtmlDirMuf
+	console.log(this.gvInLjs); 				//gvInLjs
+	console.log(this.gvInLjsDirMuf);		//gvInLjsDirMuf
+
+Global variable inside an function: 
+If you declare a variable inside a function but without a 'var' keyword then it becomes a global one ->
+So above var also can be declare like this:
+
+...JS content... >>	
+	<script>
+		function myFn() {
+			var gvInFn = 'gvInFnMuf';	// This is not a global one
+			gvInFnDir = 'gvInFnDirMuf';  // This is global one
+		}
+	</script>
+
+index.js 
+	function myFn() {
+		var gvInLjs = 'gvInLjsMuf';		// This is not a global one
+		gvInLjsDir = 'gvInLjsDirMuf'; // This is global one
+	}
+	
+
+So in index1.js >>
+	console.log(gvInFn); 			//Error
+	console.log(gvInFnDir); 		//gvInFnDirMuf
+	console.log(gvInLjs); 			//Error
+	console.log(gvInLjsDirMuf);		//gvInLjsDirMuf
+	
+As this are lying in the 'window' object you can aso do this:
+index1.js >>
+	console.log(window.gvInFn); 			//Error
+	console.log(window.gvInFnDir); 			//gvInFnDirMuf
+	console.log(window.gvInLjs); 			//Error
+	console.log(window.gvInLjsDirMuf);		//gvInLjsDirMuf
+	
+Aslo as you know 	
+Both of the code will have 'this.' === window object. you can aso do this:
+index1.js >>
+	console.log(this.gvInFn); 				//Error
+	console.log(this.gvInFnDir); 			//gvInFnDirMuf
+	console.log(this.gvInLjs); 				//Error
+	console.log(this.gvInLjsDirMuf);		//gvInLjsDirMuf	
+
+As like variable methode also behave in same way: 
+if methode is declared at root level then this methode automatically got in 'window' object:
+index1.js >>
+	function() myMeth {
+		console.log(window.gvInFn, this.gvInLjsDirMuf)			
+		console.log(gvInFn, gvInLjsDirMuf)
+		console.log(this.gvInFn, this.gvInLjsDirMuf)
+	}
+	myMeth();
+	this.myMeth();
+	window.myMeth();	
+All three call of 'myMeth' will produce same and valid result.
+
+### Though if you use bind you can change the behaviour (we will look inti it in other chapter)
+	
+Local scope: 
+If you declare a varaible inside any function block AND with the 'var' kayword it will be a local one
+this is very straightforward and we not need to dive here.
+
+------------End inline js or linked .js-------------
+
+---- Node----
+Even if you are using Node or Es6 etc. this is true. 
+If you have a file imported by 'import' of 'require'
+
+in anywhere in the code
+	import api from 'api.js'
+	..
+	
+api.js >>
+	console.log(gvInHtml); 			//gvInHtmlMuf
+	console.log(gvInHtmlDir); 		//gvInHtmlDirMuf
+	console.log(gvInLjs); 			//gvInLjs
+	console.log(gvInLjsDirMuf);		//gvInLjsDirMuf
+	OR
+	console.log(window.gvInHtml); 			//gvInHtmlMuf
+	console.log(window.gvInHtmlDir); 		//gvInHtmlDirMuf
+	console.log(window.gvInLjs); 			//gvInLjs
+	console.log(window.gvInLjsDirMuf);		//gvInLjsDirMuf
+	
+That is why you have access of manu utility functions like 'comnsole', 'JSON', 'atob' in imported and included js file both.
+becoz they all live in window object. 	
+	
+Above will work fine.
+But in api.js you can not do below, because 'this.' in 'import' or 'require' file not reprsent 'window' object
+	console.log(this.gvInHtml); 			//Error 
+	console.log(this.gvInHtmlDir); 			//Error
+	console.log(this.gvInLjs); 				//Error
+	console.log(this.gvInLjsDirMuf);		//Error
+	
+Declaring global variable in imported file:
+First of all file are imported with Node and Node do not allow the use of variable without declaration. 
+So if you use it without var it will throw an error.
+
+As you know 'this.' in imported file does not points to 'window', So even if you do below in 'api.js' at root level of file it eont work:
+api.js	>>
+	this.gvr = 'df'  	// 'this.' is undefined 
+	gvr = 'fgd'			//	you cannot use variable without declaration in Node
+	var gvr = 'fgd'		//  No Error But 'gvr' is local variable here and available in this file only.
+There is one and only one way de declate ablobal variable here: 
+	window.gvr = 'df'	//Correct one and only way
+
+Now on intresting thing: 
+Examin two situation - 
+You said at the root of imported file you can use following statment
+api.js >>
+	var gvrInapi = 'fgd'	
+In the root of js which is in script tag or in direct link of script tage
+<script> OR index.js:
+	var gvrInIndex = 'fgd'	
+Both the syntax is valid but they have very diffrent effect:
+1: 'gvrInapi' will have scope in the 'api.js' file only 
+2: 'gvrInIndex' will have a global scope and can be used anywhere (Given it is used properly after the intialization)
+
+Now for 'gvrInapi' what does file scope mns :-
+Actully when you run the webpack and build the bundle lets say 'bundle.js'.
+in this 'bundle.js' you will see the code of all your imported file including 'api.js' 
+something like this: 
+....bla bla bla... __webpack_require__(47) {..blabla... [api.js code]....}, 
+Now scope of 'gvrInapi' lies in following block there   {..blabla... [api.js code]....}
+	
+### We can say that in case on Node.js we have one more kind of scope that is 'file scope',
+	Though technically it is also Local scope but its available in whole file to use so we may say it 'file scope' 
+
+	
+----END Node----
+
+
+
+----Jquery----
+
+You have to put JQuery link on the top so all the js who are using. jQuery will have window.jQuery or window.$ defined
+If you put the jQuery link properly then
+
+In the jqury lib this lime lie at the bottom :
+	window.jQuery = window.$ = jQuery;
+So
+This both ($ and JQuery) are simplay a global variable which lies in window object.
+And that is whay the variable 'Jquery' is available everywhere, in HTML doc's scripts tags, in linked js(index1.js), in imported JS(api.js).
+
+
+----Jquery----
+---
+In a plan .js file if you have this methode
+
+function onlyFunction(color) { console.log(this); }
+
+Now what 'this' will give in console?
+it depends on the way it called
+
+onlyFunction('red')  										//undefined
+var ff = new onlyFunction('red')  							//newly created Object of 'onlyFunction' class
+vat fBinded = onlyFunction.bind({a:'a'});  fBinded(); 		//{a: 'a'}, because now it will represent the binded object
+---
+
+What does 'this' reprsent in HTML root doc {not inside any methode or class}
+e.g.  <script> console.log(this)</script>
+Here 'this' will reprsent the window object
+---
+
+VVIMP: 
+In the .JS file which are linked directly from .html document, 'this.' at the top level of that .js file will reprsent the 'window' object.
+But if file is called via 'import' of 'required' way, then 'this.' at the top level of that .js will be undefined.
+
+SO do remember this always: 
+This is correct
+	<script src="index.js"> </script>
+	index.js>>
+	----
+		import mi from 'myInternalJs'
+		...
+		console.log(this)			----->>  This will print 'window' object
+		...
+	-----	
+	myInternalJs.js>>
+		----
+		import bla bla...
+		...
+		console.log(this)			----->>  This will print 'undefined'
+		...
+	-----
+	
+DO remember: 
+In above example we are talking abount 'this.' at top level of file, not inside any methode or block.
+'this.' === window if and only if 
+	JS is inline in <script> tage OR file which is diretly linked to .html doc (e.g. index.js)
+	AND
+	'this.' is Used at top level of file or tag (not inside any function)
+
+If it is a .js which is in use but not linked directly to .html, then 'this.' !== window
+
+You use
+import api from 'api.js'
+NOT
+<scrip src="api.js">
+api.js>> 
+	console.log(this.gvInHtml)	  //Error
+	console.log(window.gvInHtml)  //gvInHtmlMuf
+	console.log(gvInHtml)		  //Error
+		
+
+
+### 
+Varoable declaration
+IN JS >>  without keyword, var
+IN Es6 >>  let, const, var, [not possible without keyword]
+
+
+------------------------------------------------------------------------------
+
+As you know if we are in included 'index.js' file then declaring variable wihout 'var', then it will become the global one.
+Javascript in later stage (ES5) provided the way to disable this functionality read 'use stric' in chapter js.txt
+
+
+------------------
+
+
+				
+

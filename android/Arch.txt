@@ -1,0 +1,67 @@
+Static Factoty class
+    KeyGenerator keyGenerator = KeyGenerator.getInstance("");
+
+Factory Pattern:	
+	"I am factory of PERSON, give me raw input and i will create USER/ADMIN/SUPERADMIN from that"
+	PersonFactory() 
+		{	getPerson(){
+			if(...) return user; 
+			if(...) return person; 
+			if(...) return andmin; 
+			}
+		}
+
+Abstract Factory:
+	"I am factory of factory, give me input and i will return factory"
+	MyFactory()
+	{
+		if(...) return personFactory; 
+		if(...) return messageFactory; 
+	}
+
+SingleTon:
+	You know lot already, Lets skip to imp part:
+	is it threag safe: 
+	1. ST.getInstance(): 
+		At the the timer of creation (first entery) it may not be safe,
+		suppose t1 and t2 runnig and both run for getInstance() and there is chances to create two of this instance
+		and so single is no more single.
+		Solution : declare getInstance() synchronized
+	2. ST.getInstance().function():
+		This methode are called for for same obj, and may be called from diffrent thread at a same time so no safe.
+		To make it safe use synchronized {} depends on requirments.
+
+Adapter:
+	"Give me a file i will process it according to its type"
+	MediaAdapter {
+		public MediaAdapter(String audioType){
+			if("vlc")  new VlcPlayer();			
+			if("mp4")  new Mp4Player();  }		         
+
+		play(fileName)  {player.play(fileName);}
+	}
+		
+Builder:
+	Suppose you have large raw data to create a oject than this is best.
+	How:
+	Person 
+	{
+		PersonBuilder{	setters.., Person build() {} ;}
+			
+	}	
+	Person p = new Person().PersonBuilder().set_().set_()....build();
+
+Observer:
+	if a change occure here it must reflect there.
+	interface Observer {onUpdate()}
+	class client a implements Observer {{onUpdate() {..|.}}
+	class client a implements Observer {{onUpdate() {.|...}}
+	class client a implements Observer {{onUpdate() {....|.}}
+	
+	Server{
+		ArrayList<Observer> ol; addObserver (Observer ov) {ol.add(ov)}
+		notifyObservers() {for : ol --> ol.update()}
+	      }
+
+
+		

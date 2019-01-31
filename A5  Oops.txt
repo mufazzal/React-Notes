@@ -1,0 +1,36 @@
+Function MyFuncClass() {
+	this.myByThis = 0;
+	var myByVar = 0;
+	
+	countp() {
+		this.myByThis++;
+		myByVar++;
+		
+	}
+}
+var omyFuncClass = new myFuncClass();
+
+Here 'myByThis' and 'myByVar' both will have same scope and available till 'omyFuncClass' exist.
+But 'myByVar' is private and 'myByThis' is public
+
+so 
+omyFuncClass.myByThis  >> OK
+omyFuncClass.myByVar	>> Error
+
+Also 
+if you call 
+	omyFuncClass.countp();
+	omyFuncClass.countp();
+	omyFuncClass.countp();
+Then
+Both variable will set to 3
+
+But see this now:
+We cahnge the function like this
+	countp() {
+		var locVarinnerFun = 0;
+		this.myByThis++;
+		myByVar++;
+		locVarinnerFun++;
+	}
+if you call omyFuncClass.countp(); here then value of 'locVarinnerFun' will not be prserve and it will be 0 each time on function call

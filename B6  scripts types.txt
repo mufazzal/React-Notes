@@ -1,0 +1,453 @@
+Story of Javascript:-
+Java script is the languane that is evelving each moment, its expansion and usbility have imcrease multifold.
+Now we have more than 20+ browser on mobile nand PC both.
+The pace of enhancement in JS is so fast that no single browser able to match with pace of JS.
+
+This create two major problem:-
+
+1.	Now javascript itself is evelving as a core, like today javascript have advance feature like Promise, fetch, canvas and many thing.
+	The browse may or may not support those advance feature. so there are uncertainity for those feature in diffrent browser.
+
+2.	Now we have many flavoured javascript in the market like:-
+		ES6
+		JSX
+		Typescript
+		Coffescript
+	The problem is each of this flavour contain enhanced syntaxes.
+	The browse may or may not support those advance syntexes. The uncertainty is so high that it may be possible the a one broswer may supoort 
+	some syntex of those script and not other of that same script.
+	
+This two problem increase so much that finally JS community have to sit and decide how to handle this mess.
+
+They come up with graet solution-
+for 1:	For this the solution is that, we will create a lib that will give backward compatibility for all the enhanced features for all the prowser
+		This approch is called polyfill.
+		with polyfill we do not have to worry about the that what advance feature like Promise/fetch etc. will support which browser.
+		polyfil will take care of all of those gaps.
+		Here is the lib:-<script src="https://cdn.polyfill.io/v2/polyfill.min.js"></script>
+		
+for 2:	There may  be many flavour of javascript in future which make the syntaxes more easy, agile and advance.
+		No matter what flavour it is, how the new syntext look like, In the end we will compile that in PLAIN JavaScript code. 
+		We will remove all this advance shit and compile the code to normap plain JS.
+
+		
+ECMAScript:-
+One of the most used flavour of javascript is 'ECMAScript'
+Timeline of ES-
+	ES1 to ES4					-		1997 to 2009
+	ES5							-		2009			strict mode, string.trim() etc.
+	ES 2015 / ES6				-		2015			let, const etc. 
+	ES 2016 / ES7				-		2016
+	ES 2017 / ES8				-		2017
+
+***Perhaps the cause for all of your confusion begins here. You see, ES6 and ES2015 are the same thing.***	
+	
+TypeScript:-
+	This is also very much in use.
+	
+shimming->
+   shim is a abstrsact term, it is a technology to add new or missing behavior to old or legacy technology.
+   Polyfill is also a one kind of shim, it is specifically designed shim to add new js feature in old web browser.
+
+Polyfier:
+	there are many polyfill libs prsent to add the missing feature and api of advance JS in older browser.
+	
+
+
+	
+Babel:-
+This is widely used tool for the javscript building process, it do the main two thing of this JS ecosystem
+		1.	Convert ECMAScript 2015 and higher version of ES** code into a backwards compatible version of JavaScript.
+		2.	Polyfill the missing feature in browser through @babel/polyfill.
+Core Concept-
+Babel is the the js compiler which convert all the flavoured JS code to plain JS also add the missing features for targeted browser.
+
+If you write this code-
+	()=> {...}, 
+	Now if you do not use babel and bundle the same code for distribution, then final code will have exact same code to run on all the browser.
+	This will work fine for the Chrome, but will fail on IE. becoz as usual chrome rapidaly adopt the changes and add the support for such syntax.
+	nd IE is still sleeping in 2009.
+	For this we need babel to bring down al the advance syntext too plain JS or ES5
+	Also
+	In the code if you have used the function like 'fetch' or Promise, then also IE and even some old chrome version will fail on this. As this 
+	is complete new feature of JS, this is not a syntax suger that we just need to transform, this is a complete new functionality of Js that need
+	the browser support. to fill the gap of this missing functionality in browser we need the polyfill.
+	
+	Lukily babel do both the thing together for us.
+
+Basic configuration of babel:-
+suppose you have a code arch like below:
+	projectFolder
+		-	src
+		-	package.json
+		-	dist
+you wants to process code in src and deliver it to dist.
+1.	npm install --save-dev @babel/core			
+	This will install the core lib of babel, this core lib is a platform for transformation, this is must have lib
+	All the plugin and preset use this lib for transformation.
+2.	Create either .babelrc(for static json cofig) or babel.config.js(for dynamic js config) file and place all params in it.
+	This file will tell the babel, its plugin, its preset to how to transform the code. like sequence of plugins, presets, minimum browser required
+	and many other thing, it even have field to pass the param to specific pugin or preset.
+	for more go to google.
+	in this config, you have to install at least one plugin or preset for babel o do some task.
+	Suppose you wants to apply '@babel/preset-env' preset:
+	Then first install it 
+		npm install @babel/preset-env
+	in config-	
+		const presets = [
+		  [
+			"@babel/preset-env", { targets: {edge: "17", firefox: "60", chrome: "67"},
+		  ],
+		];
+3.	finally run this ommand, either from package.json or directly
+	from package.json:
+		script: { 'transform': './node_modules/.bin/babel src --out-dir dist'}
+
+	
+babel plugin:-
+Babel contains large amount of plugins, which transform a specific syntax of specific flavour.
+basically if you write a code with any falvoured JS, then you should configure the babel to run certain plugins of babel in certain order
+to transform and polyfil your code to plain js.
+So babel is highly cofigurable, you can change the sequrnce or add/remove the plugin from it.
+Most of the official plugin are available on npm repository and most of them lies in @babel scopr of thar repository.
+So you can install those plugin by:-
+	npm install @bable/plug_name;
+Although it is very rare that u have to do it manually as most of the time you use preset that have all the information in it.
+
+
+babel Preset: 
+you know that some of the flavour of JS is very famous and usually they required the same sequence of plugin flow to compile the code.
+For this babel provide the special feature. PRESET, it is basically a predifine set of plugin in proper sequence which can be used to compile the 
+specific type/falvour of js
+To use them first you need to install them as like plugin
+		npm install --save-dev @babel/preset-env
+Useful prests:-
+	1.	@babel/preset-es2015	>>	for compiling Javascript ES6 code down to ES5 (please note that babel-preset-es2015 is now to @babel/preset-env)
+	2.	@babel/preset-env 		>> 	advance version on preset-es2015 [it contains very long list of plugin]
+	3.	@babel/preset-react 	>> 	This will transform the jsx [this contain 3 plugins for transformation]
+	4.	@babel/preset-typescript>>	Use it for typescript 
+		
+Almost in all the js code you use preset-env of preset-2015, becoz this will convert the ES6+ to ES5.
+Along with it you may use other presets dependig on js flavours.		
+
+#REFWEBPCKBABEL
+Babel + webpack :-
+1.	almost all of the time you need to set up the babel with webpack (you may ise gulp/grunt also but it is rarre, go google it)
+	First install babel core, A prerequisite to run all the babel plugin, preset.
+		npm insatll @babel/core
+2.	Now install 'babel-loader':, which is a loader of webpack, which process each js file and apply the babel transformation on it.
+	This actully connect the babel library with webpack.
+		npm install --save-dev babel-loader
+3.	Now connect babel-loader and webpack, so when webck do the compiling of code it passes the code through babel too.
+	webpack.config.js>>
+		module: { rules:[
+			{ test: /\.(js)$/, use: { loader: "babel-loader" } }
+		]}
+
+4.	Till now you have set up the babel platform and its connection with webpack. now ask the babel what to do and how to do.
+	You may have use any of flavoured javascript in your code. so you need to add the appropiate plugin/presets to instruct babel for proper transormation.	
+	Now do it via config file
+	to configure Babel! Create a new file named .babelrc inside the project folder:
+		{ "presets": ["@babel/preset-env"]}	
+			
+Babel + webpack + REACT:
+	Here you will need one more preset that is '@babel/preset-react'. so in step 3 and 4 do this small changes
+	You need to take care od jsx file too so
+		{ test: /\.(js|jsx)$/, use: { loader: "babel-loader" } }
+	ask babel to transform with preset-react also so
+		  "presets": ["@babel/preset-env", "@babel/preset-react"]
+	Now babel will forst apply preset-react then preset-env.
+	
+Babel + webpack + Typescript:
+	almost same just use 'preset-typescript' instaed of 'preset-react'
+		
+A additonal feature of webpack : No need of .babelrc :
+	in above case you have to create a .babelrc file and pass confige in it, but if you are running babel on top of webpack then you can pass this
+	config in webpack.config.js >> babel_loader like below-
+	module: { rules:[{
+			test: /\.(js)$/, 
+			use: { loader: "babel-loader", options: { presets: ['@babel/preset-env', "@babel/preset-react"] }}
+	}}];
+
+Note: Though webpack passes throug entru=y tag and then passes to internal dependency. lets sat you use react and have 'import react from react' in your code.
+		Now webpack and babel-loader will apply the transformation to react library too. 
+		This is completely useless and time comsuming decoz precompiled libs are alreday in optimized form and no need for re-transformation
+		So lets exclude them all from passing in babel-loader
+		
+	module: { rules:[{ 	
+			test: /\.(js)$/, 
+			exclude: /node_modules/,
+			use: { loader: "babel-loader", options: { presets: ['@babel/preset-env', "@babel/preset-react"] }}
+	}}];		
+		
+		
+In below-
+var funm = () => {					---> This will be processed by @babel/preset-env as arrow function is the ES6 feature
+	return <div> ... </div>			---> This will be processed by @babel/preset-react as it is jsx
+}		
+		
+		
+babel config file:-
+	.babelrc ->   {...}
+	babel.config.js	->	module.export = {...}
+		
+--------------------------------------------	
+
+
+LintinG-
+
+As the Js grow and added the new flavoured js too, it is become very difficult to identify the common error or comon unnnecessay code 
+So a new technology evolved to just remove such kind of error and mistakes.
+For the ES falvour the one of most used is ESlint
+Its goal is to find out common error and mistakes in code.
+It is highly confogurable. Ypu can ask the eslint to throw, warn or ignore any kind of such mistakes.
+ESlint first parse the code then evalutaes sentexes to see the error pattern.
+ESLint uses Espree parser for JavaScript parsing.
+
+How it works-
+You have to set uop couple of thing to work it properly
+You must and must need a eslint installed on your node module, this is the platform for doing all the linting test.
+	npm install eslint --save-dev
+Now your platform is ready to use.
+Here you have a eslint reday for you, but now you have to instruct and guid it for what to do and how.
+Now to instruct it properly create a .eslintrc  near package.json
+Giving the instruction is bit od complex lets dive in it-
+For this you have to set the rule object in that file, which will have a long list of rule to instruct the eslint for how to behave if that 
+rule is violated.
+EG:
+	"rules": {
+        "semi": ["error", "always"],
+        "quotes": ["error", "double"]
+    }
+You can provide the long list of such rule in the file adn if set properly then it will make your code very uniformed.
+The first value in array could ne 'off'/0, 'warn'/1, 'error'/3.
+This will decide that vioation of this rule should nbe taken as one of three.
+semi:> it instruct that there should be a semicolon at the end of each statement, otherwise lint will throw error.
+As you know there could be may such syntexual scenarion could come, for each such senarion you ca set the bahvior rule for lint
+For complete liast go to - https://eslint.org/docs/rules/
+
+Now problem is:
+You have lot of such rule and it is stupidity to set all of them every time for each project in the universe.
+So ESlint collect them all and provide a complete set of that rule in 'eslint:recommended'
+To use collection of that rulesyou should use extends tag in eslintrc file
+So we will remove above two rule and add extends.
+	{
+		extends: 'eslint:recommended',
+		rules: {}
+	}
+This will enable all the rule that are listed with right-sign icon on left on https://eslint.org/docs/rules/
+If you wants additonal rule then add them also 
+EG: 'indent' rule on ' https://eslint.org/docs/rules/' is not included on 'eslint:recommended' so add it as-
+	{
+		extends: 'eslint:recommended',
+		rules: {
+		 "indent": ["error", 4],
+		}
+	}
+Now you have installed the eslint and set it up with instruction.
+lets play them all together-
+careate one file somwhere in your project and put the code in it
+	eslinttester.js>>
+	var t = 0
+Now test it with eslint-
+	node .\node_modules\eslint\bin\eslint .\src\modules\mod1\eslinttester.js
+You will see the result-
+	-->>   1:5  error  't' is assigned a value but never used  no-unused-vars
+This is because 'eslint:recommended' add this rule. see the list on  https://eslint.org/docs/rules/.
+semicolon rule is not by default added in eslint:recommended so lets add it by ourself
+	{
+		extends: 'eslint:recommended',
+		rules: {
+		 "indent": ["error", 4],  "semi": ["error", "always"], 
+		}
+	}
+Now if you run the lint, then you will get two error-
+	1:5   error  't' is assigned a value but never used  no-unused-vars
+	1:10  error  Missing semicolon                       semi
+You can modify existint rule also
+	{
+		extends: 'eslint:recommended',
+		rules: {
+		 "indent": ["error", 4],  "semi": ["error", "always"], "no-unused-vars": ["warn"]
+		}
+	}
+Now output be-
+  1:5   warning  't' is assigned a value but never used  no-unused-vars
+  1:10  error    Missing semicolon                       semi
+
+console if by default give error in lint if 'eslint:recommended' is used, so at development time add this in rule-
+	no-console: ["off"]
+  
+>> To run on complete directory us-
+	node .\node_modules\eslint\bin\eslint .\src\modules\mod1\**.js
+  
+Eslint and global variable:-
+You know that js now work on lot of things like you can run it on browser, node, backend, shelljs, nashorn. jest, ES6, JQuery etc.
+Now they all have some of the global variable on it
+EG: browser has window, document, console.
+JQuery have $
+node has process.
+But ESlint by himself not aware of this. So you have to tell him about the enviorment in .eslintrc by-
+  "env": { "browser": true, "node": true },
+If you do not do it then ypu will get error on uses of any such global variable
+EG: 
+ console.log()-->
+ 2:3   error  'console' is not defined                      no-undef
+  
+ESLint + ES6:-
+  ES6 now contains many new syntexes which are not supported by Espree parser of ESlint. So we need to use the 
+  advance parser for this that is 'babel-eslint'. this parser support all the ES6 syntex that babel also support.
+  This parser is widely use for lintung ES6 code. 
+  First install it
+	npm i --save-Dev babel-eslint;
+  If you are using the ES6 in your code then you have mention it in .eslintrc as following
+  {
+	"parser": "babel-eslint",
+    "parserOptions": {"ecmaVersion": 6, "sourceType": "module",},		>> to enable export/import + ES6 feature
+    "env": {"es6": true, "browser": true, "node":    true,},   			>> to set enviorment of ES6
+    "extends": ["eslint:recommended", ],    
+    "rules": {....}
+ }
+For detail abouth each one go to 'http://www.zsoltnagy.eu/use-eslint-like-a-pro-with-es6-and-react/'
+If you do not set the above one properly for ES6 then you will get error on-
+	var fun = () => {};
+
+ESLint + ES6 + React:-
+For this you have to use eslint-plugin-react.
+first install it 	npm install eslint-plugin-react	
+now set couple of thing in .eslintrc
+{
+	"parser": "babel-eslint",				--> So that we can parse the advance ES6 syntaxes
+    "plugins": ["react"],					--> tell ESlint about this plugin, You can remove the prefix 'eslint-plugin-*'
+    "parserOptions": {
+        "ecmaVersion": 6,
+        "sourceType": "module",
+        "ecmaFeatures": { "jsx": true }		--> becoz react use the JSX
+    },
+    "env": {
+        "es6":     true,
+        "browser": true,
+        "node":    true,
+		"jquery": true,
+    },   
+    "extends": [
+        "eslint:recommended", 
+        "plugin:react/recommended"			--> This will lot of rule related to react and JSX
+    ],    
+    "rules": {
+    }
+}
+
+ESlint in projevt:-
+best way to run the selint in project is to define the script in package.json:
+	scripts: {
+		lint: "ESlint src/**/*.js src/**/*.jsx"
+		lintFix: "ESlint src/**/*.js src/**/*.jsx --fix"
+		build: "npm run lint && npm run webpack"
+	}
+
+Lint and fix :>
+Above we see how the ESlint examine the code then find violation and finally report those violation.
+But it is more smart than you think, It can even fix those violation in the source codeIt will actully change the source code that developer write 
+and fix some of such violation.
+But do remember that it can not fix all the violation, only some of very easy and basic things it can take care of.
+EG:
+	it can fix unexpected indent, missing semicolon, unwanted spaces and tabs.
+	But it wont fix uses of console, unused variable etc.
+To enable auto fix you have to pass --fix in command line.
+So if you run this command-
+	node .\node_modules\eslint\bin\eslint .\src\modules\mod1\eslinttester.js --fix
+It will change source code of developer, and remove possible violation. (not all)	
+
+VVVIMP:>
+babel VS ESLint-
+babel transpile and generate a complete new code for building
+ESLint examine the code of developer, find violation, do possibe fixes it in the same code, finally give report about violation But unlike
+		babel it do not generate new source code.
+		
+ 
+Enable/Disable ESLint: 
+You can enable or disable the ESlint on a specific part of code simpaly by adding a appropiate comment-
+	/* eslint-disable */
+	debugger;
+	/* eslint-enable */
+After this ESLint will not give any error for vioalation of rule.
+You can even specify the specific rule to be violated-
+	/* eslint-disable no-debugger */
+	debugger;
+	/* eslint-enable no-debugger */
+ 
+
+Customized global variable:-
+Many time through build process in webpack you add the enviorment specific variable, which will be converted to string after webpack processing
+[see webpack.DefinePlugin(...)]
+But ESlint do not understand it. becoz ESlint has to run before the babel to get the violation in development code.
+So Eslint will ive error-
+	
+	in webpack.config.js-
+		new webpack.DefinePlugin({'env': 'DEV'}); 
+	in source js-
+		if(env === 'DEV') ....
+This will give error by ESlint-
+	error    'env' is not defined             no-undef
+You can simpaly ignore the ESlint by- 	  
+	/* eslint-disable */
+	if(env === 'DEV') ....
+	/* eslint-enable */	
+Remeber after the babel it will be converted to 	if('DEV' === 'DEV') ....
+You can intimate the ESlint about the global varibale prsent in the code by simpally adding this line in the code-
+	/* global env, reg */
+Generally the global are never change, and if you wants ESLint to observe such violation you can pass boolean to allow/disallow changes in global
+	/* global env: false, reg: true */
+
+You can also specify it in .eslintrc
+	"globals": {
+        "env": true,
+        "reg": false
+    }
+	
+-------
+Webpact + Eslint
+You can run the lint directly through the command 'eslint' or you can run it in webpack phase.
+For this use 'ESlint-loader' 
+just apply it before any transpiler like 'babel-loader'/'typescript-loader'
+Do remember to apply it before babel, not after because you need to analyze orignal code for violation not the generated one.
+For more detail-
+	https://github.com/webpack-contrib/eslint-loader
+  
+-------------------------------------------------------------------------------------------------------------
+Javascript: 
+
+Coffescript:
+
+BabalScript:
+
+Fortunately the Babel loader supports transforming both ES2015 and JSX which means we can get away with using a single loader 
+instead of requiring both the babel-loader and the jsx-loader.
+
+
+Es6:
+
+BabalScript
+
+JSX
+
+You do not have to use specific file extension for using above any script, loader automatically detect it and parse it.
+
+MAin advatage of ES6 is that it add the class syntax
+
+
+
+Diffrent flavour of the javascript may or may not be supported by diffrent browser, even some browser can support some feature of some flavour of those scripts.
+So to write a code that run on all browser is hell of the task. 
+EG:-
+IE not at all support any ES6 synyex.
+But Chrome support fat arow '=>' But do not support 'class'
+
+To handle all of this shit, is to best thing to convert all the code in the simple javascript.
+But who will do thisWelcome BABEL.
+
+Babel-
+Babel is a JavaScript transpiler that converts edge JavaScript into plain old ES5 JavaScript that can run in any browser (even the old ones).
+It makes available all the syntactical sugar that was added to JavaScript with the new ES6 specification, including classes, fat arrows and multiline strings.
+

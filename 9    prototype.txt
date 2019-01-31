@@ -1,0 +1,628 @@
+As you already know we can create the object by multiple way
+E.G.
+var obj = {} 	OR 		new Object()  	OR   	new Person()
+with all this way you create objevt you can do one common thing , You can call those function 
+obj.toString()
+obj.hasOwnProperty()
+obj.valueOf()
+etc...
+
+So how does it possible, If we have never define this methode in the object then how this are available here?
+Answer is 'Inheritance' OR 'Prototype'.
+
+A prototype is an object from which other objects inherit properties
+
+
+But do not confuse with the JAVA here. Javascript the the inheritence in slightly diffrent way. 
+It do the inheritance on OBJECT level not on CLASS level.
+And this object is shared among all its child Objects in READ ONLY way
+
+Suppose you have two methode(constructor) and wanys relation in them
+	function Person(name) {
+		this.name = name;
+		this.setName(name) {this.name = name}
+	}
+	
+	function Employee(empId) {
+		this.empId = empId;
+	}
+	
+
+What you inherit is an instance of class not a class itself and the those who are inheriting is also a instances of class not a class.
+In normal java case we will say, Hey 'Employee' will extend 'Person'
+But in JS we will say
+An instance of 'Person' is extendet by all the instances of 'Employee'
+And this instance of 'Person' is shared among all the instance of 'Employee', but instances of employee cannot change instace of 'Person'
+
+As we said it is Object based inheritace so first u have to create a object of 'Person'
+
+	var personObj = new Person('No Name');
+
+Now you wats that every instance(not class) of 'Employee' must be a child of 'Person'
+basically every 'Employee' instance (not class) when created must have some pre-setted properties of 'personObj' (not 'Person') in it.
+Now from the above point you understand that 'personObj' is an instace that is shared among all the instance of 'Employee'
+So we must have an relationship between 'Employee' methode/constructor/class (not instance) with 'personObj' (not class)
+
+	Employee.prototype = personObj;
+### in the console if you print em1/em2/em3 you can see that __proto__ will point to 'Person {..}'	and it will be same for all and 'personObj'
+	
+So whenever you make a object of class 'Employee', You will automatically have access to read (not write) of 'name' property in it.
+E.G. 
+	Employee em1 = new Employee('111');
+	Employee em2 = new Employee('222');
+	Employee em3 = new Employee('333');
+	
+	em1.name === em2.name === em3.name === 'Default Name'; >> They all will point to same and 100% same pointer.
+
+Now all the values in 'personObj' is attached with em1.__proto__/em2.__proto__/em3.__proto__
+
+How to access the inherited values: 
+You can do it by 
+	1.	em1.name
+	2.	em1['name']
+	3.	em1.__proto__.name
+
+
+console.log(em1) >>
+Employee :{empId: "111"}
+		__proto__ : Person {name:"No name"}			----------- ==='personObj'
+							__proto__: Object.prototype									----------- === Default JS object
+							
+console.log(em2) >>
+Employee :{empId: "222"}
+		__proto__ : Person {name:"No name"}			----------- ==='personObj'
+							__proto__: Object.prototype									-----------	=== Default JS object
+							
+console.log(em3) >>
+Employee :{empId: "333"}
+		__proto__ : Person {name:"No name"}			----------- ==='personObj'
+							__proto__: Object.prototype									-----------	=== Default JS object			
+
+BUT BUT BUT 
+You said they all point to same pointer, then what will happen if one of then changed the value. Will it reflect for all?
+Because if yes then whole system will be unstable. 
+that is why i said it 'in JS inherited object is shared in readonly mode'
+If you try to change the value which are inherited from __proto__ then instead of updating it in __proto__, 
+JS engine will create a new variable of same name in child object with new value and keep the one in __proto__ unchanged.
+
+So if you do anything below (Overrideing the parent property): 
+	1.	em2.name = 'Mufa';
+	2.	em2.setName('Mufa')
+	3.	function EmployeeMuf() { ... this.name = 'mufa'  ...};  EmployeeMuf.prototype = personObj.
+In all 3 case 'personObj' will remains unchanged and __proto__ of em1/em2/em3 and somthing like this will happen
+
+console.log(em1) >>
+Employee :{empId: "111"}
+		__proto__ : Person {name:"No name"}			----------- ==='personObj'
+							__proto__: Object.prototype									----------- === Default JS object
+							
+console.log(em2) >>
+Employee :{empId: "222", name: 'Mufa'} <<---HERE
+		__proto__ : Person {name:"No name"}			----------- ==='personObj'
+							__proto__: Object.prototype									-----------	=== Default JS object
+							
+console.log(em3) >>
+Employee :{empId: "333"}
+		__proto__ : Person {name:"No name"}			----------- ==='personObj'
+							__proto__: Object.prototype									-----------	=== Default JS object	
+
+
+							
+See the value of em2 now, Here you can see a new property is added and the one in __proto__ remain intact,
+So any change done on prototype properties of any child instance will reflect over that instance only not on their other sibling.
+So After overriding you will see somthing like below :
+
+	1.	em2.name				>> 'Mufa'
+	2.	em2['name']				>> 'Mufa'
+	3.	em2.__proto__.name		>> 'No name'
+	1.	em1.name				>> 'No name'
+	2.	em1['name']				>> 'No name'
+	3.	em1.__proto__.name		>> 'No name'
+	1.	em3.name				>> 'No name'
+	2.	em3['name']				>> 'No name'
+	3.	em3.__proto__.name		>> 'No name'
+	1.	personObj.name			>> 'No name'
+	2.  personObj['name']		>> 'No name'
+	
+
+Now but do remember one thing if you change the value in 'personObj' itself then this change will reflect at everywhere in __proto__. but not on overrided one
+	personObj.name = "Changed one"
+Then:
+	1.	em2.name				>> 'Mufa'
+	2.	em2['name']				>> 'Mufa'
+	3.	em2.__proto__.name		>> 'Changed one'
+	1.	em1.name				>> 'Changed one'
+	2.	em1['name']				>> 'Changed one'
+	3.	em1.__proto__.name		>> 'Changed one'
+	1.	em3.name				>> 'Changed one'
+	2.	em3['name']				>> 'Changed one'
+	3.	em3.__proto__.name		>> 'Changed one'
+	1.	personObj.name			>> 'Changed one'
+	2.  personObj['name']		>> 'Changed one'
+	
+Also observe: setName() is function of 'Person', if you call it with 'Employee' instance also it possible but 
+chnges will not reflect actual inherited 'personobj' but it will be overrided on new property on child instance.
+
+Now how JS find if property is in __proto__ or not: 
+So it work like that 
+If you call emp1.name or emp2.name etc to READ.
+	First it will look into all the property of 'Employee' (bottom child class)
+	If he find it then read it (in case of emp2).
+	If not then it goes into the __proto__ (in case of emp1.__proto__)
+	Now read all the properties in emp1.__proto__
+	if he find any property in emp1.__proto__ with name 'name' then return it
+	If not then it will repeate the same process with   emp1.__proto__.__proto__
+	This process repeate till we reached Object class as __proto__
+	If he finally find it then fine othertwise give error 'undefined'
+	
+	
+--------
+Now remember by default all the object no matter how it created 
+var obj = {} 	OR 		new Object()  	OR   	new Person()
+they all have default prototype as an empty object'{}' and this empty object hase __proto__ as 'Object' instance of object class
+That is why we have following function all the time available: 
+	obj.toString()
+	obj.hasOwnProperty()
+	obj.valueOf()
+so if you call obj.toString then we travese through all the __proto__ and finally call it from Object-class instance (Given it is not overrided)
+
+E.G. for 'Person' objects
+	Person {name: "Default Name", setName: ƒ}
+			__proto__: {}
+						__proto__:Object()
+									hasOwnProperty()
+									toString()
+									...
+--------
+
+But protype has one very big flaw:
+if you change the child class prototype like this :
+	Employee.prototype.name = 'risky way';
+It will reflect everywhere (exept overrided one).
+This actully have the simillar effect as  
+	personObj.name = "Changed one"
+So Remeber: 
+			Employee.prototype.name === personObj.name >> They both point to same object
+So after
+	Employee.prototype.name = 'risky way';
+	
+	1.	em2.name				>> 'Mufa'
+	2.	em2['name']				>> 'Mufa'
+	3.	em2.__proto__.name		>> 'risky way'
+	1.	em1.name				>> 'risky way'
+	2.	em1['name']				>> 'risky way'
+	3.	em1.__proto__.name		>> 'risky way'
+	1.	em3.name				>> 'risky way'
+	2.	em3['name']				>> 'risky way'
+	3.	em3.__proto__.name		>> 'risky way'
+	1.	personObj.name			>> 'risky way'
+	2.  personObj['name']		>> 'risky way'
+	
+-----------
+
+with the prototype you can add aproperty in in instace and it will be available to others too:
+	Employee.prototype.sapId = 'sap4561285';
+Now:
+	1.	em2.sapId				>> 'sap4561285'
+	2.	em2['sapId']			>> 'sap4561285'
+	3.	em2.__proto__.sapId		>> 'sap4561285'
+	1.	em1.sapId				>> 'sap4561285'
+	2.	em1['sapId']			>> 'sap4561285'
+	3.	em1.__proto__.sapId		>> 'sap4561285'
+	1.	em3.sapId				>> 'sap4561285'
+	2.	em3['sapId']			>> 'sap4561285'
+	3.	em3.__proto__.sapId		>> 'sap4561285'
+	1.	personObj.sapId			>> 'sap4561285'
+	2.  personObj['sapId']		>> 'sap4561285'
+	
+---------
+
+What will happen if:
+Person.prototype.income = 100;
+As of now person is extending an empty object instance so after this it will add 'income' in this empty object like this
+
+	Person {name: "Default Name", setName: ƒ}
+			__proto__: {income: 100}
+						__proto__:Object()
+									hasOwnProperty()
+									toString()
+									...
+									
+Also this propert 'income' now also availble to all its child via __proto__
+
+	1.	em2.income							>> '100'
+	2.	em2['income']						>> '100'
+	3.	em2.__proto__.__proto__.income		>> '100'
+	1.	em1.income							>> '100'
+	2.	em1['income']						>> '100'
+	3.	em1.__proto__.__proto__.income		>> '100'
+	1.	em3.income							>> '100'
+	2.	em3['income']						>> '100'
+	3.	em3.__proto__.__proto__.income		>> '100'
+	1.	personObj.income					>> '100'
+	2.  personObj['income']					>> '100'
+
+Now suposse if i change 
+	em2.income	= 900;
+In this case 'em2' will have a new perameter of same name in its object but the one in prototype will remain same.
+
+	1.	em2.income							>> '900'
+	2.	em2['income']						>> '100'
+	3.	em2.__proto__.__proto__.income		>> '100'
+	1.	em1.income							>> '100'
+	2.	em1['income']						>> '100'
+	3.	em1.__proto__.__proto__.income		>> '100'
+	1.	em3.income							>> '100'
+	2.	em3['income']						>> '100'
+	3.	em3.__proto__.__proto__.income		>> '100'
+	1.	personObj.income					>> '100'
+	2.  personObj['income']					>> '100'
+	
+----------
+
+'prototype' is the keyword useful with function name/constructor/class not with instance name.
+	Employee.prototype --> Make sense
+	BUT
+	em2.prototype --> makes no sense[it will just a one property of em2 with name 'prototype' nothing else] 
+	em2.prototype has nothing to do with inheritence. 
+	BUT
+	em2.__proto__  has everything to do with inheritence
+	
+----------
+
+Inheritance for the object whithout constructor:
+	var a = {city: 'bar'}
+If you wnats this instace in be child of 'Person' Do this
+	a.__proto__ = personObj;
+Not
+	a.prototype = personObj;
+
+---------
+IMP __proto__ point to the pointer so any change here will reflect everywhere (except overrided one)
+If you change like this
+	em1.__proto__.name = 'dddd'
+
+	1.	em2.name				>> 'Mufa'
+	2.	em2['name']				>> 'Mufa'
+	3.	em2.__proto__.name		>> 'dddd'
+	1.	em1.name				>> 'dddd'
+	2.	em1['name']				>> 'dddd'
+	3.	em1.__proto__.name		>> 'dddd'
+	1.	em3.name				>> 'dddd'
+	2.	em3['name']				>> 'dddd'
+	3.	em3.__proto__.name		>> 'dddd'
+	1.	personObj.name			>> 'dddd'
+	2.  personObj['name']		>> 'dddd'
+
+	
+So Remeber: 
+			Employee.prototype.name === personObj.name === em2/em1/em3.__proto__.name		>> They both point to same object
+
+
+Also remember: 
+If you are inside the constructor of any class, you can also add the prototype there: e.g. :
+	function Employee() {
+		this.eId = 'empmuf';
+		this.__proto__.secrtId = 'sId';
+	}	
+Actully this one will have same effect as 
+	em2/em1/em3.__proto__.secrtId = 'sId';
+
+	1.	em2.secrtId					>> 'sId'
+	2.	em2['secrtId']				>> 'sId'
+	3.	em2.__proto__.secrtId		>> 'sId'
+	1.	em1.secrtId					>> 'sId'
+	2.	em1['secrtId']				>> 'sId'
+	3.	em1.__proto__.secrtId		>> 'sId'
+	1.	em3.secrtId					>> 'sId'
+	2.	em3['secrtId']				>> 'sId'
+	3.	em3.__proto__.secrtId		>> 'sId'
+	1.	personObj.secrtId			>> 'sId'
+	2.  personObj['secrtId']		>> 'sId'
+---------
+
+NOw lets exammine Methode ovveriding:
+This also work in same way as the property. 
+If you override it in child class. It will not implact the orignal one in __proto__, but rather create anew function in that object itself.
+So all the concepts above is valid here too.
+
+Now let see if you override the methode but wants to use one in parant too [Call super methode] :
+In the class->
+	this.__proto__.printInfo();
+outside the class->	
+	emp1.__proto__.printInfo();
+	
+	emp1.printInfo();   and     this.printInfo() will call the overrided one.
+
+But when you add methode in prototype, you must remember that the body of methode should not have a nonexisting variable : 
+E.G.:
+	function Employee() {
+		this.eId = 'empmuf';
+		this.__proto__.printInfo = functio() {console.log(this.eId + ' -- ' + this.name)}
+	}
+Now the methode 'printInfo' will be available to all the child whose parant is sam as of 'Employee'.
+So this methode is avaiable to all the child of 'Person' class.
+But
+Its working may be depend of avilability of variable used in this methode.
+Because here 'this.name' is available to all the child but 'this.eid' is not, 'this.eId' is available only to the instances of 'Employee'
+
+SO 
+
+	1.	em2.printInfo()					>> empmuf -- Mufa
+	3.	em2.__proto__.printInfo()		>> empmuf -- Mufa
+	1.	em1.printInfo()					>> empmuf -- dddd
+	3.	em1.__proto__.printInfo()		>> empmuf -- dddd
+	1.	em3.printInfo()					>> empmuf -- dddd
+	3.	em3.__proto__.printInfo()		>> empmuf -- dddd
+	1.	personObj.printInfo()			>> undefined -- dddd
+	
+---------
+Above discussed inheritence is used lesser time, most of the time it is done with 'Object.create'
+Syntax:
+	Employee.prototype = Object.create(Person.prototype);
+Above statement will create a new object with all the perametrs of 'Person.prototype', and then all instance of 'Employee' will auto inherited them.
+By this way the child classes will have all the variable/function which are set in prototype of 'Person'. But it will not have the variable 
+declare with 'this.' in 'Person'
+
+	function Person(name) {
+		this.name = name;
+		this.setName(name) {this.name = name}
+	}
+	Person.prototype.income = 5978;
+	Person.prototype.getInf = function() {...};
+	
+	Employee.prototype = Object.create(Person.prototype);
+
+Now 'name' and 'setName' is not avialable to em1/em2/em3
+But 'income' and 'getInf' is avialable to em1/em2/em3
+
+Why do we need this?
+	1.Employee.prototype = Object.create(Person.prototype);			VS			2.Employee.prototype = personObj
+In the methode '2' you basically inherit all the thingg of the 'personObj', without any discrimination. 
+But in the methode '1' you will be able to extend only those which are declared through 'Person.prototype'
+In methode '2' you inherit the object itself.
+In methode '1' you inherit the properties defined in the 'prototype' of that class.
+In methode '2' a single object 'personObj' will be shared among all the child.
+In methode '1' a single object 'Person.prototype' will be shared among all the child.
+
+IF you use this approch then any property declared in instance 'Person' with 'this.' will not be inherited by any instance of 'Employee' class.
+For better view see in 'proto.docx' and observe ::
+
+	'p1/p2/p3.name' : valid because 'name' in declared with 'this.' in respective 'Person' object
+	'p1/p2/p3.comp'	: valid because 'comp' in declared with 'Person.prototype' and so shared among all the 'Person' object
+	
+	'e1/e2/e3.name' : invalid because 'name' in declared with 'this.' in respective 'Employee' object neither it is available in '__proto__' heirachy
+	'e1/e2/e3.comp'	: valid because 'comp' is available in '__proto__' heirachy
+
+
+If you change 'incodme by 'Person.prototype.income' or 'person.__proto__.income' the change will apear everyehere.
+	Person.prototype.income = '3454'	OR    person.__proto__.income = '3454'
+	1.	em2.income					>>3454
+	3.	em2.__proto__.income		>>3454
+	1.	em1.income					>>3454
+	3.	em1.__proto__.income		>>3454
+	1.	em3.income					>>3454
+	3.	em3.__proto__.income		>>3454
+	1.	personObj.income			>>3454
+
+If you change 'income' ny 'Employee.prototype.income' or 'em1/em2/em3.__proto__.income' then a new perameter of same name 'income' will be created in 
+Employee.prototype as 'Employee.prototype.income' OR 'em1/em2/em3.__proto__.income'. 
+But 'Person.prototype.income' OR person.__proto__.income OR em1/em2/em3.__proto__.__proto__.income remain same as '5978'
+	Employee.prototype.income = '85269'	OR    Employee.__proto__.income = '85269'
+	1.	em2.income							>>85269
+	3.	em2.__proto__.income				>>85269
+	3.	em2.__proto__.__proto__.income		>>5978
+	1.	em1.income							>>85269
+	3.	em1.__proto__.income				>>85269
+	1.	em3.income							>>85269
+	3.	em3.__proto__.income				>>85269
+	1.	personObj.income					>>5978
+	
+Object.create also accept the second perameter also:
+
+This second perameter is the array of propeties that you wants to add in child objects, But there are certain rule to this.
+Suppose you wants to add an property 'pocHr' and 'pocPayment' for object of employees through Object.create (not directly like this.pocHr = 'ss'): 
+Now craete a array of properties with its value in gived formate:
+	var parr = [{pocHr: {value: 'sima'}}, {pocPayment: {value: 'rima'}},];
+Now pass it in 'Object.create'
+	Employee.prototype = Object.create(Person.prototype, parr);
+
+Now check:
+	1.	em2.pocHr					>> 'sima'
+	2.	em2['pocHr']				>> 'sima'
+	3.	em2.__proto__.pocHr			>> 'sima'
+	1.	em1.pocHr					>> 'sima'
+	2.	em1['pocHr']				>> 'sima'
+	3.	em1.__proto__.pocHr			>> 'sima'
+	1.	em3.pocHr					>> 'sima'
+	2.	em3['pocHr']				>> 'sima'
+	3.	em3.__proto__.pocHr			>> 'sima'
+	1.	personObj.pocHr				>> undefined
+	2.  personObj['pocHr']			>> undefined
+	
+All the object of 'Employee' will 
+	
+BUT BUT BUT 
+	em2.pocHr = 'tina'	//It will give Error
+the propery passed in the 'parr' will be read only and if you wants it to be changable, then you must pass some more perameter in it:
+
+	var parr = [{pocHr: 	 {value: 'sima', writable: true, configurable: true, enumerable: true  }}, 
+				{pocPayment: {value: 'rima', writable: true, configurable: true, enumerable: true  }},
+			   ];
+Then only you can change its value.
+Also if you change the value it will create the new value of same key in the 'Employee' object, It does not change anything in the origanal vaue.
+So after em2.pocHr = 'tina'
+
+	1.	em2.pocHr					>> 'tina'
+	2.	em2['pocHr']				>> 'tina'
+	3.	em2.__proto__.pocHr			>> 'sima'
+	1.	em1.pocHr					>> 'sima'
+	2.	em1['pocHr']				>> 'sima'
+	3.	em1.__proto__.pocHr			>> 'sima'
+	1.	em3.pocHr					>> 'sima'
+	2.	em3['pocHr']				>> 'sima'
+	3.	em3.__proto__.pocHr			>> 'sima'
+	1.	personObj.pocHr				>> undefined
+	2.  personObj['pocHr']			>> undefined
+	
+---------
+
+Note taht : 
+
+Employee.prototype.__proto__ === e1/e2/e3.__proto__.__proto__ === Person.prototype
+-----------
+
+	var p1/p2/p3 = new Person();
+	var e1/e2/e3 = new Employee();
+	var ep = Object.create(Person.prototype);
+	Employee.prototype = ep;
+	
+	p1/p2/p3 = {name: 'muf/hus/sha'}
+	e1/e2/e3 = {eId:  '111/222/333'}
+	
+If you do 
+	Person.prototype.comp = 'Acc'
+It will do: 
+	p1/p2/p3 >> {name: 'muf/hus/sha'} __proto__ >> 										{comp: Acc}
+	e1/e2/e3 >> {eId:  '111/222/333'} __proto__ >> ep{pocHr: 'sima'} >> __proto__ >> 	{comp: Acc}
+	
+::	a single 'Person.prototype' object is '__proto__/prototype' of all the object of 'Person' class.
+::	a single 'ep' object is '__proto__/prototype' of all the object of 'Employee' class and '__proto__' of 'ep' is 'Person.prototype'
+::	In both of the line '{comp: Acc}' refer to same object which is shared among them 
+
+
+
+	
+If you do 
+	Employee.prototype.isSap = true; 	OR		e1/e2/e3.__proto__.isSap = true;		OR 		ep.isSap = true;	
+It will do: 
+	p1/p2/p3 >> {name: 'muf/hus/sha'} __proto__ >> Object										  {comp: Acc}
+	e1/e2/e3 >> {eId:  '111/222/333'} __proto__ >> ep{pocHr: 'sima', isSap: true} >> __proto__ >> {comp: Acc} 
+	
+::	'Employee.prototype' OR 'e1/e2/e3.__proto__' point to '__proto__/prototype' of 'Employee' class not of 'Person' class.
+		So it will change the 'prototype' of 'Employee' not 'Person'
+	
+	
+	
+If you do 
+	Employee.prototype.isSap = false; 	OR		e1/e2/e3.__proto__.isSap = false;		OR 		ep.isSap = false;	
+It will do: 	
+	p1/p2/p3 >> {name: 'muf/hus/sha'} __proto__ >> Object										   {comp: Acc}
+	e1/e2/e3 >> {eId:  '111/222/333'} __proto__ >> ep{pocHr: 'sima', isSap: false} >> __proto__ >> {comp: Acc} 
+	
+::	'Employee.prototype' OR 'e1/e2/e3.__proto__' point to '__proto__/prototype' of 'Employee' class not of 'Person' class.
+		So it will change the 'prototype' of 'Employee' not 'Person'	
+::	So it is also cleqar that >>
+		Employee.prototype	===	 e1/e2/e3.__proto__	===   ep  --> they all point to same object which is prototype of 'Employee' class and point to 
+																	same memory location
+
+	
+If you do 
+	e1.isSap = yes;
+It will do: 	
+	p1/p2/p3 >> {name: 'muf/hus/sha'}		 		__proto__ >> Object										     {comp: Acc}
+	e1		 >> {eId:  '111/222/333', isSap: yes} 	__proto__ >> ep{pocHr: 'sima', isSap: false} >> __proto__ >> {comp: Acc} 
+	   e2/e3 >> {eId:  '111/222/333'} 				__proto__ >> ep{pocHr: 'sima', isSap: false} >> __proto__ >> {comp: Acc} 
+
+::	whenever you do any WRITABLE opertaion on the property which are also prsent in 'prototype' through 'object.' (Not by Employee.prtotype. or obj.__proto__.)	   
+	then it will not change the propery in '__proto__' in tead it will create a new one in the object itself, and keep the one in '__proto__/prototype' intact
+::	SO >>	Employee.prototype	===	 e1/e2/e3.__proto__	===   ep	!== 	e1/e2/e3
+	
+	
+	
+If you do 
+	Person.prototype.comp = 'TCS';	 			OR		p1/p2/p3.__proto__.comp = Tcs;		Or		
+	e1/e2/e3.__proto__.__proto__.comp = Tcs;	Or		Employee.prototype.__proto__.comp = Tcs;
+It will do: 	
+	p1/p2/p3 >> {name: 'muf/hus/sha'} __proto__ >> Object										   {comp: Tcs}
+	e1/e2/e3 >> {eId:  '111/222/333'} __proto__ >> ep{pocHr: 'sima', isSap: false} >> __proto__ >> {comp: Tcs} 
+
+::	'Person.prototype' or 'p1/p2/p3.__proto__' or 'e1/e2/e3.__proto__.__proto__.comp'
+		will always point to the same object which is prototype of 'Person' class. so it will change 'Person.prototype'
+	So we can also change the data of parent object through the deep __proto__ of child, But this is very buggy way to do this.
+	
+
+If you do 
+	Employee.prototype.comp = 'Infy';	OR		e1/e2/e3.__proto__.comp = Infy;
+It will do: 	
+	p1/p2/p3 >> {name: 'muf/hus/sha'} __proto__ >> Object										   			   {comp: Acc}
+	e1/e2/e3 >> {eId:  '111/222/333'} __proto__ >> ep{pocHr: 'sima', isSap: false, comp: Infy} >> __proto__ >> {comp: Acc}
+	
+::	'Employee.prototype' or 'e1/e2/e3.__proto__' will always point to the same object which is prototype of 'Employee' class. so it will change 'Employee.prototype'	
+::	in the 'proto.docx' see the one in green color.
+
+
+If you do 
+	person.comp = cogni;
+It will do: 	
+	p1/p2/p3 >> {name: 'muf/hus/sha', comp: cogni} 	__proto__ >> Object										   			     {comp: Acc}
+	e1/e2/e3 >> {eId:  '111/222/333'} 				__proto__ >> ep{pocHr: 'sima', isSap: false, comp: Infy} >> __proto__ >> {comp: Acc}
+
+::	read 'POINT123' below
+
+To understand inheritence here we must understand working of this staement in  detain:
+	Employee.prototype = Object.create(Person.prototype);
+First 'Object.create(Person.prototype)' will make a real object 'ep'
+This object is type of 'Person'
+reference of this object(not object itself) is saved in 'Employee.prototype'
+Now this refrence will be shared among all the object of 'Employee'
+
+
+See 'proto.docx' for more detail
+--
+VVVIMP:
+
+Value inside any __proto__{} can be changed only by either 'ClassName.prototype' OR by 'object.__proto__' But never by 'object.' or 'this.' of parent 
+Or child class ()
+	>	Not by: e1/e2.
+	>	Not by: p1/p2.
+	>	But it is possible to change 'Employee.prototype' by 'ep.'
+
+Also do note that 
+	>	'object.' and 'object.__proto__/Class.prototype' is two seprate object but they do have a kind of parent child relationship.
+	>	when you enquire any property like 'object.name', it will first search in 'object.' if not found then it will traverse in '__proto__' heirarchy.
+	>	If you do any opertaion to change/add property by 'object.pp = muff' then it will never impact the 'object.__proto__/Class.prototype'
+			even if 'pp' is already prsent in the 'object.__proto__/Class.prototype', The change will reflect in and only in 'object.'.  <-- 'POINT123'
+	>	Simillarly If you do any opertaion to change/add property by 'object.__proto__.ff/Class.prototype.ff = sha' then it will never impact the 'object.'
+			even if 'ff' is already prsent in the 'object.', The change will reflect in and only in 'object.__proto__/Class.prototype'
+--		
+		
+--------
+Can we use 'this.' in prototype function
+>>	Yes! and it will point to the calling object
+	E.G.  em1.getInf() > in the body of 'getInf' 'this.' will point to 'em1'
+
+------------
+###emp.__proto__ is a reference to the object defined by Employee.prototype at the time it was created
+	
+###JavaScript is an object-based language based on prototypes, rather than being class-based.
+
+
+-------------------
+
+constructor and prototype relation: 
+Whenever you declare a function (later use it either as constructor or normal methode)
+the framwork internally make a constructor of it also 
+e.g. : if you write the code	
+
+	function Person(name) {
+		this.name = name;
+		...
+	}
+internally framwork do the follwong too : 
+	Person.prototype.constructor = Person;
+print it >> console.log(Person.prototype)
+>>	Now go into the console and expand the 'constructor' there
+>>	Now open '....constructor.__proto__' in the console
+>>	There you find three most imp methode 'apply/bind/call'
+So every function do have those three methode attachged to its prototype.
+	
+-----------------
+
+var f = function() {}
+var f1 = {}
+console.log(f.prototype);		//f()..
+console.log(f1.prototype);		//undefined		because this is not a constructor function but a object itself.
+console.log(f1.__proto__);		//proto chain
+	
+	

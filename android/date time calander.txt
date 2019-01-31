@@ -1,0 +1,53 @@
+In actual java calender January = 0 and december = 11, But in this tuto we took general conventions
+
+calander.setTime(new Date())
+point --> 13 03 1988
+
+calander.dayofyear --> 20
+point --> 20 01 1988
+
+calander.dayofyear --> 360
+point --> 27 12 1988
+
+calander.dayofyear --> 370
+point --> 05 01 1989
+
+-----------------
+
+If you set dayofyear more than 365 pointer will move to next year
+
+calander.dayofyear --> 370
+point --> 05 01 1989
+ -->
+calander.dayofyear --> 15
+point --> 15 01 1989
+--->
+calander.dayofyear --> 380
+point --> 25 01 1990
+---------------
+calander.dayofyear --> 90
+point --> 30 03 1988
+-->
+calander.dayofyear --> 91
+point --> 30 04 1988
+
+-----------------
+
+-----------------
+
+If you set DATE more than 31/30/28/29 (Depend on moth which is pointing) pointer will rotate to 1sy day of this month + 
+	Extra days after 31/30/28/29
+
+Ex. if month have 30 day
+
+calander.setTime(new Date())
+point --> 13 03 1988
+ -->
+calander.DATE --> 20
+point --> 20 03 1988
+--->
+calander.DATE --> 35
+point --> 05 03 1988  [30 - 35 = 05]
+--->
+
+-----------------

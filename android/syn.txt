@@ -1,0 +1,199 @@
+First we will study the importance of 'Synchronized' Keyword
+
+This works same way across all mltt apis like 
+ThreapoolExecutor, Thread, run, doInBackGround so we will study it comprehesivly like 
+	doIn/run(){
+	Synchronized(o){.. .. ..}
+	}
+
+So what it do: 
+	This keyword give EXCLUSIVE ACCESS to a thread over a particular object (o).
+	Inside  the synchronized block your thread will have EXCLUSIVE ACCESS to the object (o)
+	All other thread who will try to enter ANY SYNCHRONIZED BLOCK OF THIS OBJECT(o) will be hold before their 
+	respective synchronized block, once our synchronized block is completed, than holding thread will allow
+	to go in the respective blocks but again one at a time only.
+	o: This will has to be same object (may diffrent refrence), synchronized(o1) and synchronized(o2) 
+		will never be synchronized in any way.
+		
+Case: suppose i have three thread t1, t2, t3 
+	  t1 and t2 have syn block over o. so they will be thread safe in that block. now t3 does not have 
+	  synchronized block (or does not hace synchronized block over o) but it does use o in some way. so what will happen if they run toghter
+Ans:  t1 and t2 will run thier synchronized block one by one synchronusly but t3 will normally run with 
+	  them doesnt matter o is in synchronized block somewhere.
+	  ---t1---->t2-->
+	  ------t3------>
+
+	  o the MONITOR:
+	    This o is over synchronized object it may also call MONITOR.
+        synchronized(o) {...} tells you that if in the system 1000s of threads are running and suppose 100 of them are having
+        synchronized(o) block in them, now there will be only one out of this 100 thread will be running at time in there  synchronized block.
+        now about remaining 900: now we assume that this 900 does not have any  synchronized(o)  block in them
+        They will run any fully arbitary manner. This 900 may have  synchronized(o1/o2/this/h).
+        they may also use o in some manner like Log.e(o.name) but they all will run randomly wrt synchronized(o).
+        in a statement:
+            your mainthread/Asynchtask/Thread own the MONITOR of object 'o'
+
+God Rule:
+	  This all rule of synchronized block works for normal code, but if in the   synchronized(o)   block u have
+	  used   o.wait()    then its behaviour changes drastically.
+
+
+--------------------------
+
+
+      wait()/notify():
+        Whenever you use this function for o
+        you first your thread must have ownership of its monitor.
+        So
+
+        o.wait()/o.nitify() --> exception
+
+        synchronized(o)                 --> Will works
+        {  o.wait()/o.nitify()  }
+
+        Wait and notify is kind of contract between diffrent thread so that they can communicte with each other
+        in some concretre way
+
+        Use:
+        Suppose you have three thread t1 t2 t3
+        now while executing t1 at certain point  #p  he needs some info which is provided by t2 and t3
+        but they all running in paraller so it will become mess
+        Here we use wait()/notify(), What we is
+
+        First create a Monitor 'o', which is shared among all thread in buisness.
+
+        We ask  t1
+         you need info at point #p? right? yes!
+         So lets just execute yourself till point  #p simply.
+         now you at point #p and need info I
+         so lets accquire the ownership of 'o' by  synchronized(o)
+         now just check if you have that info  by  while(I)
+            t1 says: why while not if,
+            me: i will tell you later
+         Now if you have this I
+            release the 'o' and go ahead otherwise
+            you has to go to wait() till your vendor thread (i't know who is he) get I for you and notify() you
+            And surely while in wait() u will release 'o' monitor so that vendor thread (t2, t3..) can proceed for I and notify you.
+
+            Wait till notify()
+            Suppose some vandor thread (say t7) did it,
+            now check again if you have I, if yes than go ahead otherwise wait() again
+              now t8, t34...
+              keep doing this till u got your I
+                    >> This is the reason i told you to take while loop
+              now suppose t2/t3 did it and notify you and you check I is available
+              So now you move ahead and release 'o' also
+
+
+           we ask t2/t3:
+                do some bla bla opratyion and find I
+                once you find it , accuire 'o'
+                now just notify everyone who is waiting on 'o'
+                now release 'o'
+                go ahead..
+
+
+
+            t1:
+            ...
+            ...
+            ... #p
+            synchronized(o)
+            {
+                while(I == availabe)
+                {
+                    o.wait();
+                }
+            }
+            ...
+            ...
+            ------------------------------
+            t2/t3
+            ...
+            ...
+            I = bla bla bla...
+            synchronized(o)
+            {
+                  o.notifyAll();
+            }
+            ...
+            ...
+            ------------------------------
+            t7/t6
+            ...
+            ...
+            NEVER FOUND I
+            synchronized(o)
+            {
+                  o.notifyAll();
+            }
+            ...
+            ...
+            ------------------------------
+
+
+
+	  Suppose you are in thread t, Now this thread at some point acquire the ownership of monitor of 'o',
+	  So all other thread who wants o's ownership has to blocke before their synchronized block.
+	  So if t in   synchronized(o) {...}  then
+	  lot of t1, t2, t3.. may be blocked b4   synchronized(0).
+	  now inside  t  you have line    o.wait()
+	  Then
+      to move it ahead of wait() some other thread has to call o.nitify. right? hell ya.
+      But dude
+      you know o.nitify() could be called only if caller thread has owership of o's monitor
+        (Like  synchronized(o)   {.. .. o.nitify() .. ..} )
+      But Hey
+      t already has its ownership.
+      So BANG deadlock
+      t   says i own 'o' and i am in 'o.wait()' so i will not move further till someone else notify me by 'o.notify()'
+      and other says
+      bro untill u wont release 'o' it is impossible for us to notify you
+            as You are in your   synchronized(o){..}  we are outside of ours   synchronized(o){..}.
+
+      That is why JAVA has done a major chageover in wait() methode:
+        When you call   o.wait()   u must own o's monitor but after   o.wait()   called
+        caller thread will immidiatly loose its ownership of o's monitor. and your syncc block will not have any effect inside and only inside
+        wait function.
+        But As wait returns, caller thread reacqiure the ownership back again.
+
+        synchronized(o)
+        {
+        ...
+        ... ________________________
+        o.wait()        At this point synchronized is compromised and other block thread on o can enter in there synchronized block
+                        But as this line end ownership returns to caller thread.
+        ...--------------------------
+        ...
+        }
+
+        Logically:  wait() do nothing but ask thread to wait till noified, so it is guarantee that there is no single line code
+                    or anything will be happen in this thread till it is notified. So if you are doing nothing you can give 'o'
+                    to someone who needs it.
+                    and once he is done he will notify us. and then we will have our ownership back again
+
+---
+Sleep(t) Vs Wait()/wait(t)
+	sleep will just let the thread to do nothing for t time
+	wait will tell the thread that please wait till t time if some OTHER THREAD will notify you (by calling
+	notify()) to proceed. if not than just proceed anyway.
+	when you call wait(),
+	
+If you open source code of sleep u will see: 
+		...
+		...
+		Object lock = currentThread().lock;
+        synchronized (lock) {
+            while (true) {
+                long now = System.nanoTime();
+                long elapsed = now - start;
+                if (elapsed >= duration) { break;}
+                duration -= elapsed; start = now; millis = duration / NANOS_PER_MILLI;
+                nanos = (int) (duration % NANOS_PER_MILLI);
+            }}
+		...
+		...
+		So this nothing but a while loop.
+	
+	
+	  

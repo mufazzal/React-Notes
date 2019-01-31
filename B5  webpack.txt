@@ -1,0 +1,1004 @@
+Whenever we develope any JS application it contains lot of JS files.
+The all may also have dependencies to each other.
+And when application run on browser, All this file logically be download there also. 
+
+But when you have vary large amount of file, than this may take havy toll on speed. 
+So what is the solution....
+	WEBPACK!
+	
+Webpack simply merge all your JS file in only one file. and remove the overhead to download each JS on browser side.
+
+How to install
+>> npm install webpack --save 
+now in package.json 
+add key value pair in the script 
+script: {"myWebpackBuildName" : "webpack"}
+open command prompr in procect directiory (paraller to package.json)
+>> npm run myWebpackBuildName
+
+--In the out put you will see all the build files
+
+Now biggest problem here is that after each small change in the JS file you haave to run this command again and again, and its so frstating.
+To solve this issue we will use one more tool with webpack and that is - 
+webpack-dev-server: 
+This is special tool build to support webpack, This provide soliuton of two problem
+1. It create a tiny webserver for development (never be used in production)
+2. It will do the live reloading, it mns once you change the small change in your js, it run the webpack tool and create the bundle and user do 
+	not have to enter the command again and agian
+it has extraordinary feature which is 'rebuild and deploy webpack bundle on change'
+This is the tool/server which do the live reloading and building of all sources file. 
+If this server is up and running, Than whenever a change is deteced in any source file it rebuild and create new bundle. 
+This bundle file(s) contains all the JS file, All the node module etc.
+If there is error in source code you can see the error in the server console.
+whenever you do ctrl + s it start its reloading and building process
+So this server has all things that typical server has like host, port assets etc + live reloading.
+
+How to use webpack-dev-server:
+How to install
+>> npm install webpack-dev-server --save-dev
+now in package.json 
+add key value pair in the script 
+script: {"myWebpackDevBuildName" : "webpack-dev-server"}
+open command prompr in procect directiory (paraller to package.json)
+>> npm run myWebpackDevBuildName
+
+--In the out put you will see 'Project is running at <serverurl> webpack output is served from /'
+
+VVVIMP: There is no way to run webpack or Webpack-dev-server without pacjakge.json, you will have to put your script there and run itby npm run <key of script>
+
+----------------------------------------------
+typical model of webpack.config.js
+path = require('path');
+
+var config = {
+   //entry: './src/main.js', [s1 in]
+   entry: { [sm in]
+	   index: './src/main.js',
+	   contactus: './src/contact.js',
+	   profile: './src/profile.js',
+	   login: './src/login.js',
+	   register: './myss/register.js',
+   },
+   output: {
+      //path:'/',
+      path: path.join(__dirname, "dist/js"),
+      //filename: 'index.js', or '[name].js' [s1 out]
+	  filename: 'asset/[name]-mufbundle.js', [sm out]
+   },
+   devtool: "eval-source-map",
+   devServer: { 
+      inline: true,
+	  host: "localhost",
+      port: 3000
+
+
+   },
+   mode: 'production' or 'development',
+   module: {
+      loaders: [
+         {
+            test: /\.jsx?$/, or /\.js?$/,
+            exclude: /node_modules/,
+            loader: 'babel-loader',
+            query: {
+               presets: ['es2015', 'react']
+            }
+         }
+      ]
+   },
+   Plugin: []
+}
+module.exports = config;
+
+----------------------------------------------
+Remember: ./ denote the current directory (./src mns that src must lie in parraller to config file)
+
+There is 3 most IMP params here 
+IMP P1 and P2: entry and output:
+This two params work with each other in synch. follow this to understand better
+>> You did some change in source code and save it
+>> Webpack-dev-server detect it and run webpack tool
+>> Now webpack which has loaded the config file at a time of server start again reanalyze (not read) the params
+>> in the entry params he find out what are the diffrent entry point .js file (multiple or single)
+>> Now webpack do its magic and traverse through first entry point js files, read all its internal dependecies like import and other 
+and finally create the one single js file for this.
+>> If there is multiple entry point then it repeate the process for each file
+>> If there is n entry file js then there is n bundled output file.
+>> This each file will be emitted in programatically defined output files.
+>> If there is only one input and output file like as in "s1 in" and "s1 out" then its simply traverse to input file src/main.js create 
+its bundle and finally emit it to asset/index.js.
+So whenever you we hit the http://<host>:<port>/asset/index.js , We will be shown the generated bundled js file.
+There is no any accessible file like http://<host>:<port>/src/main.js
+>> If there is multiple in and out file as in "sm in" and "sm out" then this 4 input file will be travsed and budled in 4 js file and they
+will be mapped as per the filename params is specified in output tag
+
+   NAME: './source file dir/js file.js',		'asset/[name]-mufbundle.js'		asset/NAME-mufbundle.js			http://<host>:<port>/asset/NAME-mufbundle.js
+   index: './src/main.js',						'asset/[name]-mufbundle.js'		asset/index-mufbundle.js		http://<host>:<port>/asset/index-mufbundle.js
+   contactus: './src/contact.js',				'asset/[name]-mufbundle.js'		asset/contactus-mufbundle.js	http://<host>:<port>/asset/contactus-mufbundle.js
+   profile: './src/profile.js',					'asset/[name]-mufbundle.js'		asset/profile-mufbundle.js		http://<host>:<port>/asset/profile-mufbundle.js
+   login: './src/login.js',						'asset/[name]-mufbundle.js'		asset/login-mufbundle.js		http://<host>:<port>/asset/login-mufbundle.js
+   register: './myss/register.js',				'asset/[name]-mufbundle.js'		asset/register-mufbundle.js		http://<host>:<port>/asset/register-mufbundle.js
+
+As you use [name] in output file name, You can also use [id] here like [name]-[id].bundle.js, This id is index of entry point in the list.
+index.js >> 0  index-0-mufbundle.js
+contactus >> 1	contactus-0-mufbundle.js
+profile >> 2...
+
+What if 
+   entry: {
+	   profile1: './src/profile.js',
+	   profile2: './src/profile.js',
+   },
+  Two bundle (chuck) js file will be created one for each entry. though content iin both will be same.
+  entry: {
+	profile: './src/profile1.js',
+	profile: './src/profile2.js',
+  },
+  Only one will be crerated and that is against profile2.js
+  
+ 
+When you make changes in the siurce code webpack will build and bundle only effected area not all
+E.G.
+
+index.js >> [import c from contact, import L from Login ...]
+Contact.js >> [...]
+
+If you make changes in index.js: it will re-build only index.js file not other because other file remain same
+If you make changes in Contact.js: it will re-build Contact.js and index.js because index.js has internal dependency on Contact.js
+   
+what will happen if i have multiple input but only single output file defined: 
+e.g. 
+entry: {f: f.js, m: m.js}
+output: 'my.js'
+Then : there will be error on server start itself ' Multiple assets emit to the same filename my.js'
+what will happen In one input and multiple output: 
+Logically impossible
+
+Is it possible to have logically diffrent output file name for one particular entry js: 
+e.g. in table above suppose you need 
+gallary: './myss/gallary.js',				'media/[name]-hus-bundle.js'		media/gallary-hus-bundle.js		http://<host>:<port>/media/gallary-hus-bundle.js
+Ans: Yes
+Use path resolver.
+
+path: 
+You know that after webpack bundle will be created. But do you wants to see the content in this, then you must use path
+path: path.join(__dirname, "dist/js"),
+mns all the item in bundle will appear in the directry specified: 
+in our case it is C:/muf/path/to/package.json/dist/js, Here you will see all the bundler items
+
+
+This will also work if you run the 'webpack-dev-server' command.
+Because it will create bundle and place it in server directory 
+so you can see all the content of bundle here 
+http://<host>:<port>/dist/js
+
+
+filename VS path:
+http://localhost:3000/asset/index-mufbundle.js
+http://localhost:3000/dist/asset/index-mufbundle.js
+This two url will point to simillar (not same) file
+
+path is a root directory and all the created file put in this directory and it is same for all file name.
+filename is directories which will be plced inside the 'path' directory and ir varies for every file name
+
+if you run only 'webpack' then you can see the builded file in you local disk too: 
+after running 'npm rum build' [if in package.json you have 'script: {build: "webpack"}'], just go to
+C:path/to/package.json/dist/asset/index-mufbundle.js
+
+clean-webpack-plugin: This plugin is very useful if you wants to clear the output directory before freash building process start and emit the result:
+do thing
+	const CleanWebpackPlugin = require('clean-webpack-plugin');
+	...
+	Plugin: [
+		 new CleanWebpackPlugin(['dist'])  //Or the folder name that you use
+	   ]
+-------------
+VIMP: src and asstet is just an directory to understand it could be any directory name given the path is properly resolved
+
+ 
+What happen if you hit a url for any js file but wepack is not even run once to build that js file 
+In that case webpack will run immediatly and build the file 
+
+
+This take many params. Some of them are:
+
+in 1.	inline:  This param hardly have any significance. It define wheather you want to see the SERVER log on browser(on client side) also. 
+If this is false than you can view app and server log together on following url
+	http://<host>:<port>/webpack-dev-server/
+If this is true than you will not have anything on this url :
+	http://<host>:<port>/webpack-dev-server/
+
+This perametre have default value true
+
+in 2. host and port: 
+This two define that which host and port we should use to load our entry point.
+
+devtool: This param help the developer for dubugging, because budled file is impossible to debugg.
+so keep it to proper value as mentioned above.
+When you set the value of devtool to 'eval-source-map', it wil generate a aditional source file which will be 100% same as the developer write.
+this file can also be viewed chrome>source>webpack>.>src>...
+NOw chrome will use this file for the debugging and other things. This file are neither minified nor uglified. its 1000% same as the developer left.
+So it is way too easy to debugg unlike the acctual minified-uglified js file.
+
+VVVIMP: whatever the value of optimization.minimize or wharever uglify plugin you have used, it will have 0 impact on this additionally generated source files.
+		those thing only apply to actual js file.
+
+//--------------
+module.loaders: 
+Loaders are the npm modules which helps the webpack to compile and bundle the files if they are in diffrent formate or in flavoured javascripts
+E.G. 
+If you are using the babal-script or Es6 than you should use 'babel-loader' module from npm.
+if coofescript then 'coffe-loader'
+If you are using JSX then also you can use 'babel-loader' (because it support jxs too).
+
+This loader basically take the filtered input files pass then throug their transformer code and generate plane javascript 
+against them, and finally create a basic javascript file to deploy.
+So no matter you used coffescript, babal, ES6, JSX, Typescript, If you have used proper loaders then they all turn in basic javascript in the end.
+
+Remember this loaders are also JS libraries but they does not load on browser instead they are just an processer 
+that transform the flavoured JS into plan JS
+
+What happen if i do not use babal-loader in webpack if i have used jsx/babalscript in code:
+it will give error in console and on js file too
+console: 
+	Module parse failed: C:\muf\debateApp\src\app.js Unexpected token (7:9)
+	You may need an appropriate loader to handle this file type.
+So if you have used any kined of flavoured JS then u must nust use specific loader too
+
+
+	test: /\.js?$/,						: This varibale tell what kind of file extension we shoud parse with this loader
+	exclude: /node_modules/,			: Excluding some folder
+	loader: 'babel-loader',				: this is mpn module of loader
+	query: {							: loader specific input
+	   presets: ['es2015', 'react']
+	}
+		
+		
+IMP:  
+module.loaders is now module.rules
+  loaders api in webpack is now deprecated by  rules
+	Same syntax with rule:
+	
+	test: /\.js?$/,														: SAME
+	use: [{'babel-loader', options {"key" : value}}, {}...]				: instead of loader: 'babel-loader'
+	or 
+	use: ['babel-loader', ...]	
+  
+If you have loader params set into your webpack.config.js file that you must have also install it through 'npm install babel-loader'
+and so you hace this etry in your package.json
+  "dependencies": {
+    "babel-core": "^6.26.0",
+    "babel-loader": "^7.1.4",
+    "babel-preset-es2015": "^6.24.1",
+    "babel-preset-react": "^6.24.1",
+  },
+  
+ 
+ 
+mode:
+This set the enviorment type of sercver, 
+mode: 'production' or 'development'
+  
+		
+//--------------
+
+VVVIMP: As i said all params are taken from file "webpack.config.js" file, but any change in this file does not trigger the re-building.
+U have to restart the server for this.
+-----
+
+Webpack used with the web-dev-server to serve all the bundle and asset 
+Webpack + node server create a server directory (Nobody knows where) like one in WAMP/WWW. 
+Then after every change webpace do the rebuilding of the souce code create bundle and than place it into the server directory.
+
+so you cahnge in file C/muf/mypro/src/app.js and press ctrl + S
+webpack detect it
+it create new build (e.g. buuld.js or mufbbuild.js)
+now place it into server directory
+
+
+webpack-cli: 
+This is one npm package which help all the command line interface (CLI) operation, and it is very useful in dev mode
+
+
+
+Passing argument from package.json to webpacke.config.json
+
+All the params we discussed for webpacke.config.js can also be set from packag.json like this:
+
+packag.json
+script: {'sKey': 'webpack --devtool=eval-source-map'}
+Now you do not have to declare devtool in webpacke.config.js, if you do above value will be override.
+>>npm run sKey
+
+
+
+  "scripts": {
+    "start": "webpack-dev-server", 
+	"build": "webpack"
+  },
+  
+  build VS start
+  start: It will start the webpack-dev-server, provile server to run the code and also auto build on save.
+  build: It will just build the output js files when 'npm run build' is ran in command promt, niether create server nor auto build on save
+  
+
+VVVVVIMP::
+
+	output: { path: path.join(__dirname, 'dist', 'modules'), filename: '[name]-bundle.js'},
+	output: { path: path.join(__dirname, 'dist', 'modules', 'sdsd'), filename: '[name]-bundle.js'},
+	output: { path: path.join(__dirname, 'dist'), filename: '[name]-bundle.js'},
+all will map to->
+	<script src = "mod1-index-bundle.js"></script>
+But:
+	output: { path: path.join(__dirname, 'dist'), filename: 'modules/[name]-bundle.js'},
+	output: { path: path.join(__dirname, 'dist'), filename: 'modules/sdsd/[name]-bundle.js'},
+	output: { path: path.join(__dirname, 'dist'), filename: '[name]-bundle.js'},
+all will map to respectively->
+	<script src = "modules/mod1-index-bundle.js"></script>
+	<script src = "modules/sdsd/mod1-index-bundle.js"></script>
+	<script src = "mod1-index-bundle.js"></script>
+  
+//-----------------------------------------------
+
+Plugin:
+As it name suggest plugins are the node modules which can ran after and before the bundle generation by loaders.
+See the flow
+...
+plugin 1 
+plugin 2
+plugin 3
+loader.....
+plugin 5
+plugin 6
+plugin 7
+...
+
+This are also node module so before using it u must install ans import them
+
+plgg = reqiure('plg');
+myplll = reqiure('myplll');
+Plugin: [new plgg(), new myplll()]
+
+Some imp plugin: 
+uglifyjs-webpack-plugin:  for uglify the end bundle (foe more detail google it)
+
+
+----------------------------------------
+
+
+------------------
+VVVIMP
+
+If you are importing any kind of file either by 'require()' or by 'import from' you must have proper loader fir such kind of file
+E.G.
+If you have .js than a loder to read it like babal ttc.
+If you have .css than a loder to read it like style-loader etc.
+If you have .less than a loder to read it like less-loader etc.
+If you have .muf than a loder to read it like mufazzal-loader etc.
+
+If you do
+import invalidFile from './src/sha.rtm'
+
+It will give error when build.
+
+----------------------------
+
+Multiple webpack.config.js file:
+You can have multiple such file like this
+
+webpack.config.js
+webpack.set1.config.js
+webpack.set2.config.js
+
+In package.json
+ "scripts": {
+    "start": "webpack-dev-server",
+    "startset1": "webpack-dev-server --config webpack.set1.config.js",
+    "startset2": "webpack-dev-server --config webpack.set2.config.js",
+	
+    "build": "webpack",
+    "buildset1": "webpack --config webpack.set1.config.js"
+  },
+-------------------------
+
+webpack.config.js  file is simple js file, you can also do this
+
+var con = []
+con.scripts = {"sad":"dwew", "sd", "dsf"}
+con.loaders = this.getLoader();
+con.plugins = []
+
+module.export = con;
+
+-----------------------
+
+process.env.NODE_ENV 
+
+Resolve and alias
+
+-------------------------
+
+running with node
+
+>>npm run webpack
+is 100% same as 
+>>node node_modules/webpack/bin/webpack.js 
+
+also 
+>>npm run webpack --config webpack.set1.config.js
+is 100% same as 
+>>node node_modules/webpack/bin/webpack.js --config webpack.set1.config.js
+
+so in start script of package.json you can aslo see
+"build": node node_modules/webpack/bin/webpack.js --config webpack.set1.config.js
+
+How 'npm run webpack' and 'node node_modules/webpack/bin/webpack.js' :>
+see #BINOFNODEMODULE in nodejs.txt
+
+webpack-dev-server also accept the config file like that.
+
+
+-----------------------------------
+
+resolve: 
+This is one more very IMP params of webpack and it can be used to change the behavior of 'import' and 'require()' functions.
+resolve.alias : 
+This is use to set the alias for path in import/requre functions
+if you set in webpack.config.js :
+
+supposse you have ./src/core/framework/apiFolder/api.js prsent
+  resolve: {
+	alias: {
+	  api: path.resolve(__dirname, 'src', 'core', 'framework', 'apiFolder'),
+	  OR
+	  api: path.resolve(__dirname, 'src/core/framework/apiFolder'),
+	},
+	extensions: ['*', '.js', '.jsx']
+  } 
+  
+Now in your js file
+main.js->
+  import ap from 'api/api.js'  OR   import ap from 'api/api'
+Then it will detct the alias match and re-interprate import as lik:
+  import ap from 'C:\muf\debateApp\src\core\framework\apiFolder\api.js'
+Biggest advantage is that it is now absolute path not relative path, Now if you change the destination folder of main.js, Then also you do not have to 
+worry about its imports.
+But if you use 
+import ap from 'api'  --> then there will be error bcoz it does not have any js file pointed out
+
+A trailing $ can also be added to the given object's keys to signify an exact match:
+api$: path.resolve(__dirname, 'src', 'core', 'framework', 'apiFolder', 'api.js')
+OR
+api$: path.resolve(__dirname, 'src', 'core', 'framework', 'apiFolder', 'api')  // If extensions: [ '.js',] is also set
+
+Then 
+import ap from 'api/api.js'  OR   import ap from 'api/api'
+will not behave as expected alis, instead it will navigate to 'api' folder of current directory
+only
+import ap from 'api'
+will work, and so it must point to exact .js file
+
+
+resolve.extensions: It filter out the type of file extensions that can be imported.
+default value is ['.js', '.json']
+But suppose you have a file to import like
+
+myreact.jsx
+Then you must override this like that
+	extensions: ['.js', '.json','.jsx']
+if you wants to accept all then ['*']
+----------------------
+grapical analysis of bundle : use -
+https://github.com/webpack-contrib/webpack-bundle-analyzer
+
+---------------------
+Dynamic import: 
+You can import the required item in the code directly but it is rarly used
+
+return import('lodash').then(myDef => {});
+
+-------------------------------------------------------------------
+
+grunt vs gulp vs webpack:-
+Grunt and gulp are task runner 
+But webpack is bundler.
+In short webpack is the thing that do lot lot of things very efficiently, but other two do some small set of operation.
+
+Grunt vs gulp:-
+This is used in ode enviorment to perform some repitetive task on JS files, like minification, cleaning, test run etc.
+
+But webpack, It is the dude in the town, it do all the thing above two do along with-
+-	Watch for file changes and re-run tasks
+-	Run Babel transpilation to ES5
+-	Run a developer web server
+-	Use auto-prefixes
+-	Use require() for CSS files.
+-	Have dead code elimination, that basically means that Webpack can find code that you are not actually using and not add it to the final bundle
+-	Bundle up smaller modules of JavaScript (eg. login-bundle.js, profile-bundle.js) so we are not serving your entire application to every single user that just visits your homepage
+----------------------------
+
+
+CSS: 
+How does webpack work on it?
+We can include CSS in two way
+1.	By import 
+2.	In entry itself {not recommended}
+
+By Import:
+	Way 1: [Emitting CSS in HTML DOC]
+	Way 2: [Emitting CSS in New CSS file]
+	
+Way 1: [Emitting CSS in HTML DOC]
+You must use proper loader for this. and loader also must be accompnied by proper pluginn if needed.
+For this use style-loaded and css-loader
+
+now if in any js file if you wants to use this css then use
+contact.js >>
+import './css/contactus.css';	
+
+How it internally work :
+-you run webpack in cmd
+-meanwhile building wepack comes to 'contact.js'
+-Now it read that   import './css/contactus.css'   and detect it need to process the .css type of file
+-Now it go into its wepack.config.js file and see the proper loader for this
+-It finds  {   test: /\.css$/, use: [ 'style-loader', 'css-loader' ] }
+-Now It passes this css file in this two loader and generate result
+-Finally in newly created JS file this line will be added.
+	contactus-bundle.js>>
+		webpack_(98){... document.head.append(<link type="css"> 'color: black,...css2, css1, css3 ' </link>) ...}
+-So if this js file is used in HTML dic, then at time of loading of HTML doc, the CSS text will be appended as inlne CSS in  <head> of the document
+-Finally in HTML DOC
+
+Import css1/css2/css3
++
+entry{ contactus-index: './src/contactus.js' }
++
+loader: ["style-loader", "css-loader"]
++
+new MiniCssExtractPlugin({filename: "[name]/style.css", chunkFilename: "[id].css" })
+OR
+None
+Result will be ->
+Css will integrated in HTML document itself. 
+Behind the scene, in the buldled output js file this line got appended
+		webpack_(98){... document.head.append(<link type="css"> 'color: black,...css2, css1, css3 ' </link>) ...}
+IMP: 'MiniCssExtractPlugin' will be useless if you use style-loader not 'MiniCssExtractPlugin.loader'
+	
+
+-----------
+Way 2: [Emitting CSS in New CSS file]
+
+For this use MiniCssExtractPlugin.loader, "css-loader" not style loader. Also attach the MiniCssExtractPlugin in plugins.
+
+now if in any js file if you wants to use this css then use
+contact.js >>
+import './css/contactus.css';	
+
+-you run webpack in cmd
+-meanwhile building wepack comes to 'contact.js'
+-Now it read that   import './css/contactus.css'   and detect it need to process the .css type of file
+-Now it go into its wepack.config.js file and see the proper loader for this
+-It finds  {   test: /\.css$/, use: [ MiniCssExtractPlugin.loader, 'css-loader' ] }
+-Now It passes this css file in this two loader [css-loaded and MiniCssExtractPlugin] and generate result
+-Finally with newly created bundled JS a new css file will also be created and name of this file can be mapped with name of the js budle.
+-Now in the HTML doc you have to specify this link to css file by yourself. So this is big minus for this approch.
+
+Import css1/css2/css3
++
+entry{ contactus-index: './src/contactus.js' }
++
+loader: [MiniCssExtractPlugin.loader, "css-loader"]
++
+new MiniCssExtractPlugin({filename: "[name]/style.css", chunkFilename: "[id].css" })   //LINEWP1
+------
+After the webpack cycle when all the js and css file are processed and a final output chunk is created, then all the css that are imported in this
+entry chunk will be emitted to a new css file and the name of this css file can be detemined with [name] of that entry chucnk.
+
+EG:
+	myMod.js >>
+		import css1/css2/css3
+
+	entry {
+		contactus-index: 'src/contactus.js'
+	}...
+	loader: [MiniCssExtractPlugin.loader, "css-loader"]...
+	new MiniCssExtractPlugin({filename: "[name]/style.css", chunkFilename: "[id].css" })...
+Final-
+http://localhost:3000/contactus-index/style.css >>
+	css1... css2.. css3
+Now you have to explicitaly include this file in your html filr
+index.html >>
+	<Link src="http://localhost:3000/mod1/style.css">
+	
+>> Now in above if you do not use LINEWP1 then it will give error. So if you have used 'MiniCssExtractPlugin' in loader, 
+Plugin must be specify.
+----------------------
+
+CSS into entery :
+
+	entry{ maincss: './src/main.css' }
+Very strongle unrecomendded, because it will create on .css and one .js file both. one 'maincss.css' and one 'maincss.js'
+instead you should make one more dummy.js file, make import 'maincss.css' in it and in entery do it
+
+	entry{ maincss: './src/dummy.js' }
+	dummy.js >>
+		import 'maincss.css'
+		
+VVVVIMP: 
+If you are using MiniCssExtractPlugin, then you will have to set the value of 'publicpath' in output field of wepack.config.js.
+If you do not then it will not load the images used with url in the css file.
+Nobody knows why.
+Also keeping the value '/' is good.
+	output {
+		 path: path.join(__dirname, output, envConfig.distPath, dist),
+		 filename: '[name]/bundle.js',
+		 publicPath: '/',
+	}
+------------------------------------------------
+
+LESS css:
+	Handling less is also almost same as css. just add one more loader here. 
+	loader: ["style-loader", "css-loader", "less-loader"]
+	Or
+	loader: [MiniCssExtractPlugin.loader, "css-loader", "less-loader"]...
+	And all other things are 100% same.
+	
+---------
+
+
+CSS all included - static resource css + Imported CSS/less + toggle between "style-loader"/MiniCssExtractPlugin
+
+	{
+	   test: /\.css$/,																						
+	   exclude: path.resolve(__dirname, src, resources, 'css'),				//Exclude the static css so that it will be consumed by last two rule. 
+	   use: [isMiniCssPlugin ?  MiniCssExtractPlugin.loader : 				//If true, then css will be emitted in seprate file which we have to link in HTML doc manually
+				'style-loader', "css-loader"]										Otherwise "Style-loader" will emit the css in HTML DOC itself. No manual chnage needed.
+   }, {	
+	   test: /\.less/,
+	   exclude: path.resolve(__dirname, src, resources, 'css'),				//Same as above with .less filr
+	   use: [isMiniCssPlugin ?  MiniCssExtractPlugin.loader : 
+			'style-loader', "css-loader", "less-loader"]
+  },{
+	   test: /\.css$/,														//Only process the static css, who were intentionaly left out by above two rule
+	   include: path.resolve(__dirname, src, resources, 'css'),				//No matter 'isMiniCssPlugin' is true or false. the css will always be emitted in seprate filee. and u have to link inmanually
+	   use: [MiniCssExtractPlugin.loader, "css-loader"]
+   }, {
+	   test: /\.less/,
+	   include: path.resolve(__dirname, src, resources, 'css'),				//Same as above with .less filr
+	   use: [MiniCssExtractPlugin.loader, "css-loader", "less-loader"]
+  }
+  
+  ..
+  Plugin	new MiniCssExtractPlugin({filename: 							// This is used if 'MiniCssExtractPlugin', otherwise ignored.
+							"[name]/style.css", chunkFilename: "[id].css" })
+	
+
+------------
+Never think like this-
+A singler css file can be emmited with entry. 
+entry: {mycss: './src/mycss.css'}
+This is issue in webpavk, it will create one js nad css file both. which is not proper behavoir.
+Instead do this
+entry: {mydummyjs: './src/mydummy.js'}
+mydummy.js>>
+import 'mycss.css';
+
+-------------------------------------
+
+Images:-
+There is three way-
+1.	Images in imported css
+2.	Imges imported itself
+3.	Image at particular location.
+
+1.	Images in imported css file:
+	You have a css filee
+		contact.css 
+		.contact{
+			background-image: url('./mod1css1.png');		//LINEURL1
+		}
+		...
+		contact.js:>
+		import 'contact.css'.
+
+2.	Imges imported itself
+	impoer conimg from './conImg.png'
+	img.src = conimg;
+	
+To handle both of the situation , You have to use proper loader to decode it.
+Best one is 'url-loader'.
+url-loader works with the file-loader internally. it has the internal dependency so you have to install the file-loader also.
+
+Code:
+	test: /\.(png|jpg|gif)$/i,
+        use: [{ loader: 'url-loader', options: { limit: 1000, name: "images/[name]-[hash].[ext]"}
+    }
+
+How it works-
+Whenever a webpack equiped with url-loder,v and encoutered the imge in css or imported-directly, it will
+1.	Either create a base 64 string of this image and push that raw string in css file itsef of in js file who is importing it.
+	So after running webpack and image size is in proper limit then-
+		background-image: url('./mod1css1.png'); will be converted to
+		background-image: url('images/ksdjfhsdiosnvduyauhfsdfioufslkdfjh==');
+	And img.src = conimg; will be converted to-
+		img.src = 'images/kjsdhfishvkjsdhisdfsdnfskjh==';
+2.	But if it is larger image then it will copy the image in file system and return the url of that image in css or js file. 
+	At that time it will use value of 'limit' option to detrmine the size thhreshold.
+	Also you can specify the name pattern of emmited image there.
+	Suppose image is larger then limit then-
+	
+	background-image: url('./mod1css1.png'); will be converted to
+	background-image: url('images/mod1css1-iamhash.png');
+	And 
+	img.src = conimg; will be converted to-
+	img.src = 'images/mod1css1-iamhash.png';
+Do notice that you can create a directory strucure also ther. as we are doing with 'image'.
+These images are copied and pasted to proper location by this loader itself. do not worry about it.
+
+By default it uses file-loader if file is large. if you wants to use other loader than use 'fallback' option.
+------------------
+
+
+VVVIMPP::
+
+	output: {
+     path: path.join(__dirname, 'dist', 'muf', 'hus'),
+	},
+Only this variable will decide where exactly all the output will come. 
+all other location we give in webpake.config will be inside that. 
+EG:
+	test: /\.(png|jpg|gif)$/i,
+    use: [{ loader: 'url-loader', options: { limit: 10, name: "images/[name]-[hash].[ext]"}}]
+Here the output will be at this location
+	C:/muf/prj/dist/muf/hus/images/[name]-[hash].ext
+Or
+	new MiniCssExtractPlugin({filename: "[name]/style.css", chunkFilename: "[id].css" }),
+The css file will be emitted at:
+	C:/muf/prj/dist/muf/hus/[name]/style.css
+	
+-----------------------
+Font File: Font file is also set in css the same wayu as background image-
+	@font-face {
+		font-familiy: Monoton;
+		src: url('../font/Monoton.woff') format('woff'); // EDIT: Change fonts to font the name of th woff-file
+		font-weight: normal;
+		font-style: normal;
+	} 
+url-loader will help you here too. 
+-----------------------
+
+publicPath: This variable set in the output tag, this will tell you in root of the server, all the output of webpack will be served.
+default value is '/'
+So 
+   output: {
+     path: path.join(__dirname, output, envConfig.distPath, dist),
+     filename: '[name]/bundle.js',
+     publicPath: '/public/'
+   },
+   Then in index.html:
+         <link rel="stylesheet" href="public/cssMod/style.css" type="text/css" />
+		 <script src = "public/mod1-index/bundle.js"></script>
+	But if
+		publicPath: '/public/'
+    Then
+         <link rel="stylesheet" href="cssMod/style.css" type="text/css" />
+		 <script src = "mod1-index/bundle.js"></script>
+------------------------
+
+
+Chunk:
+	When you run the the webpack, all the output is generated according to output tag provided. for multile entery in entry tag, multipe bundle is created.
+	each of this bundle is called chunk.
+	EG:
+	output{m1: './src/m1.js', m2: './src/m2.js'}
+	Will create two chunk name 'm1' and 'm2'.
+	You a see their name in the console table generated once the buil finish in command promt.
+	
+	
+html-webpack-plugin: 
+	Once the build is finished and chunck is generated, you will have to link this generated bundle in yout 'index.html' file.
+	If the name of the generated bundle derived without [hash] then name will always remain same and so things remain not much complicated.
+	But is [hash] is used then it will changed every time a build is created with chnages and so you have to updated your 'index.html' all the time.
+Solution to this problem is 'html-webpack-plugin' :
+	This plugin will generate a *.html file and add the link of generated bundles as per specification.
+
+For this do this-
+		first create a template html file with placeholder like below
+		<!DOCTYPE html>
+		<html>
+		  <head>
+			<meta charset="utf-8"/>
+			<title><%= htmlWebpackPlugin.options.title %></title>
+		  </head>
+		  <body>
+		  </body>
+		</html>
+Now in the webpack config use this plugin like below:
+new HtmlWebpackPlugin({filename: "mod1-index.html",
+                            template: path.resolve(__dirname, src, 'html-index', 'mod1-index.html'),
+                            chunks: ["mod1-index"]})
+	filename: file with this file name will be generated in output folder. 
+	template: path of template file.
+	chunks: list of chunk or bundle that you wants to add in this html file.
+This plugin will automatically add the links of generated js and css file that are related to module mentioned in 'chunk' tag, in the provided html template file.
+-----------------------------
+
+
+Webpack-dev-server and proxy:
+Webpack dev server is small server for development used for hosting the codebase, it is not a actual server which can host webservice, api etc.
+Generally we host the web services in diffrent server. 
+the dev server is used only for developmemt in actiual word we use the tomcat kind of server.
+Now suppose you are workin on application that are in development and with webpack-dev-server for hosting locally-
+
+   devServer: {
+	  host: "localhost",
+      port: 3000,
+   },
+   
+   So the contect will be hosted at localhost:3000/
+Now in javascript file you call this function-
+	fetch('/api', {...}).then(...)
+The problem in local development with webpack-dev-server is it will go to  'localhost:3000/api', 
+But whne you are on actual server then it will go to 'www.myhost.com:myport/api'
+
+But even at the time of developmennt you have to use some of the actual api, that are hosted on 'www.myhost.com:myport/api'
+For this you have to somhow redirect specific urls to other portal.
+
+For this we will use proxy.
+It will redirect the url to other url if matches the pattern otherwise it will be redirected to webpack-dev-server.
+
+for this do this-
+	devServer: {
+	  host: "localhost",
+      port: 3000,
+      proxy: {
+        '/posts': {target: 'http://jsonplaceholder.typicode.com/', changeOrigin: true }
+      },
+   },
+
+
+So now if
+you call fetch('/posts') 					then it will be redirected to 		'http://jsonplaceholder.typicode.com/posts'
+you call fetch('/posts/1') 					then it will be redirected to 		'http://jsonplaceholder.typicode.com/posts/1'
+you call fetch('localhost:300/posts') 		then it will be redirected to 		'http://jsonplaceholder.typicode.com/posts'
+you call fetch('localhost:300/postsMM') 	then it will be redirected to 		'http://jsonplaceholder.typicode.com/postsMM' // THIS IS RISKY ONE.
+BUT if you call fetch('anyhost.com/posts') 	then it will redirected to 			'anyhost.com/api'
+also if you call fetch('/yyy/posts/') 		then it will redirected to 			'localhost:3000/yyy/posts/'
+
+changeOrigin: if you wants to redirect to new host then it must be true.
+
+MAny time if you have webpack-dev-server and api host both running on local host itself but on diffrent port then it is very useful-
+proxy: {
+        '/posts': 'localhpst:8080/',
+		 changeOrigin: true
+      },
+Also note that in target you do not have '/posts' in the end. it will be added automatically by webpack.
+In order to work on proxy u must also install 'http-proxy-middleware'.
+
+
+Detail about url and mapping:
+
+         foo://example.com:8042/over/there?name=ferret#nose
+         \_/   \______________/\_________/ \_________/ \__/
+          |           |            |            |        |
+       scheme     authority       path        query   fragment
+
+'/api'	-						all the url whose path started with '/api'
+'/api/'	-						all the url whose path started with '/api/'
+proxy('**', {...}) 				matches any path, all requests will be proxied.
+proxy('**/*.html', {...}) 		matches any path which ends with .html
+proxy('/*.html', {...}) 		matches paths directly under path-absolute
+proxy('/api/**/*.html', {...}) 	matches requests ending with .html in the path of /api
+
+In ptoxy redirection main role is played by path. 
+>> changeOrigin: true/false, Default: false, this must be true if the target URL has the diffrent host or port (or authority).
+
+NOTE:-
+	if you do 
+	proxy: { '/posts' : {...} } in config, then fetch('/posts') and fetch('/posts/') both will be proxied BUT,
+	proxy: { '/posts/': {...} } in config, then fetch('/posts') will not be proxied, and fetch('/posts/') will be proxied.
+	
+IF you wants to make any change in path also then use 'pathRewrite'
+------------------------------------
+
+optimization: This tag is used for performance and minification etc.
+	optimization.minimize: if it is true, then the generated file will be minimized by emoving extra spaces and others, otherwise not.
+		imp: its value has no impact on the additionally generated source file for devTool = 'eval-source-map'
+
+		
+-------------
+
+optimization: This are the tags we passed in wepack config for performance features. there are many attribute we passed down in it to make 
+				performance tuning of the code.
+				two of major one are
+				minimize  : true/false	-> If you wants to minimize the code.
+				minimizer : ...			-> Minimizer plugin to be used, by default is TesterPlugin
+			There are more than 20+ attr here availabl for performance tuning.
+			you set its value depending on what level of debigging, code clearity etc wants in your code.
+
+process.env.NODE_ENV: This variable is quite unique in term of node and webpack. before going into detail first lets go to backgroud of this.
+ process.env.NODE_ENV is exteremly important and significant enviorment variable in node js BACK END SERVER. This variable largly used
+ to configure the code behaviour for prod and dev enviorments. 
+ This was puerly a node server back-end runtime variable untill webpack bring its importance in clint side code configuration too.
+ just like the server side where this variable is configured with its value in cofig file of server and injected in the code,
+ The webpack also do it for the js code in compilation to.
+ 
+ You have to set its value in webpack cofig file with thr help of Defineplugin like below: (no other ways possible)
+ new webpack.DefinePlugin({ 'process.env.NODE_ENV': JSON.stringify('produnction'/'developement') });
+
+ Lately many of the js libs/loader/plugin stated using this variable to detrmine the prod VS dev behavoir of code.
+ So JS community started to streamline there code to tune itself for developement mode if the value of 'process.env.NODE_ENV' is development. and simillarly for 'production'
+ EG: 
+	in react lib such a line exist -
+		if(process.env.NODE_ENV === 'production')
+			logger = lessInformative
+		if(process.env.NODE_ENV === 'development')
+			logger = moreInformative
+	Now if you have set the value of process.env.NODE_ENV properly in webpack config by defineplugin, then react will automaticaly use the proper logger.
+	Also if you have used good code minimizer then it will remove the unnesessry code (the false if block) from the final bundle itself and save lot of bytes
+	
+	So you see how this libs tune together on 'process.env.NODE_ENV' to produce the refined compiled result for prod/dev, after webpack compilation. 
+	Remember- you have set its value by DefaultPlugin, otherwise it remain null.
+	
+Mode:-	Mode is one of the most distinguished feature of webpack 4.
+		It can have three value 'production', 'development', 'none'
+		you can set its value in webpack cofig like:- mode: 'production'/'development'
+		
+Its true magic is that, it work in cojection with some other parts of webpack config, 
+If you set it value to 'production'/'development' then it will auto configure the other values of webpack config.
+and this auto confugy=ured values are combination of best match of production and development.
+This will save u from doing lot of thing by yorself to manage dev vs prod behavior of code compilation.
+ 		
+for mode : 'development' >>
+	auto configure will be
+	devtool-> 'eval'
+	optimization.minmiz -> false
+	plugin[
+		new webpack.DefinePlugin({ "process.env.NODE_ENV": JSON.stringify("development") }),
+	]
+	For more detail: https://webpack.js.org/concepts/mode/ 
+	
+for mode : 'production' >>
+	auto configure will be
+	devtool-> 'eval'
+	optimization.minmiz -> true
+	plugin[
+		new webpack.DefinePlugin({ "process.env.NODE_ENV": JSON.stringify("production") }),
+	]	
+	For more detail: https://webpack.js.org/concepts/mode/ 
+Remember you can override any of this value any time you wants in config file.
+If not set, webpack sets production as the default value for mode.
+
+
+Webpack + Babel 
+#REFWEBPCKBABEL in 'script types.js'	
+------------		
+
+
+Watch: As you alredy know that webpack-dev-server automatically run the webpack and rebeuild the code if developer make any changes in code.
+With the 'watch' you can achive it for 'webpack' too.
+Just small change-
+	"build:dev_eu": "webpack --watch --env.enviorment dev --env.region EU ",
+This will also hang the command prompt for himself and command propmt behave as it would have with 'webpack-dev-server' execpt no localhost
+---------------------
+
+copy-webpack-plugin: 
+This is very useful if you wants to inject couple of static resources like, favicon, staticjs etc.
+first install it then-
+	const CopyWebpackPlugin = require('copy-webpack-plugin')
+	...
+	var copyAssetMap = [];
+	var commonAssetIn = path.join(__dirname, 'src', 'assets', 'commonAsset');
+	var commonAssetOut = path.join(__dirname, output, envConfig.distPath, dist, 'asset');
+	copyAssetMap.push({from: commonAssetIn, to: commonAssetOut});
+	if(envConfig.envSpecAsset) {
+		var envAssetIn = path.join(__dirname, 'src', 'assets', envConfig.envSpecAsset);
+		var envAssetOut = path.join(__dirname, output, envConfig.distPath, dist, envConfig.envSpecAsset);
+		copyAssetMap.push({from: envAssetIn, to: envAssetOut})
+	}
+	...
+	plugin[ new CopyWebpackPlugin(copyAssetMap) ];
+	
+Do notice how we inject the enviorment specific resource. also note that you do not need to use blob pattern **/*.* to copy all the file
+it will take all the file automatically.
+To ignore some of them use ignore option, google it.

@@ -1,0 +1,67 @@
+Pinning
+
+One way to limit the possible damage from hacked CAs is to recognize that most apps do not need to communicate with arbitrary servers. Web browsers, email clients, chat clients, and the like might need to be able to communicate with whatever server the user elects to configure. But many apps just need to communicate back to their developer’s own server, such as a native client adjunct to a regular Web app.
+
+In this case, the app does not need to accept arbitrary SSL certificates. The developer knows the actual SSL certificate used by the developer’s server, so the developer can arrange to accept only that one certificate. Or, the developer knows the CA that they get their SSL certificates from and can only accept certificates issued by that CA, and not other CAs. This reduces security a bit, but makes it easier for you to handle SSL certificate expiration and replacement without major headaches.
+
+This technique is referred to as “pinning”. Chrome is perhaps the most well-known implementer of pinning: when you access services like Gmail from Chrome, Google (who wrote the browser) knows the valid certificates for Google (who wrote the server) and can toss out anything that is invalid… such as the TURKTRUST fake certificate mentioned earlier in this chapter.
+
+Nikolay Elenkov has another blog post outlining certificate pinning support in Android 4.2. Moxie Marlinspike has an implementation of pinning, with a description in a blog post. And, the Guardian Project has an implementation of pinning in StrongTrustManager, discussed in tomorrow’s post.
+
+----------
+
+Device trust store  cannot be modified  by user  until Android 4.0 (ICS)
+• Certificate pinning can be implemented using an App specific trust store
+
+---
+When you don't know in advance to which hosts you might be connecting (e.g. in a browser), checking hostname match and chain of trust is the best you can do. In most native apps, though, you know your hosts in advance. This enables a higher level of security: You can make sure that it's your certificate that the server has presented.
+
+---
+
+Accepting only SPECIFIC CERTIFICATE which i know must be on my server(eiuther selfsigned or purchased one)
+public class MyHttpClient extends DefaultHttpClient {
+ 
+    final Context context;
+ 
+    public MyHttpClient(Context context) {
+        this.context = context;
+    }
+ 
+    @Override
+    protected ClientConnectionManager createClientConnectionManager() {
+        SchemeRegistry registry = new SchemeRegistry();
+        registry.register(new Scheme("http", PlainSocketFactory.getSocketFactory(), 80));
+        // Register for port 443 our SSLSocketFactory with our keystore
+        // to the ConnectionManager
+        registry.register(new Scheme("https", newSslSocketFactory(), 443));
+        return new SingleClientConnManager(getParams(), registry);
+    }
+ 
+    private SSLSocketFactory newSslSocketFactory() {
+        try {
+            // Get an instance of the Bouncy Castle KeyStore format
+            KeyStore trusted = KeyStore.getInstance("BKS");
+            // Get the raw resource, which contains the keystore with
+            // your trusted certificates (root and any intermediate certs)
+            InputStream in = context.getResources().openRawResource(R.raw.mykeystore);
+            try {
+                // Initialize the keystore with the provided trusted certificates
+                // Also provide the password of the keystore
+                trusted.load(in, "mysecret".toCharArray());
+            } finally {
+                in.close();
+            }
+            // Pass the keystore to the SSLSocketFactory. The factory is responsible
+            // for the verification of the server certificate.
+            SSLSocketFactory sf = new SSLSocketFactory(trusted);
+            // Hostname verification from certificate
+            // http://hc.apache.org/httpcomponents-client-ga/tutorial/html/connmgmt.html#d4e506
+            sf.setHostnameVerifier(SSLSocketFactory.STRICT_HOSTNAME_VERIFIER);
+            return sf;
+        } catch (Exception e) {
+            throw new AssertionError(e);
+        }
+    }
+}
+
+--------------------------------------------------

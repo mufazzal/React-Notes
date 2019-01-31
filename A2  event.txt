@@ -1,0 +1,1266 @@
+Most basic event: 
+
+onclick registered in html doc:
+	<div onclick="...code...">
+	
+So here whatever u write in the quote will execute as javascript
+	<div onclick="alert('muf'); ... console.log(ss);...">
+So the space between the quotes is actully a space to write any code.
+here u have all the global variable(window scope) defined(in index.html, index.js or in api.js file) accesible.
+
+generally we call a function here like below:
+
+	<div onclick="myFun()">
+
+here myFun should be declared in global scope anywhere.
+
+in the space between quotes, there lies a two variable pre-defined. that are: 
+	1.	this	:	reprsent the HTML dom element on which event is performed
+	2.	event	:	event itself
+
+Many time we send this two variable in the function itself: 
+	<div onclick="myFun(this, event)">
+	myFun(pt, pe) {
+		console.log(pt, pe, pt.id, pe.target);
+	}
+	
+	
+'this.' vs 'event.target' :
+There is bif adiffrence between this two. 
+this.: 			it will by default (if not binded) reprsent the HTMLElement on which click is registered.
+event.target:	it will always be the most bottom HTML element on which the clicked is performed, not neccesarily the same as the one
+				on which u add the click register.
+
+		<div onclick="clkFun()" > 
+			Click parent				//Area 1
+			<div> 
+				  Click child			//Area 2
+			</div>
+		</div>
+
+Here if you click on 'Area 1'
+	this: 			parent div
+	event.target:	parent div
+Here if you click on 'Area 2'
+	this: 			parent div
+	event.target:	child div
+-----
+#REFONCLICRET
+significance of return value: 
+significance f return value is depend on the fact that is it a JQuery-Event or a simple HTML-event
+First we will see the simple HTML-event-
+	<div onclick="clkFun()" /> 
+	clkFun() {..return false/true...}
+	OR
+	<div onclick=".... return true/false" /> 
+This will determine the default behaviour of any event, like visit-color for link etc.
+if you return false then default behaviour will be prohibited otherwise it will work as usual.
+best example: 
+		<a href="http://www.google.co.uk/" onclick="return (confirm('Follow this link?'))">Google</a>
+This will only prevent the default behaviour, not at all stop the event propogation from child to next parents.
+Most useful use of return value is in form submit and link opening.
+
+IMP: 
+we consider the return in the quoted space itself: 
+	<div onclick="return false/true" />  								OK
+	<div onclick="return getV()" /> 	 	getV(){return true/false} 	OK
+	<div onclick="getV()" />  				getV(){return true/false} 	Not OK, because here you are not returning anything.
+
+Now for the JQuery-event: 
+#REFONRET
+	
+-----
+propogation of click: 
+click first be detected in innerest child and then move to outer parents. it move from bottom to top 
+
+		<div onclick="clkFun()" > 
+			Click parent				//Area 1
+			<div onclick="clkFunChi()"> 
+				  Click child			//Area 2
+			</div>
+		</div>
+	click in Area 1: if you click here only 'clkFun' will be called.
+	click in Area 2: if you click here first 'clkFunChi' then 'clkFun' will be called.
+Stoping prpogation: 
+	You can stop the prpogation in any child to next all parents by calling 'stopPropagation'
+	So if you do: 
+	clkFunChi(e) {e.stopPropagation()}
+	this will prevent the calling of 'clkFun'
+	But this will not change the default behaviour of the browser for given UI element.
+also see stopImmediatePropagation
+#REF_STPIMDTPRP
+-----
+
+preventDefault: 
+another imp way to stop default behavior of browser is by 'event.preventDefault()'
+This is very useful if you are deep into the function and return make no sense, then just do the preventdefault.
+	<a onclick="return gotL(event)" />
+	gotL(event){
+		... event.preventDefault() ....;
+	} 
+-----
+propogation of click and default behaviour of browser are two saperate thing. 
+first one is control by e.stopPropagation second by return value.
+----------------
+
+Attaching event by simple JS: 
+	You cann attach the event on single element with js, it cannot be applied on collection altogether
+	so 
+		document.getElementsByClassName('itm').onclick = f		// Will not work because 'getElementsByClassName' return collection
+		document.getElementById('apple').onclick = f			// Will work as expected
+
+The function will have two  predefinned param int:
+	1.	e: event as the first formal param
+	2.	this: the context (by default it is the HTML element same as e.target)
+	
+	document.getElementById('apple').onclick = function(e) {
+		console.log(e, this)
+	}
+
+custom context(bind the click methode):
+	As described above default 'this' in click function is the HTML element but you can change it by bind
+	
+	var clsFun = function() { console.log(e, this) }
+	document.getElementById('apple').onclick = clsFun.bind({name: 'muf'})
+	On clicking print it- 
+		event{...}, {name: 'muf'}
+	
+more complex: 
+if you have a class:
+	function ClsHandle() {
+		var inClosue = 'inClosue';
+		this.name = 'myHandle';
+		this.clkHAndler = function(e) {
+			console.log(e, this, inClosue);			L1
+		}
+	}
+	
+	var clsHandle = new ClsHandle();
+	document.getElementById('apple').onclick = clsHandle.clkHAndler;	//L2
+----
+What will happen once user click?
+What will be the value of 'this' in line L1?
+lets find the answer- 
+You know 'clkHAndler' is a member function of 'ClsHandle', so calling of 'clkHAndler' will either happen by 'this.clkHAndler()/objClsHandle.clkHAndler()'
+and so in both of the case you will have 'this.' defined in the 'clkHAndler' function.
+
+But what will happen when we set in a callback?
+see the statement :
+	document.getElementById('apple').onclick = clsHandle.clkHAndler;
+here we are not calling 'clkHAndler' but assigning its refrence.
+lets dive into the framwork, what will be happening when we are clicking the element :-
+	imAFunDeepInJsLib() {
+		...
+		...
+		myEle[i].onclick()
+		...
+		...
+	}
+now this line will actully make the call of 'clsHandle.clkHAndler' which is assign in line L2, now thogh you are calling 'clkHAndler' of 'clsHandle'
+but you are not calling it with 'this.' or 'clsHandle.', instead you are calling it with 'myEle[i].',
+myEle[i] here is a HTML element which is clicked.
+Already you know if you call a function 'f' with 'o.f()' then 'this.' in 'f' will reprsent the 'o'
+So if you are calling 'onclick' by 'myEle[i].onclick()' then 'this.' in 'onclick' will reprsent 'myEle[i]'
+Here onclick refer to 'clsHandle.clkHAndler'
+myEle[i] refer to 'document.getElementById('apple')'
+that is why now 'this.' in 'clsHandle.clkHAndler' will reprsent the 'document.getElementById('apple')'.
+
+That us the reason though the function(clkHAndler) lie in context of any other class(ClsHandle) but if it is called through the callaback(myEle[i].onclick()) 
+of any element, 'this.' in that function(clkHAndler) will reprset in HTML UI element not the object(clkHAndler) of that class.
+
+Though there is one imp thing to remember here: 
+this function still have access of all variable which are in the clouser of '__ClsHandle.clsHandle__'
+so u will aways have 'inClosue' defined above.
+	
+So finally the output of line L1 is: 
+		Event{...}, <div>...</div>, inClosue
+	
+It may also possible to have a function declared with 'var' not 'this.'
+though logicall you should not use 'this.' in the function declared with 'var' because calling it independently cause the error.
+But still you use 'this.' in it then it will represent the HTML element clicked.
+So basically same as the function declared with 'this.'
+	function ClsHandle() {
+		var inClosue = 'inClosue';
+		this.name = 'myHandle';
+		var varMet = function(e) {
+			console.log(e, this, inClosue);			L3
+		}
+		
+		document.getElementById('apple').onclick = varMet;	//L4
+	}
+	
+output of L3
+	Event{...}, <div>...</div>, inClosue
+
+So you can see the behaviour of the function with regard to 'this.' will be same if it is called by callback of click event, 
+no matter function is declared with 'this.' or 'var'.
+Because: 
+	1.	event will remain same in both
+	2.	'this.' will reprsent the HTML element
+	3.	Both will have access to the clousre of parent.
+
+See the diagram 'clickbind.docx'
+-------
+#REF_clickBind
+Biniding the click: 
+As you know that 'this.' in any click methode will repsent the HTML element itself. 
+Now suppose you want to use the other context then the HTML element than you will have to use the bind methode - 
+you can bind the methode by usual ways:
+	First way:
+		...
+		this.clkHAndler = function(e) {
+			console.log(e, this, inClosue);			
+		}.bind(this)
+		...
+		document.getElementById('apple').onclick = clsHandle.clkHAndler;	
+	OR
+		...
+		this.clkHAndler = function(e) {
+			console.log(e, this, inClosue);			
+		}
+		...
+		document.getElementById('apple').onclick = clsHandle.clkHAndler.bind(clsHandle);	
+Both will print:
+		Event{...}, ClsHandle{...}, inClosue
+
+You can bind any kind of objevt with it(usual binding)		
+	document.getElementById('apple').onclick = clsHandle.clkHAndler.bind({name: 'muf'});
+Print:-
+	Event{...}, {name: 'muf'}, inClosue
+	
+This is wiledly used feature for click methode becoz it will give you the context of 'this.' that you wants.
+but if you bind the click methode with any other object, then you lost the default context of that HTML element in that function.
+But you can get that HTML element through 'event.target'
+
+more binding eg: 
+	document.getElementById('apple').onclick = (function() {...}).bind(this/{...}/myObj/null);
+	
+You know that if you bind a callback function then 'this.' in that callback 'this' will reprsent the HTML element on which 
+the click is registered:
+Now loot this condition:-
+	1.	$('.apple').on('click', (function(){..this..}).bind({..}))
+	
+here you have bined the callback so 'this' there will reprsent the binded object not the HTML element
+if you see the selector[$('.apple')] you will find that is is applied over the collection of element, 
+becuase multiple UI element can have class 'apple'.
+if your selector were [$('#apple1')] then still you can assume that it is only one element and you can get it by 'var ele = $('.apple')'
+but not for selector[$('.apple')].
+So the question is how would you find out that exactlty for which HTML element this event is triggered (on which evnt is registered)
+for this use:
+	event.currentTarget
+unlike event.target it is always the point to the elemet on which click cycle is workin so to the element on which click is registered.
+
+this					:	It will point to HTML element on which event is regitered (unless it is bind to something else)
+event.target			:	It will point to innermost HTML element on which clicked prformed
+event.currentTarget		:	It will point to HTML element on which event is registered. (same as this if callback is not binded)
+
+-------------
+
+see the diffrence: 
+	<div onclick="clkFun()" /> 
+	VS
+	document.getElementById('apple').onclick = clkFun;
+	
+	They both are 100% same statement but first u make actual call, because the space between quote is executed.
+	in second u just assign the refrence of the function.
+	If you do 
+		document.getElementById('apple').onclick = clkFun();
+	then the return value of clkFun will be assign in onclick not the clkFun itself.
+----
+Remember that onclick, is a property of JS (HTML DOM Element) not of JQuery 
+	document.getElementById('apple').onclick 				//Correct
+	document.getElementsByClassNAme('apple').onclick 		//Incorrect
+	$('#apple').onclick										//Incorrect
+	$('#apple')[0].onclick									//Correct
+	
+---------------------------------JS .addEventListener()-----------
+The biggest problem with JS onclick is that you can apply only one at a time, if you apply it then previous one will be ovrrided.
+see #REF_MULTCLKSIGIT
+
+statement: 
+	element.addEventListener(event, function, useCapture)
+	
+To solve this issue JS provide 'addEventListener', you can attach as many listener on single element you want with it, 
+But just remember one thing
+	>	a 'onclick' will always executed first and then all listener of 'addEventListener' will executed on FIFO basis.
+
+'addEventListener' is a JS api not of JQuery,
+'addEventListener'	has many issue, specially with compatibility of IE and other,
+Jquery used 'addEventListener' to create its own api '.on', which cover lot of things,
+and remove many drawbacks of 'addEventListener' 
+So today 'addEventListener' is rarly used, so we will study the '.on' directly rather than 'addEventListener'.
+
+Just keep in mind that fundamental of '.on' is addEventListener.
+	
+-----------------------------------------------JQuery .on()------------------------
+
+This is one of the most imp function to register the event with JQuery, this is lowest level ot api 
+for registering event by Jquery, all other are made over it.
+
+statement of 'on': 
+	.on( events, [...selector ], [...data ], function(){..} )
+event: 		this is the event like click, blur, etc
+selector:	this is the child element on which you wants to register click, Optional
+data:		a bundle data, Optional
+function:	callback.
+
+lets see a DOM 
+		<div id='fruite'> 								
+			Fruite
+			<div id='apple1' class="apple">  Apple1 </div>		
+			<div id='apple2' class="apple">  Apple2 </div>
+			<div id='apple3' class="apple">  Apple3 </div>
+		</div> 
+
+Most basic eg:
+	$('.apple').on('click', function(){ console.log('apple>>click'); })
+This will register the event on all the UI element with class 'apple'.
+so if you click 'Apple1' or 'Apple2' or 'Apple3', this function will be called.
+
+As like in simple js the event flow from bottom to top, so if you have registered the event on 'Fruite' too eg:
+	
+advantage of on:
+You can use mumtiple click function on single element, they all will run in LIFO basis of their registration time	
+
+------
+
+See the diffrence: 
+	<div onclick=func(e,this)>
+	func(p1, p2){
+		console.log(p1, p2, this);
+	}
+	Output:
+	Event{...}, HTMLElement<..>, ??????
+?????? here is not at all the HTMLElement clicked, remember that 'this' is the HTML element only in the space between quote in onclick.
+if you pass that 'this' than in the formal param it is the HTML element, but in the function if you use 'this.' than it will 
+be the context of that function or the its binded object but not a clicked function
+
+
+------
+#REF_MULTCLKSIGIT
+Multiple click on single element: 
+Behaviour of multiple click listener depend on the way it applied, we will see them one by one:-
+Way 1.	onclick: [JS]
+	document.getElementById('apple1').onclick = function() {....}
+	OR
+	<div onclick="clkFun1()">  Apple1 </div>
+Listener apply this way will be only one at a time for any element, and that one will be the the last who is applied on it.
+One who is applied in HTML doc will always be averrided with later loading JS, if that js change anything.
+EG:
+	
+	<div onclick="console.log('onclick 0')">  Apple1 </div>
+	...
+	document.getElementById('apple1').onclick = function() { console.log('onclick 1');} 
+	document.getElementById('apple1').onclick = function() { console.log('onclick 2');} 
+
+Only 'onclick 2' will be printed here, other two will be overrided.
+	
+Way 2.	on  [JQuery]
+		$('#apple1').on('click', function(){ console.log('on_c 2'); })
+		$('#apple1').on('click', function(){ console.log('on_c 1'); })
+		$('#apple1').on('click', function(){ console.log('on_c 3'); })
+Functioning of this listener is diffrent than 'onclikc' in 'way 1'
+Here the listener do not overrid each other instead they all will be added into the stack in sequential basis. 
+and when the click is performed, then all the listener will be executed on FIFO basis.
+The one who is registered first will be the one who is executed first, and so on.
+So here if you click the '#apple' output be:
+	on_c 2
+	on_c 1
+	on_c 3
+
+way 3. 
+onclick + on: [JS + JQuery]
+When you use both on single element, thing goes like below: 
+	At a  time only one 'onclick' will be executed and that is the last one applied.
+	All the 'on' will be executed on FIFO sequence.
+	No matter who applied first{ on or onclick}, but onclick will always be executed before all the 'on'
+
+	EG:
+		<div onclick="console.log('onclick 0')">  Apple1 </div>
+		...
+		document.getElementById('apple1').onclick = function() { console.log('onclick 1');} 
+		$('#apple1').on('click', function(){ console.log('on_c 2'); })
+		$('#apple1').on('click', function(){ console.log('on_c 1'); })
+		document.getElementById('apple1').onclick = function() { console.log('onclick 2');} 
+		$('#apple1').on('click', function(){ console.log('on_c 3'); })
+	Out:
+		onclick 2
+		on_c 2
+		on_c 1
+		on_c 3
+	
+Propogation in multiple listener for single element: 
+#REF_STPIMDTPRP
+You can control the propogation of event in listener of same element by calling 'event.stopImmediatePropagation()'
+This will stop propogation of event in next  listeners of same element and also the listener of its parents
+
+	EG:
+		<div onclick="console.log('onclick 0')">  Apple1 </div>
+		...
+		document.getElementById('apple1').onclick = function() { console.log('onclick 1');} 
+		$('#apple1').on('click', function(){ console.log('on_c 2'); })
+		$('#apple1').on('click', function(){ console.log('on_c 1');})
+		document.getElementById('apple1').onclick = function() { console.log('onclick 2'); event.stopImmediatePropagation()} 
+		$('#apple1').on('click', function(){ console.log('on_c 3'); })
+	Out:
+		onclick 2
+
+stopPropagation and stopImmediatePropagation will completely block the propogation of event in parent and parent+himself listener respectivly.
+no matter that listener are added with 'on' of 'onclick'	
+---
+A HTML element can control the flow of event to its parent and to the next listeners(on or onclick) of himself, but he cannot 
+control the flow in its child.
+So basically it can control flow to the next listener not to the previous one.
+
+--------
+Propogation to Parent: 
+Once all the listener of the child has completed (either applied by on or onclick) now the event will pass on to the parent,
+Though child can decide to block this propogation but we will see it later.
+once the event is propogated to parent than again the listners of the parent start executing in the same way
+first the listener applied by onclick(the latest one)
+Then listener of 'on' {on FIFO basis}
+
+EG:
+		<div onclick="console.log('fruite onclick 0')"> Fruite
+			<div onclick="console.log('onclick 0')">  Apple1 </div>
+		</div>
+		...
+		document.getElementById('apple1').onclick = function() { console.log('onclick 1');} 
+		$('#apple1').on('click', function(){ console.log('on_c 2'); })
+		$('#apple1').on('click', function(){ console.log('on_c 1'); })					// L5
+		document.getElementById('apple1').onclick = function() { console.log('onclick 2');} 
+		$('#apple1').on('click', function(){ console.log('on_c 3'); })
+
+		$('#frAndVg').on('click', function(){ console.log('frAndVg on_c 0'); })
+		document.getElementById('frAndVg').onclick = function() { console.log('frAndVg onclick 1');  } 
+		$('#frAndVg').on('click', function(){ console.log('frAndVg on_c 1'); })
+		
+		document.getElementById('fruite').onclick = function() { console.log('fruite onclick 1');} 
+		$('#fruite').on('click', function(){ console.log('fruite on_c 2'); })
+		$('#fruite').on('click', function(){ console.log('fruite on_c 1'); })
+		document.getElementById('fruite').onclick = function() { console.log('fruite onclick 2');} 
+		
+	Out:
+		onclick 2
+		on_c 2
+		on_c 1
+		on_c 3
+		fruite onclick 2
+		fruite on_c 2
+		fruite on_c 1
+		frAndVg onclick 1
+		frAndVg on_c 0
+		frAndVg on_c 1
+		
+Preventing flow of event from child to parent: 
+You can do it in listener of child:
+	Listener with 'onclick' : call e.stopPropagation();
+	Listener with 'on':	call e.stopPropagation() or return false;
+Suppose in L5 you change
+	$('#apple1').on('click', function(){ console.log('on_c 1'); return false;})	
+	the out: 
+		onclick 2
+		on_c 2
+		on_c 1
+		on_c 3
+If Any of listener of any of the child stop the propogation then all the parent above it become unresponsive to that event.
+
+Bu do remember:
+a listener of HTML element(#apple) can control flow of event to the parent(#fruite) of it, 
+but cannot control the flow of event in its child's(#greenApple) listener or to the other listener of same HTML element 
+
+So updated line 'L5' will stop the listener of '#fruite' but not the listener of '#apple'	
+
+-------
+
+return value of onclick: 
+#REFONCLICRET
+return value of on: 
+#REFONRET
+	if you return the false, then it is equivalant to call this two function 
+	event.stopPropagation();
+	event.preventDefault();
+So basically it stop the event to go to parent and also prevent its default behaviour(like submit/link).
+So in 'on' if you only wants to restrict the default behaviour then do not return false, instead call event.preventDefault();
+same is true for stopping the event to leak to parent.
+	
+-------
+Childselector in on[delegate event]: 
+You can also set the child element to be clicked in parent : 
+	$('#fruite').on('click', '.apple', function(){...} );
+Here the element wich will trigger this click is not the '#fruite' but the collection of element by '#fruite .apple'
+This is 100% same as 
+	$('.apple').on('click', function() {..});
+	
+Then what is the biggets advantage of this approach, it is the below on
+Click on dynamically added element: 
+Suppose you have couple of '.apple' element in your HTML doc and all have listener attach to it like than
+	$('.apple').on('click', function(){ console.log('.apple>>click '); })		L6
+Now after the page load and suppose user press a button which lead to add one more sunch element:
+	$('#fruite').append($('<div class="apple">  Apple4 </div>'));
+Now question is that, Does the listener in Line L6 will be applicable on newly created element?
+Answer : 
+	No for below - 
+		>	$('.apple').on('click', function()...);
+		>	document.getElementsByClassName('apple').onclick = function...
+	But yes for:-
+		>	$('#fruite').on('click', '.apple', function()...);
+		
+'this.' in on with childselector: 
+	'this.' here will reprsent the child elemnt selected by childselector into the parent one
+	So in
+		$('#fruite').on('click', '.apple', function() {console.log(this)});
+	It will print a element(only one) from the collection of '#fruite .apple', which is clicked, not the '#fruite'
+
+When this run in click cycle: 
+	It will run into the cycle of '#fruite' not of '.apple' in bolow sequence
+	...
+	all child 'onclick' and 'on'
+	onclick of '#fruite'
+	'on' of '#fruite' with child selector
+	'on' of '#fruite'
+	all parent 'onclick' and 'on'
+	...
+	
+EG:
+		<div onclick="console.log('fruite onclick 0')"> Fruite
+			<div onclick="console.log('onclick 0')">  Apple1 </div>
+		</div>
+		...
+		document.getElementById('apple1').onclick = function() { console.log('onclick 1');} 
+		$('#apple1').on('click', function(){ console.log('on_c 2'); })
+		$('#apple1').on('click', function(){ console.log('on_c 1'); })					
+		document.getElementById('apple1').onclick = function() { console.log('onclick 2');} 
+		$('#apple1').on('click', function(){ console.log('on_c 3'); })
+		
+		document.getElementById('fruite').onclick = function() { console.log('fruite onclick 1');} 
+		$('#fruite').on('click', '#apple1', function(){ console.log('#fruite #apple on_c 1');})			
+		$('#fruite').on('click', function(){ console.log('fruite on_c 2'); })
+		$('#fruite').on('click', function(){ console.log('fruite on_c 1'); })
+		document.getElementById('fruite').onclick = function() { console.log('fruite onclick 2');} 
+
+		$('#fruite').on('click', '.apple', function(){ console.log('#fruite .apple on_c 1');})			
+	
+	Out:
+		onclick 2
+		on_c 2
+		on_c 1
+		on_c 3
+		fruite onclick 2
+		#fruite #apple on_c 1'
+		#fruite .apple on_c 1'
+		fruite on_c 2
+		fruite on_c 1	
+	
+event.currentTarget: 	It will also be the single element from the collection which is clicked, which is pointed by the '#fruite .apple'
+							So basically same as default value of 'this.'
+---
+When a selector is provided, the event handler is referred to as delegated. 
+The handler is not called when the event occurs directly on the bound element, 
+but only for descendants (inner elements) that match the selector
+
+-----
+on  this  and   bind:-
+'this.' on on also behave same as 'this.' in onclick, by default it will reprsent the HTML DOM element which is clicked. 
+binding will also have same effect as in onclick
+see #REF_clickBind
+
+As long as you are using JQuery then in '.on' :
+this.   : HTML dom element
+$(this) : JQuery DOM elemnt
+----
+on and namespace: 
+Another very useful feature of .on is namespace, which can be used for two imp thing
+1.	in off
+2.	cutom event
+
+Fundamental use of namespace is too personally identify the each event registerd on HTML element
+
+custom event:
+You can make custom event for any UI element and then use the namespace to trigget it:
+	$('.apple').on('muf.hus.myeve', function(){....})
+triggering it:
+	$('.apple').trigger('muf.hus.myeve');
+With the same approch you can also trigger the inbuilt event:
+	$('.apple').trigger('click');
+
+namespace of predefined event:
+You can attach the namespace to the element for predefined event like this:
+	$('.apple').on('<event>.<namespace string>', function(){....})
+Eg:
+	$('.apple').on('click.muf', function(){....})
+This will register a normal click event but with the namespace 'click.muf' this will be 100% same as normal click but with namespace.
+
+----
+Passing data to the handler:
+#REF_PASSDATAHANDLE
+You can pass the data into the event handle and later can get it through 'event.data' [not in formal param of callback]
+	function greet( event ) { alert( "Hello " + event.data.name ); }
+	$( "button" ).on( "click", { name: "Karl" }, greet );
+if you you have delegate then do this:
+	$( "button" ).on( "click", "tr", { name: "Karl" }, greet );
+----
+event registered on collection of element and getting the precise element clicked:
+
+	<div id='apple1' class="apple"> Apple1 </div>
+    <div id='apple2' class="apple"> Apple2 </div>
+    <div id='apple3' class="apple"> Apple3 </div>
+
+	$('.apple').on('click', function(event) {...this...event...target...event.currentTarget..})
+	
+Here you have register the enent on collection of element, if you click on any of them than how would you recognize which one is clicked?
+for this just remember that 'this'(unless binded) and 'event.currentTarget' will always point to the SINGLE element which is registered against that 
+cliked and which one is actully cliked,  
+
+So though you have apply registration over $('.apple'), you will get follwing result: [assumption this is not binded]
+clicked on Apple1:
+this:					$('#apple1')	
+event.target			$('#apple1')	[the inner most element]
+event.currentTarget		$('#apple1')	
+clicked on Apple2:
+this:					$('#apple2')	
+event.target			$('#apple2')	[the inner most element]
+event.currentTarget		$('#apple2')	
+	So 'this' and 'event.currentTarget' will not point to the collection of element on which the click is registered. 
+	but the element clicked among that collection
+-----
+Note: 
+	<div id='apple1' class="apple"> <span> Apple1 </span> </div>
+    <div id='apple2' class="apple"> <span> Apple2 </span> </div>
+    <div id='apple3' class="apple"> <span> Apple3 </span> </div>
+It will give if click in Apple2: 
+
+this:					$('#apple2')	
+event.target			$('#apple2 span')	[the inner most element]
+event.currentTarget		$('#apple2')
+
+-----
+Detail of call back function of on: 
+
+formal params: in the callback of '.on' you receive only one formal param that is 'event' and nothing else.
+The uses if this param is same as the one in onclick. so diving in it again make no sense.
+
+-----
+somwhere in too deep framwork on JS: 
+	clikckHappen() {
+		...
+		ele.onclick(...)
+		for(listeners of on/addEventListener with childSelctor) {
+			$(childSelctor).listener()
+		}
+		for(listeners of on/addEventListener) {
+			ele.listener()
+		}
+	}
+-----
+simple cycle: click on #greenapple:-
+	
+1	('#greenapple')[0].onclick()							onclick of #greenapple
+2															on of #greenapple with childselector
+3		('#greenapple').on('click', 'tr')...
+4		('#greenapple').on('click', 'div')...			
+5		('#greenapple').on('click', 'p')...
+6		...													on of #greenapple
+7			('#greenapple').on('click')...
+8			('#greenapple').on('click')...
+9			('#greenapple').on('click')...
+10			...
+11				('#apple1')[0].onclick()						onclick of #apple1
+12					('#apple1').on('click', 'tr')...			on of #apple1 with childselector
+13					('#apple1').on('click', 'div')...			
+14					('#apple1').on('click', 'p')...
+15					...											on of #apple1
+16						('#apple1').on('click')...
+17						('#apple1').on('click')...
+18						('#apple1').on('click')...
+19						...
+20							('.fruite')[0].onclick()						onclick of .fruite
+21								('.fruite').on('click', 'tr')...			on of .fruite with childselector
+22								('.fruite').on('click', 'div')...			
+23								('.fruite').on('click', 'p')...
+24								...											on of .fruite
+25									('.fruite').on('click')...
+26									('.fruite').on('click')...
+27									('.fruite').on('click')...
+28									...		
+29										('#frAndVg')[0].onclick()						onclick of #frAndVg
+30											('#frAndVg').on('click', 'tr')...			on of #frAndVg with childselector
+31											('#frAndVg').on('click', 'div')...			
+32											('#frAndVg').on('click', 'p')...
+33											...											on of #frAndVg
+34												('#frAndVg').on('click')...
+35												('#frAndVg').on('click')...
+36												('#frAndVg').on('click')...
+37												...			
+													It will propogate to till body
+													
+if u call 'event.stopPropagation'/'event.stopImmediatePropagation' in line 1, all from line 2 will ignored
+if u call 'event.stopPropagation' in line 2, all from line 11 will ignored
+if u call 'event.stopImmediatePropagation' in line 2, all from line 3 will ignored
+if u call 'event.stopPropagation' in line 3, all from line 11 will ignored
+if u call 'event.stopImmediatePropagation' in line 3, all from line 4 will ignored
+
+In this complete cycle: 
+
+Line 1 to 9
+this					:	('#greenapple') [unless bind to something else]
+event.target			:	('#greenapple')
+event.currentTarget		:	('#greenapple')
+
+Line 11 to 19
+this					:	('#apple1') [unless bind to something else]
+event.target			:	('#greenapple')
+event.currentTarget		:	('#apple1')	
+
+Line 20 to 29
+this					:	('.fruite') [unless bind to something else]
+event.target			:	('#greenapple')
+event.currentTarget		:	('.fruite')	
+
+Line 30 to 37
+this					:	('#frAndVg') [unless bind to something else]
+event.target			:	('#greenapple')
+event.currentTarget		:	('#frAndVg')
+
+37 and beyond:
+this 					will point to the element on which that event is registered. (unless binded)
+event.target:			('#greenapple')
+event.currentTarget:	will point to the element on which that event is registered.
+
+-----
+The majority of browser events bubble, or propagate, from the deepest, innermost element (the event target) 
+in the document where they occur all the way up to the body and the document element. In Internet Explorer 8 and lower, 
+a few events such as change and submit do not natively bubble but jQuery patches these to bubble and create consistent cross-browser behavior.
+
+------------------------.off()--------------------------
+Reverse of on is off, It de-register the event
+removing the listener if you have refrence of click function:
+	var foo = function() {};
+	$("body").on( "click", foo );
+	$("body").off( "click", foo );
+	
+How namespace work: 
+	This name space work exactly same as css classes and HTML Element name: 
+	<div class='muf hus mah'>
+	and
+	$('#apple1').on('click.mufc.husc.mahc')
+	
+	div === click
+	muf hus mah	===	mufc husc mahc
+	
+selection will occure for all below combination:
+	click
+	.mufc.husc.mahc
+	.mufc
+	.mufc.husc
+	.mufc.mahc
+	click.mufc.mahc
+	click.mahc
+	click.mufc.husc.mahc
+
+Removing with namespace:-
+EG1:
+if you do below:
+	$(".apple").off( "click" );
+It will remove all the click listener on collection of element
+
+EG2:
+	$('#apple1').on('click.Nm2', function(){ console.log('click.Nm2');})
+To remove it:
+	$('#apple1').off('click.Nm2.det2')
+	$(".apple").off( "click" );
+	$(".apple").off( ".Nm2" );
+	$(".apple").off( ".det2.Nm2" );
+	$(".apple").off( ".det2" );
+	$(".apple").off( "click.det2.Nm2" );
+It will not remove if you do:
+	$('#apple1').off('.click.Nm2')
+	$(".apple").off( ".click" );
+	$(".apple").off( "Nm2" );
+	$(".apple").off( ".click.det2.Nm2" );
+
+More: 
+	var validate = function() {};
+	$( "form" ).on( "click.validator", "button", validate );
+	$( "form" ).on( "keypress.validator", "input[type='text']", validate );
+	$( "form" ).off( ".validator" );
+the last line will remove both the validator.
+
+So basicallly: 
+	click, dblclick, hover, mousemove ===  div, input, p, h1
+	all other after the dot(.) === css classes
+
+VVIMP: 
+	off() wil remove the listener added with 'on' not the one who is assigned againgt 'onclick'
+---
+
+if you have added a deleget event like thiis: 
+	$('#fruite').on('click.Nm2', '#apple1', function(event){...})
+You can remove it by:
+	$('#fruite').off('click.Nm2');
+but not by
+	$('#apple1').off('click.Nm2');
+So if on is called by 'AAA' then off shouls also be called on same.
+
+Removing all delegate event(on with childselector) at once:
+	$( "p" ).off( "click", "**" );
+
+-----------------------JQuery.click()---------------
+
+click methode of JQuery is built on the top of on, its is just shorhand of 'on'
+it is used to register and trigger the clickboth:
+For Triggerring:
+	$('.apple').click();					// It will click the set of element
+For Registering:
+	$('.apple').click(function() {....});
+actully in the framwork at the core this obe will transform ito belo:
+	$('.apple').on('click', function() {...});
+So it is clear that all the thing we discussed for 'on' is true for 'click' too
+like: 
+	$('.apple').trgger('click')		//will trigger the event
+	$('.apple').off('click')		//will remove the event
+
+	When you call the .click() to softly click a element then also the complte event cycle flow form bottom to top and.
+	Cycle of click-event remain unchanges either you do hard click or soft click by (trigger() and click())
+	
+------
+$('#apple').on('click', function() {
+	this.id = 'ooooooooo'
+	
+	div.append(<div id ='apple'>)
+})
+
+------
+
+----
+Scenario: 
+	<div onclick='fpc()' onfocus='fpf()' onfocusin='fpf()' onchange='fpch()'>
+		<input ... />
+	</div>
+	
+	If use click on 'input'. will the fpc() and fpf() be called
+	Ans: fpc: Yes, because it propogate.
+		 fpf: No, because it does not propogate.
+		 fpi: Yes, because it propogate.
+		 fpch: Yes because it propogate.
+------------------------------------Limitation of 'on', 'click', 'onclick' in JS-----------------
+
+There is one very big limitation in 'on'/'click'/'onclick'
+see the senario-
+	var fun = function(event){ 
+		console.log('Bounded fun', this, event.target.innerText);
+	}
+	$('#fruite').on('click', '#apple1', fun.bind({name: 'muf'}))
+	OR
+	document.getElementsByClassNAme('.apple')[0].onclick = fun.bind({name: 'muf'});
+	
+The limitation is that if your callaback function is bind to any other object (than default HTML element clicked), in that case
+you will have 'this.' in the callback as the binded object not the HTML element clicked.
+Here you will loose the refrence of element clicked.
+This is sothing known to the world but ignored,
+Though for single element you can compansate it by:-
+	var fun = function(event){ 
+		htmlEle = $('#apple1')[0];
+		console.log('Bounded fun', htmlEle, event.target.innerText);
+	}
+but if click listener is attached on collction of element then you will never know the which item is clicked if callback function is binded.
+event.target also cant help as it will give the deepest element clicked not the one on which listener is registered.
+----------------------------------------
+
+Performance: 
+1.	click event is less frequent one, but some event like 'mousemove' or 'scroll' can triiger 100s of time in a second, so u should do very less 
+		work in it.
+3.	$('body').on('click', 'tr', f)		VS		$('table').on('click', 'tr', f)
+	Second one is better for performance, as it will required less comparision of selector on JQuery side.
+4.	Use less complex selector
+
+-----
+Removing listener in same event: 
+if you call the 'off' then it will be reflected once the event cycle is completed, not in between that is why: 
+	 
+	$( "#test" ).on( "click.c1", function() {$("#test").off( "click.c2", handler2 );} );
+	$( "#test" ).on( "click.c2", function() {..} );
+If you click first time both will be executed, but once the event cycle complete 'off' will be reflected.
+So clicking second time will not call 'click.c2'
+-----
+
+passing data in trigger: 
+You can also pass data in trigger like below, u will get it in second param of callback
+	$( "div" ).on( "click", function( event, person ) {
+	  alert( "Hello, " + person.name );
+	});
+	$( "div" ).trigger( "click", { name: "Jim" } );
+Passing data in 'on' is diffrent than above:
+see #REF_PASSDATAHANDLE
+
+pass data in trigger: 	get it back in second param of callback
+pass data in on: 		get it back in event.data
+------------------------------------------------------Events-----------------------------------------------
+
+Any event like name '##event##' can be registerd with : 
+$('#apple1').##event##(function() {...})
+OR
+$('#apple1').on('##event##', function() {...})
+
+In click event, 'onclick' always run prior to the 'on', no matter who was applied first. 
+But there are couple of event who will execute them in order of its application EG:
+in scroll event: 
+	'onscroll' will run after the 'on', if 'onscroll' is applied later.
+I will tag such event as #ONEVSERIAL
+though propogation between child o parant remain same, first to child then to parent.
+
+error: 
+	> works with element such as <img />, <window /> 
+	> for img it trigger when image failed to load (the event trigger only afrter the event is registerd )
+	> Prpogation: no
+
+resize:
+	> work/triggered only and only for window, when the size of browser window change.
+	> call many time if size change by mouse drag, so keep it light weight
+	> listener apply with 'on' and 'onresize' will run on its registration order not like onl
+	#ONEVSERIAL
+
+scroll:
+1.	Scroll by browser scroller: 
+	If your HTML page page is so lagre becouse of inner element that browser put its own scollbar in it.
+	Then if you scroll, this event is fired.
+	But it will be fired against document and then window.
+	It will be work only with 'window/document.scroll(f..)' not with anything else.
+	suppose height of ur login page is 1000px and ur destop screen is 750px, then browser will bring the scrollbar
+2.	Scroll in the HTML doc:
+	If in your HTML page certain HTML element has child which is having the scroll in it. This happen in this scenarion 
+	A.	The container element has following css	
+			overflow: scroll/auto; 
+			width: WIpx; 
+			height: HIpx;
+		Now the size on all the child element exccced the WI and HI, in that case a scrollbar appear for that container element.
+				<div id="target" style="overflow: scroll; width: 200px; height: 100px;">
+				 ..... Very large children.....
+				</div>			
+		When you scroll the container element, the event is triggered.
+		This event do no proporate at all.
+		It only execute the scroll event register against the container (#target) and die. Do not go to next parent.
+		#ONEVSERIAL
+ready:
+	This is one of the most widly used event after click, so we will dive in it.
+	This event is fired once the DOM is ready and safe to manipulate.
+	There is no any exact JS counterpart of it so u will never see 
+		document.getElement*By*('sele').onready = ... 
+		OR
+		document.onready = ...
+	It is puerly a JQuery function.
+	The distant relative of this event in JS is 'DOMContentLoaded', but is rarly used. ''ready function has built over it.
+	There are multiple way to register this event: 
+		$( handler )
+		$( document ).ready( handler )
+		$( window ).ready( handler )
+		$( "document/window" ).ready( handler )
+		$( "img/div/.cls/$id" ).ready( handler )
+		$().ready( handler )	
+	They all work in same way and basically same. They all correct BUT
+	As of jQuery 3.0, only the first syntax is recommended; the other syntaxes still work but are deprecated.
+	The reason is they are either inefficient, confusing or appear to do somthing else.
+	EG:
+		in '$( ".cls" ).ready( handler )' it seems we wait for selector item (.cls), but its not. actully ready function
+		has no relation with the selector(.cls) at all. so avoid using such confusing statment.
+		
+	so best is to: 
+		$(function() {.....});		OR		jQuery(function() {.....});
+		Or somtime also u can use 
+		$( document ).ready( function() {.....} )
+	As like other event they all execute on FIFO basis;
+	
+		$(document).ready(function() { console.log('document on'); });
+		$(function() { console.log('direct ready'); })
+		jQuery(function() { console.log('J direct ready'); })	
+	Out
+		document on
+		direct ready
+		J direct ready
+	>> There is also $(document).on( "ready", handler ), deprecated as of jQuery 1.8 and removed in jQuery 3.0
+	
+load:
+	This function called when all the aset like image, script etc is loaded completely. rarly used.
+	
+blur: 
+	blur work with input type text, textarea, checkbox, select and with window
+	This event do not propogate at all, it execute for the elemnt it registered upon and die.
+	BLur fired if element lost the focus by mouse, tab key or any thind else.
+	JS couterpart: onblur
+	#ONEVSERIAL
+	This event will also be fired when developer do the soft focus-lost by calling and complete cycle will run: 
+	$('sel').blur();
+
+	
+focus:
+	It is reverse of blur but behave in same way.
+	focus work with input type text, textarea, checkbox, select and with window
+	This event do not propogate at all, it execute for the elemnt it registered upon and die.
+	focus fired if element lost the focus by mouse, tab key or any thind else.
+	JS couterpart: onfocus
+	#ONEVSERIAL
+	This event will also be fired when developer do the soft focus by calling and complete cycle will run: 
+		$('sel').focus();
+	
+	
+	
+focus/blur do not trigger on element such as div/p/h1 etc. it does not fire when you click on scrollbar of any such element too.
+
+focusin: 
+	This event is same as 'focus', but with one diffrent that This can bubble up.
+	This is started with some specific element, but propgate to all the parent 
+	Event-cycle of this event can only be started with the gaining the focus of element like input type text, textarea, checkbox, select and with window
+	It will first execute for the child and then move up.
+	It can be stated with specific element (who can gain focus) but can bubble up for any kind of parent. 
+	EG:  
+		<div id='fruite'> 
+			Fruite												Area 1
+			<div id='apple1'>  Apple1 </div>					Area 1
+			<form id="formId">									Area 2
+				<input type="text" id="inputTxId"/>				Area 3
+				<input type="checkbox" id="inputCbId"/>			Area 4
+			</form>
+		</div>
+
+	$('#fruite').focusin(function() { console.log('#fruite on'); });				L10
+	$("#apple1").focusin(function() { console.log('apple1 on'); });					L11
+	$('input').focusin(function() { console.log(this.id, focusin); });
+	$('input')[0].onfocusin = function() { console.log(this.id, 'onfocusin'); };
+	$('input')[1].onfocusin = function() { console.log(this.id, 'onfocusin'); };
+
+	If you click on Area1 or Area2, then nothing will happen, even L10 and L11 will not trigger.
+	But if you click(or move by pressing Tab/Arrow) on Area3 or Area4 then this event cycle will run.
+	this will run as below:
+		first 'on' of inner child 
+		the 'onfocusin' of inner child		[Reverse to the onclick event cycle]
+		then to the parent
+	For Area1:
+		inputTxId
+		inputTxId onfocusin
+		#fruite on
+	
+In the parent elemen this 3 imp param be like: 
+
+	JS couterpart: onfocusin	
+	DO DO remember: 
+		It is not cumpolsory that you must register the event on the elemet that can start the 'focusin' cycle, 
+		But it is compulsory such event must must be prsent to actully start it.
+	EG:
+		<div id='fruite'> 
+			Fruite												
+			<form id="formId">									
+				<input type="text"/>				
+			</form>
+		</div>
+	$('#fruite').focusin(function() { console.log('#fruite on'); });				
+		
+	Out:
+		apple1 on
+		
+	Here you have not register any listener on 'input', but you will still get listener of '#fruite' and "#apple1" be executed.
+	Because 'input' start the event-cycle and propogate it to parent
+	if instead of 'focusin' we have used 'focus' here, then the listener would not called
+	
+sequence of focusin and focus: 
+	In any condition 'focusin' cycle[from innermost child to parent] will execute first and then 'focus'[the event against the only element].
+	
+focusout:
+	This event is counterpart of 'focusin'. and brother of 'blur'
+	The only diffrence b/w blur and focusout is that, blur does bubble up like focusin.
+
+change:
+	After the 'click' this one is widely use event so we will dive in it.
+	This is started with some specific element, but propgate to all the parent [same as focusin/focusout]
+	EG	
+	1. when user done typing and press outside of input text [not for each keypress]
+	2. checkbox chane
+	3. dropdown change
+	4. radibutton change
+	This event does bubble up. so its flow mecahnism is same as 'focusin'.
+	#ONEVSERIAL
+	As like 'focusin' you need not neccesarily register the event on the element who can  trigger the 'change', But u must have its prsence their.
+	JS conterpart: onchange
+	
+	<div id='fruite'> 
+		Fruite												
+		<form id="formId">									
+			<input type="text"/>				
+		</form>
+	</div>	
+		
+	$('#fruite')[0].onchange = function(event) { console.log('#fruite onchange'); };
+	$('#fruite').change(function(event) { console.log('#fruite on'); });
+	$('input').change(function(event) { console.log('input change'); });
+	$('input')[0].onchange = function(event) { console.log('input onchange'); }
+	
+	Out:
+	input change
+	input onchange
+	#fruite onchange
+	#fruite on
+	
+	Even thoug if you write only 
+	$('#fruite')[0].onchange = function(event) { console.log('#fruite onchange'); };
+	$('#fruite').change(function(event) { console.log('#fruite on'); });
+	Out:
+	#fruite onchange
+	#fruite on	
+	
+VVIMP: 
+	This event does not call when u make: 
+	1. soft change in input type text by .val() or .value = 'lll'
+	1. soft change in input type checkbox by .attr('checked', true) or .value = true;
+	
+Flow of three imp var in event flow of focusin/focusout/change: 
+	this:					it will point to the element against which the listener is registerd (unless binded)
+	event.target:			it will point to the innermost element
+	event.currentTarget:	it will point to the element against which the listener is registerd [same as 'this' if callback in not binded]
+	
+Soft calling: 
+	As you know change-event cycle do not trigger by changing the value softly like '.val()' or value=''
+	But still you wants to run the cycle then do beloe:
+	$('#mybutton').click(function() {
+		$($('input')[0]).val('my val');
+		$($('input')[0]).change();
+	})	
+
+select:
+	This event fired when user select the text in input type text[NEVER confuse it with selection in dropdown]
+	When user select a value in dropdown: onchage not onselect fired.
+	
+keyUp/keyDown: 
+	This event is fired when any key on the keyoad is down, it keep triggering if we hold the key.
+	It also fire for any special key like SHIFT, CAPSLOCK, CTRL, F1 etc.
+	This event can be register on any element like div, input, p etc. 
+	It is very useful to create kepad short-cut because it can detect the special key.
+	This event do bubble up and reaced to the top.
+	
+keyPress:
+	This fire when key is pressed and that key is associated with actual printable charachter. 
+	So this does not fire for SHIFT, CAPSLOCK, CTRL, F1.
+	This event can be register on any element like div, input, p etc. 
+	This event seprate in between normal key and modified key.
+	You can prevent the charachter to pring on input box if you call 'e.preventDefault' or 'return false' in any listener.
+	If you use modifier key like SHIFT then both the key SHIFT+a/b/1/2/ will be consider as a single key press. So only once the event is fired,
+	So it is very useful to prevent typing of invalid character.
+	E.G:
+
+	
+keyPress VS keyUp/keyDown: 
+	This two is fundamentaly diffrent. and serve two very diffrent purpose 
+	keyPress do not care abouy key is up or down or how many key is up or down. it only care there is ant printable charachted in entered.
+	So it must be use only if you wants to detect the entry of ony printable charachter
+	
+Detection map:-
+	** Y | Y mns two event of that type one for each key
+	
+	Key				keyup/down			keypress											
+	a				Y 					Y
+	.				Y  					Y
+	SHIFT			Y 					N
+	CTRL			Y 					N	
+	F1				Y					N
+	A(SHIFT+A)		Y | Y				Y
+	CTRL+a			Y | Y				N
+	CTRL+s			Y | Y				N
+	#(SHIFT+3)		Y | Y				Y
+	
+
+Pressing a single key once: 
+	1.1: Normal Key: 	Here keydown and keypress will be called when you down the finger, once you up it keyup is called.
+						If you return 'false' in the keyDown then keypress will not be called but keyup will be called as usual.
+	2.3: Special Key: 	If you press the special key (which has no printable char assosiated) like SHIFT, CTRL F2 LEFT then keydown will be 
+						called once finger is down, keypress will not be called at all, and when you release the finger keyup will be called.
+
+Pressing with modifiier key once: [modifier then normal-key for pushdown <> normal-key then modifier for pushup, not other way around]
+	1.1: SHIFT+a: 		In this case first keyDowm will be called for 'shift' then key down will be called for 'a' 
+						then keypress will be called for 'a'
+						once you release the finger then 'keyup' will be called for 'a' then key up for 'shift'
+	
+Holding a single : 
+	1.1: Normal Key: 	Here keydown and keypress will be kept calling (first keydown then keypress)
+						untill you keep the  finger dowm, once you up it keyup is called onle once.
+						If you return 'false' in the keyDown then keypress will not be called but keyup will be called as usual.
+	2.3: Special Key: 	If you hold the special key (which has no printable char assosiated) like SHIFT, CTRL F2 LEFT then keydown will be 
+						kept calling untill finger is down, keypress will not be called at all, and when you release the finger keyup will be called at once.	
+
+Holding with modifiier key: [modifier then normal-key for pushdown <> normal-key then modifier for pushup, not other way around]
+	1.1: SHIFT+a: 		In this case first keyDowm will be called for 'shift' only once
+						then keydown for 'a' will be kept calling
+						alternativly keypress for 'a' will alse be kept calling
+						once you release the finger then 'keyup' will be called for 'a' then key up for 'shift'
+						
+						
+Three param [keyCode, charCode, which]:
+This three will produce the result of entered key or char, this behave diffrently for kepress and keyup/keydown
+Behaviour of this three property depend on many thing like browse os etc. but we will look in most genreal form, 
+keypress: 
+	This event provide you the 'UNICODE' of pressed charachter. It do not care about what and how many key is pressed. it only care
+	what is the final input characher of that operation.
+	This unicode value is assign to 'which' for all the browser except IE8
+	This unicode value is also assign to 'charCode' for almost all(but not all) the browser 
+	For IE8 it is assign to 'keyCode' [for other browser this perameter is redundant]
+	So best way to get the unicode for entered char is:
+	
+		var uniCode = (typeof e.which == "number") ? e.which : e.keyCode
+		
+	a 		> keyCode-97 : key-a : charCode-97 : which-97
+	SHIFT+a	> keyCode-65 : key-A : charCode-65 : which-65		KL1
+	.		> keyCode-46 : key-. : charCode-46 : which-46
+	CTRL	> no response
+	
+Now if you change the keyboard laguange then: 
+	
+	
+keyup/keydown: 
+	Now this two event determine which keyboard key is pressed or eleased(not what charachter is entered)
+	diffrent browser and os store the value of pressed/released key in diffrent property of event.
+	But jquery normalized them all and summarize it into the one 'which'
+	So here you can use 'which' very reliably for keycode (given you use jquery)
+	This event do not care what charachter is entered with keys neither give any reliable info for it. use keypress for it
+	So 'charCode' here is always 0.
+	This event also fire up for non-printable key like SHIFT, ARROW, F1
+	
+	a 		> keyCode-65  : key-a 	 	: charCode-0 : which-65 		KL3
+	SHIFT+a	> keyCode-16  : key-Shift 	: charCode-0 : which-16  |  keyCode-65 : key-A : charCode-0 : which-65  KL2
+	.		> keyCode-190 : key-. 	 	: charCode-0 : which-190
+	CTRL	> keyCode-17  : key-Control : charCode-0 : which-17
+do not confuse: 
+	Simillarity(65) appear ketween KL1, KL2, KL3. because charachter code and keycode for the key of 'a' is same
+	
+	
+Special case: Though 'ENTER' key do not pring anything visible but it do enter the line end charachter so it is detected by keypress too.
+
+
+Flow control: 
+	keyDown: if you do 'return false' here then event will stop prpogating and prohibit its default begaviour.
+	So if focus is on input text field then nothing will change in that field. 
+	if pressed key is functional key (like arrow, end) there default functinality will also get restricted.
+	Also it will prohibit the call of 'keypress' 
+	So returning false will stop default behavior and keypress both.
+	
+	keypress: returning flase will stop default behviour. So if focus is on input text field then nothing will change in that field. 
+	
+	keyup: it cannot prevent default behaviour at all.
+	
+Flow control for command: 
+	for command like ctrl+s or ctrl+a you must need to control the special key, and special key can only be detected by keydown and keyup
+	To disable there default behaviour use keydown and 'return false'
+	
+There is 3 more property in the event you can use, its value is true/false:
+event.shiftKey
+event.altKey
+event.ctrlKey
+As the name suggest it will be true and false depending on respective key, it detect if with the normal key any special key is also pressed.
+
+you wants to disable [CTRL+A]
+Do it:
+	$(document).keydown(function(objEvent) {        
+		if (objEvent.ctrlKey && objEvent.keyCode == 65) 
+			return false;
+	});
+		
+	
+------------------------
+Mouse events: -
+	

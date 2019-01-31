@@ -1,0 +1,230 @@
+Security on network:
+Symmetric: 
+	Mostly if we think here is of having a key known to server and client both side. and data is encrypted and decrypted with that key only.
+this are thousands of drawbacks of using this like
+Key must be known to all clients
+Request has to be enter in the server to check key. which may be malicious
+because url is not encoded, it can be read throughout network path and could be victim of MITM attack.
+
+To solve this issue we got a new tech called 
+Asymmetric: 
+	Here we encode the data with one key but to dycrypt it you must have two key.
+	In this methodology we generate a KEY-PAIR not key. Each key pair would have two keys
+	Private Key and public key.
+	Public is known to all client which wants to communicate with the server and private key is hold only by server itself.
+	Data encrypted by this public key can only be decrypt with private key.
+	So when client send any data to the server it encrypt that data and now even someone in between network try to read this request, it must need that private key to
+	decode it.
+
+Now this same logic is implemented in the TCP-IP network
+	Now before establishing connection between server and client SSL Handshake must be done successfully
+	this logic is added below Data link layer and this new layer is called SSL.
+	it works like that (its overview there may be many intermediate step):
+	i type   https\\xyz.com   in url and enter
+	request navigate in network and passes from many intermidiate servers
+	finally reach to xyz.com .
+	now server will firsr generate the key-pair for this connection
+	server will share public key of this pair to the client
+	and now communication start.
+
+Issue in this:
+		The biggest problem may occur here is if any intermediate server in network try to behave like   xyz.com.
+		he will simply follow all the steps of generating key-pair and sharing public key.
+		and as client have no idea who exactly generating this public key, it would become victim of MITM attack.
+
+
+
+To minimize this risk SSL-certificate come into picture:
+	The responsibility of SSL-certificate is to verify the servers if they are proper and unharmed
+	SSL-certificate at client: 
+		SSL-certificate from different authority(CA) may lie in the trust store of the client, this truststore may be of  windows, chrome, firfox, android, IOS [to open trust store in windows type run -> certmgr.msc]
+	At server: you have to 
+		1.	buy a certificate from one of the CA 
+		2.	or you create your own and sign it with any CA.
+		3.	or just create your own
+
+
+    So as you know that private key is kept scret and public key is distributed, so there comes a vulnerability that in intermediate
+    media while dilivering public key there was some attack and its changed.
+     So what would happen
+     Then come CA
+     CA auth. keep the public key<-->User map with them for all of its valid users
+	whenever u either hit a server or send a document MITM may take place a complete stranger may try to be a fake server or try to replace 
+	a [msg+pub key+DS] packet. Just to avoid this CA or Docusign comes to picture
+
+    CA Authority actully have  Public Kyr <-->  User    database to verify that user is valid and public key recived on other side is
+    actuuly sent from that user
+    At the server side private key is kept secret and public key is shared with all and also hiven to CA for public directory
+
+
+	1.	Now when client generate a request with ssl version and little more info, it will navigate to server as usual.
+	2.	Server will have to send its ssl-certificates to the client 
+	3.	Now client looks in its truststore and validate that certificate sent by server is trustable
+	    and lie in its truststore or signed with one from clients trustore collection.
+	4.	If its successfully done then ssl handshake start and server generate key-pair then sends its public key
+	5.	And then client generate the key-pair and sends public key to server
+	6.	And BANG communication begins
+	7.	If fail connection refused and client may give green signal to connection but at its own risk. [Add an Exception..]
+	It may fail due to 
+	a.	server failed to represent proper certificate
+	b.	certificate at client or server may be expired one
+	
+How to acquire this SSL-certificate:
+	1.	you may buy it from CA	
+		you may got one from Godaddy, Entrust
+	Pros:  Most of the client like web browser, mobile os, mobile browse have that certificate  in its trust-store. so very useful when you do not have any controls over clients
+		   trust-store. like google.com may be opnened for 1000s type of clients from 1000s of instances. and surely you cannot go to each client and store Ssl-Certificate in its trust-store.
+	Cons:	High COST
+			Add certain delay in connection due to all process of validation and all. If CA make any update on the certificate you may need to make changes in server also.
+
+	2.	you create your own certificate and sign it with any CA.
+		You may use openssl tool to create the certificate and then signed it with any CA.
+		This is widely used for developing website and all.
+	Pros: same as above. and you have some more control on certificate.
+	Cons: same as above.
+	3.	You create your own
+	Pros: Free
+	Cons: Have to install on all the client sides.
+
+	
+	Most of the talked done till here is very specific to WEB BROWSER domain. But when we shift our focus to MOBILE APPLICATION there are some new points come in focus
+	Most IMP is :
+		Most of the mobile app interact with very few number of SERVER and if server and app may belongs to same company/developer.
+		So if app and server are well familier with each other than why they need to go to truststore of device to validate connection.
+		Why Why Why request generated in the app has to carry and match thousands of certificate it has in DEVICEs truststore, with the certificate from server have
+		AS app and server both already know what certificate both are looking for.
+	Here comes BANG CERTIFICATE PINNING :
+		In CP we simpally places same certificate at client and server both
+		At client side instead of loading certificate from truststore we do load it from application itself.
+		We just need to place .bks file in either raw or asset folder, and read it from their.
+		How to do: 
+			Server: as usual
+			Client (Android) : 
+				get .cer file from server guy
+				generate .bks file : use google		
+				
+					class MyHttpClient extends DefaultHttpClient 
+					{		createClientConnectionManager()		
+							{	SchemeRegistry registry = new SchemeRegistry();
+								registry.register(new Scheme("http", PlainSocketFactory.getSocketFactory(), 80));
+								registry.register(new Scheme("https", newSslSocketFactory(), 443));
+								ClientConnectionManager sc = new SingleClientConnManager(getParams(), registry);
+								KeyStore trusted = KeyStore.getInstance("BKS");
+								InputStream in = context.getResources().openRawResource(R.raw.mykeystore);
+								trusted.load(in, "mypassword".toCharArray());
+								SSLSocketFactory sf = new SSLSocketFactory(trusted);
+								sf.setHostnameVerifier(SSLSocketFactory.STRICT_HOSTNAME_VERIFIER);
+					}		}		
+				
+				
+		There is two major disadvantage of this :
+			1.	Any change in the certificate at server left us with no choice but to replace this certificate at clients asset/raw folder, thereby has to give update of application 
+				And there is no solution of this.
+			2.	MyHttpClient  can not communicate with any other HTTPS server but only with HTTPS server with desired certificate. so we have to create another instance of HTTPCLIENT class.
+				So we have no way to communicate to publis HTTPS server like facebook, twitter etc.
+				Solution for this: 
+				Easily addressed by creating a custom TrustManager that first chech the desired certificate and if fail it will check with certificate from truststore.
+				
+				public class MyTrustManager implements X509TrustManager {
+						public MyTrustManager(KeyStore localKeyStore) { init defaultTrustManagerand and localTrustManager}
+						public void checkServerTrusted(X509Certificate[] chain, String authType)throws CertificateException {
+							try { defaultTrustManager.checkServerTrusted(chain, authType);}
+							catch (CertificateException ce) { localTrustManager.checkServerTrusted(chain, authType);}
+						}}
+						
+						
+						
+^^(How to generate .bks file) :
+steps :
+	1.	download library 'bcprov-jdk16-145.jar'
+	2.	open cmd
+	3.	type cd <path to jre/bin>
+	4.	run this command
+		C:\Program Files\Java\jre6\bin>keytool -importcert -v -trustcacerts -file "<path to .cer file>" -alias IntermediateCA -keystore "<location to generate .bks file>" -provider 	
+		org.bouncycastle.jce.provider.BouncyCastleProvider -providerpath "<path to bcprov-jdk16-145.jar library>" -storetype BKS -storepass <password for keystore>
+	
+5. your .bks file would be availiable to given location
+						
+						
+Certificates are exchanged between the client and server (asymmetric keys). The server sends its public key to the client. If the server is set to verify client authentication via a certificate, the client sends its public key to the server. The validity dates on the certificates are verified and they are checked for the digital signature of a trusted certificate authority. If the validity date and/or digital signature are not correct, the browser will issue a warning to the user. The user is then given the option to trust the certificate holder.
+The client then generates a random key (symmetric key). These will be used for encryption and for calculating MACs. They are encrypted using the server's public key and sent to the server. Only the server has the ability to decrypt the new random key. The new symmetric key is used for encrypting the data that is sent between client and server.
+Note: The use of a symmetric key after server-browser authentication greatly enhances subsequent throughput performance.
+A message encryption algorithm and a hash function for integrity are negotiated. This negotiation process could be carried out such that the client presents a list of supported algorithms to the server, which, in turn, selects the strongest cipher available to both of them. Identifiers for the chosen encryption algorithm and hash function are stored in the cipher spec field of the current state for use by the record protocol.
+All of the following fields are set during handshaking: Protocol Version, Session ID, Cipher Suite, Compression Method and two random values ClientHello.random and ServerHello.random.
+
+
+
+-------------------------------------------------------------------------------------------------------------------------
+Pinning
+
+One way to limit the possible damage from hacked CAs is to recognize that most apps do not need to communicate with arbitrary servers. Web browsers, email clients, chat clients, and the like might need to be able to communicate with whatever server the user elects to configure. But many apps just need to communicate back to their developer’s own server, such as a native client adjunct to a regular Web app.
+
+In this case, the app does not need to accept arbitrary SSL certificates. The developer knows the actual SSL certificate used by the developer’s server, so the developer can arrange to accept only that one certificate. Or, the developer knows the CA that they get their SSL certificates from and can only accept certificates issued by that CA, and not other CAs. This reduces security a bit, but makes it easier for you to handle SSL certificate expiration and replacement without major headaches.
+
+This technique is referred to as “pinning”. Chrome is perhaps the most well-known implementer of pinning: when you access services like Gmail from Chrome, Google (who wrote the browser) knows the valid certificates for Google (who wrote the server) and can toss out anything that is invalid… such as the TURKTRUST fake certificate mentioned earlier in this chapter.
+
+Nikolay Elenkov has another blog post outlining certificate pinning support in Android 4.2. Moxie Marlinspike has an implementation of pinning, with a description in a blog post. And, the Guardian Project has an implementation of pinning in StrongTrustManager, discussed in tomorrow’s post.
+
+----------
+
+Device trust store  cannot be modified  by user  until Android 4.0 (ICS)
+• Certificate pinning can be implemented using an App specific trust store
+
+---
+When you don't know in advance to which hosts you might be connecting (e.g. in a browser), checking hostname match and chain of trust is the best you can do. In most native apps, though, you know your hosts in advance. This enables a higher level of security: You can make sure that it's your certificate that the server has presented.
+
+---
+
+Accepting only SPECIFIC CERTIFICATE which i know must be on my server(eiuther selfsigned or purchased one)
+public class MyHttpClient extends DefaultHttpClient {
+ 
+    final Context context;
+ 
+    public MyHttpClient(Context context) {
+        this.context = context;
+    }
+ 
+    @Override
+    protected ClientConnectionManager createClientConnectionManager() {
+        SchemeRegistry registry = new SchemeRegistry();
+        registry.register(new Scheme("http", PlainSocketFactory.getSocketFactory(), 80));
+        // Register for port 443 our SSLSocketFactory with our keystore
+        // to the ConnectionManager
+        registry.register(new Scheme("https", newSslSocketFactory(), 443));
+        return new SingleClientConnManager(getParams(), registry);
+    }
+ 
+    private SSLSocketFactory newSslSocketFactory() {
+        try {
+            // Get an instance of the Bouncy Castle KeyStore format
+            KeyStore trusted = KeyStore.getInstance("BKS");
+            // Get the raw resource, which contains the keystore with
+            // your trusted certificates (root and any intermediate certs)
+            InputStream in = context.getResources().openRawResource(R.raw.mykeystore);
+            try {
+                // Initialize the keystore with the provided trusted certificates
+                // Also provide the password of the keystore
+                trusted.load(in, "mysecret".toCharArray());
+            } finally {
+                in.close();
+            }
+            // Pass the keystore to the SSLSocketFactory. The factory is responsible
+            // for the verification of the server certificate.
+            SSLSocketFactory sf = new SSLSocketFactory(trusted);
+            // Hostname verification from certificate
+            // http://hc.apache.org/httpcomponents-client-ga/tutorial/html/connmgmt.html#d4e506
+            sf.setHostnameVerifier(SSLSocketFactory.STRICT_HOSTNAME_VERIFIER);
+            return sf;
+        } catch (Exception e) {
+            throw new AssertionError(e);
+        }
+    }
+}
+
+
+
+
+--------------------------------------------------
+
+
+	after backgroud check and all suppose CA name 'Entrust' give certificate to xyz.com	

@@ -1,0 +1,110 @@
+Android provide two way to do HTTP operations
+    1.  By AndroidHttpClient or DefaultHttpClient
+    2.  By HTTPUrlConnection
+
+Google recommend strongly to use  HTTPUrlConnection  in android bcoz it is very lightweight. and most of mobile application use this.
+
+Heirarchy
+    URLConnection --> HttpURLConnection --> HttpsURLConnection
+
+Now whatever type of client it is all HTTP operation has 3 step
+    1.  Select Method GET/POST/PUT
+    2.  Add headers
+    3.  Add body if required
+    4.  connect and get inputstrean
+    5.  Reading this input stream is depends on you
+
+URL:
+    This is use to locate the resource with string.
+    Resource can be located from different type of enviorment with different protocol
+    HTTP    http:\\----
+    File    file:\\----
+    fTP     ftp:\\----
+    The resource string is set in the constructor itself, and this class is smart enough to recognize the protocol.
+    Now if you use some foreign protocol like or does not provide protocol like 'www.google.com'
+    'muf:\\--' than it will gives   MalformedURLException: Protocol not found: muf:\\-- OR www.google.com
+
+
+UrlConnection :
+    This class is base class of HTTPUrlConnection, FtpUrlConnection.
+    HTTPUrlConnection is design to support only http protocol wheres this is design for variaty of protocol like
+    file, ftp.
+    This is abstract class, whose implementation can be retrive with methode 'url.openConnection()'
+    returned implementation is depend upon type of prtocol set in URL
+    if protocol is  http/https than it will return  HttpURLConnection/HttpsURLConnection.
+        EX: URL url = new URL("http://www.google.com");
+        HttpURLConnection con = (HttpURLConnection) url.openConnection();
+    If ur url protocol is ftp or else than http/https than it will give classcastexception.
+
+When you call 'con.getInputStream();' system established the connection and perfom the HTTP
+At this point
+    If you use
+    *   All is well
+            Response strean will come
+    *   If you give URL which does not exists, it will gives
+            java.net.UnknownHostException: Unable to resolve host "www.pakicikunakamatrowbmnsbanana.co.in": No address associated with hostname
+    *   If there is not internate completely off  (and you have not set an timeout value)
+            it gives immediatly:  "Unable to resolve host "www.google.co.in": No address associated with hostname"
+    *   If connection is timed out than
+            java.net.SocketTimeoutException: failed to connect to www.google.co.in/173.194.72.94 (port 80) after 6ms
+    *   if server only accept 'POST' or 'GET' and you gives other one than it will gives
+            java.io.FileNotFoundException: http://www.google.co.in.  YES google uses only get.
+    *   if you use setDoOutput(true) it will force method to post only in this case if server only accept GET than it will gives FileNotFoundException.
+
+
+
+Methode:
+    There is majorly two method here GET and POST
+    What are their difference, There hell lot of this.
+     GET : POST
+        data(Header) sent in URL : in body
+        perameter remain in browser history : No
+        data playload limitation : no limit
+        easy to hack : tough
+        only ASCII allow : no restriction even binary data can be sent
+        never ever send password : yes
+        Encoding x-www-form-urlencoded  :  x-www-form-urlencoded and multipart/form-data
+
+        So now you kno why we need POST,
+        You can set it with HttpURLConnection.setMethode(string)
+
+With HttpURLConnection and GET
+        By default HttpURLConnection uses GET.
+        So you cannot send binary file here (Yup you may follow  binary -> Base64)
+        To add the Header use this:
+            There is only and only one way for this use
+                urlConnection.addRequestProperty("key", "sadcdx");
+        This is pretty much you can do here for more go to POST
+
+POST:
+        To set method tp POST call  HttpURLConnection.setMethod("POST") or  setDoOutput(true)
+        Adding Simple Perameter:
+            urlConnection.addRequestProperty("key", "sadcdx");
+            But this will add perameter as GET and they will be exposed and unsecure so use below
+        More sophishticated way
+            This is useful if you want to send data in the request body not in url and u also have binary data
+
+            If you are not sending any file than its ok otherwise first thing you have do is to change content type -
+                urlConnection.setRequestProperty("Content-type", "application/multipart/form-data");
+
+
+
+
+
+
+Simplest HTTP request
+    First get the url
+        URL url = new URL("http://www.google.com");
+    now open the connection and get HttpURLConnection (protocol must be http or https)
+    If you use 'https' than it will actually return HttpsURLConnection.
+        HttpURLConnection con = (HttpURLConnection) url.openConnection();
+    Set methode
+        con.setRequestMethod("POST/GET");
+    get inputstream
+        InputStream is = con.getInputStream();
+    disconnect
+        con.disconnect();
+
+
+--------------------------------
+        URI vs URL

@@ -1,0 +1,290 @@
+Most imp part of angular is component and communication between them.
+In many way this is simmillare to the React comp but we will go in detail to analyze how they are simmilar
+then we will see the communication in between them.
+Simillarity with React comp:-
+    Both have HTML kind of syntext attach to it in js 
+In react we have render methode or functional compponet returning HTML-JSX
+  MyComp(props){
+    return <div>....</div>
+  }
+In angular we have template declared in @Component decorator.
+  @Component({...
+    template: `<p>....</p>`,
+  })
+-
+In both case simple HTML tag like div, h1 etc are allowed and recognizably in lib.
+-
+In both you can create and use custom component in starkingly same way:
+in react by the class/function name directly- 
+    MyComp = (props) => <div />
+    <MyComp />
+ In angular by selector in decorator:-
+   @Component({...
+    selector: 'mycomp',..
+  });
+  <mycomp />
+-
+data flow:-
+   In both data flow from top to bottom. 
+   in react it is done by props.
+   in angular it is done by binding 
+function flow:-
+   In both data flow from bottom TO TOP
+-
+
+
+Binding:-
+  this is one  ofthe smot imp concept of angular.
+  binding syntax has two part.
+   one for the for the child - left part
+   one for the for the parent - right part
+   
+   wahtever written in the right part must have a refrence in the nt parent comp
+      
+   wahtever written in the left part must have a refrence in the nt child comp
+   
+right part/parent part
+   1- {{varOfParent}}
+   here first the varOfParent variable must be prsent in the parent component or prciecly speaking the component this template belongs to.
+  this syntex will convert the inlined variable in simple string and place the string value there.
+  even if it is a js object then it will be converted to "[object object]"
+
+2- "varOfParent":
+here first the varOfParent variable must be prsent in the parent component or prciecly speaking the component this template belongs to.
+here if this variable is a string or any other primitive then its copied value will be returned.
+but if it is a object then refrene of these object will be returned.
+
+3- "funInPar()": 
+this is done when you wants to bind the function of parent to the child. 
+
+4- "expression": 
+this is done when you wants to bind the function of parent to the child. 
+     
+  
+
+left part/child part:-
+1.  direct assignment. very simple strring:
+    varInChild=<whatever>
+    Here the "whatever" string is assign to varInChild, this is 100% static, it do not treat the "whatever" as any kind of variable 
+    rather just a string.
+    
+2.  One way bind - Parent to child : Top to Bottom bind : data bind : 
+    [varInChild]=<whatever>
+    When you use [] in the left then it tells that a data will come from parent to the variable in child, 
+        the name of the variable for destination in child is at left is 'varInChild'
+    Whatever value come from the right will be assign to left and therby move from parent to child.
+
+3.  One way bind - child to parent : Bottom to Top bind : function bind : 
+    (funInChild)=<whatever>
+    When you use () in the left then it tells that a will be binded
+        the name of the function for destination in child is at left is 'funInChild'
+
+----
+
+Passing data parent to child : One way binding : Top to Bottom : data flow:-
+  
+  First in the child declare this :
+   export class Child implements OnInit {
+    @Input() stringProp: string;
+     ...
+   }
+  
+No Braces + interpolation :   RECOMMENDDED FOR STRING VARIABLE
+    Interpolation will be evaluated as the javascript and generate a primitive value (only string or number) and value will be assign to childs variable at left.   
+    <Child name="{{ name }}" />                 Child->name : 'muf'  
+    <Child name="{{ name + 'zzal' }}" />        Child->name : 'mufazzal'  
+    Interpolation do not return any refrence it simply evaluate the js and return the result.
+    so in the parent if you make any changes in name then nothing will implacted in parent.
+    This is best if you wants to do small evaluation or pass a string/int variable value in child and do not wnat any connection of this to parent later.
+      
+    Passing object:
+    <Child fml="{{ fml }}" />                 Child->fml : "[Object Object]"
+    Never do it, as it will convertthe JS object in wierd string and pass.
+
+    
+[] + interpolation : 
+    Parser Error: Got interpolation ({{}}) where expression was expected.
+  
+() + interpolation :
+    Parser Error: Got interpolation ({{}}) where expression was expected.
+    
+  --
+
+No Braces + "varOfParent" : 
+    The value assign to the left side child variable will be the plain string 'varOfParent', not the value of varOfParent that lies in parent.
+    This is completely useless.
+  
+[] + "varOfParent" : RECOMMENDDED FOR OBJECT VARIABLE :-
+    
+    This is best if you wants to pass a JS object. This is widely used. also if you pass the string/int/primitive then it will pass the value. 
+    but if it is an JS object then it is a refrence that is passed down to child.
+    <Child name="{{ name }}" />                   Child->name : 'muf'
+    <Child [name]="name" />                       Child->name : 'muf'
+      Above both the statement are same 100%, as name is the string. and if you make any change in child's name then nothing will change in parent.
+    The right side here is an expression, so you can also do this.
+    <Child [name]="name + 'azzal'" />                       Child->name : 'mufazzal'
+    
+    Passing object:
+    <Child [fml]="fml" />                         Child->fml : {...}
+      As fml is the JS object, this is the best way to send the object refrence to child. Do remember that if you make any change in fml in child it will reflect in parent too.
+      later if you do in child as 
+      fml.mom = 'rrrr'; then parent will also be changed.
+    If you do somthinh like below:-
+      <Child [fml]="fml + ' huss'" />                             child fml-> '[Object Object] huss'
+      Then it will be nonsense besause the value of the expression will be evaluated as '[Object Object] huss', and in child fml-> '[Object Object] huss'
+      Though if you do below, then it will be valid 
+      <Child [fml]="fml.name + ' huss'" />                         Child->fml : Mufa Huss
+   
+VVVIMP:  If you pass a JS object like <Child [fml]="fml" />, then any changes done in fml either in parent or child, will be reflected on other.
+          and so you think that it is a two way binding, but you are utterly wrong. It is not a official two way binding of react.
+          It is just passing of data. data is object so the refrence is passed. and so changes reflected in both side. But But But it is not angular two way binding.
+      
+() + "varOfParent" :
+      () is used only for function binding so this will cause very wierd bugs, NEVER USE THIS.
+  
+ -------  
+        
+No Braces + "expression" : 
+    The value assign to the left side child variable will be the plain string 'expression', not the value of varOfParent that lies in parent.
+    This is completely useless.
+    
+[] + "expression" :
+    If you do-
+    <Child [cvar]="name + 'azzal'" />                       Child->cvar : 'mufazzal'
+    If you do-
+    <Child [cvar]="fml.sis + 'saiffy'" />                       Child->cvar : 'arwa saiffy'  
+    If you do-
+    <Child [cvar]="fml + 'saiffy'" />                       Child->cvar : '[Object Object] saiffy'  
+    If you do-
+    <Child [cvar]="fml" />                                  Child->cvar : JS Object{...}   //Only here the changes in cvar/fml in child/parent will reflect in other one
+  
+() + "expression" :
+  () is used only for function binding so this will cause very wierd bugs, NEVER USE THIS.
+
+ -------          
+Passing event parent to child : One way binding : Bottom to Top : event flow:-
+  
+  export class Child implements OnInit {
+    @Output pokeTheParentFunInChild = new EventEmitter<any>();
+    ...
+    this.pokeTheParentFunInChild.emit()
+  }
+  If you wants to do the one way bind of function from child to parent use below, remember what we do in react is also same. function flo from bottom to top.
+  () + "funOfParent()" :
+  EG:
+    <Child pokeTheParentFunInChild="pokeFromChild()">
+  pokeTheParentFunInChild: This function must be called in child, which will call the  pokeFromChild, and 'pokeFromChild' must be defimne in parent.
+  
+  Parent {
+    template: `<Child pokeTheParentFunInChild="pokeFromChild()"> </Child>`
+    ...
+    pokeFromChild() { ... }
+  }
+
+The follwing three way will not help you in function binding-
+  () + interpolation :
+  () + "expression" :
+  () + "varOfParent" :
+
+  
+Two way bind between Parent and child:-
+  Suppose you have a variable myBindedVarP in parent;
+    
+    Parent {
+      template: `<Child [myBindedVarC]="myBindedVarP" onMyBindedVarChangeC="onMyBindedVarChangeP()">`
+      myBindedVarP: string = "";
+      onMyBindedVarChangeP() {
+        
+      }
+    }
+    
+    Child{
+      @Input myBindedVarC;
+      @Output onMyBindedVarChangeC = new EventEmitter();
+      ...
+      this.onMyBindedVarChangeC.emit();
+    }
+
+ -----------------------------------------
+   
+ One way binding of DOM Property:-
+   You can do the one way binding of any DOM property {not HTML attribute}, some example-
+     value      - for input text, select, 
+     disable    - for any form element
+     src        - for img
+     innerHTML  - for any div, h4, p etc
+     checked    - for checkbox and radio
+     
+Syntxx - 
+  way 1-
+  [propertyName] = "exprression"
+  way 2-
+  [propertyName] = {{interpolation}}
+                                                                
+  [value] = "loginForm.password  +  loginForm.userName";
+  value="{{loginForm.password  +  loginForm.userName}}"
+ Incorrects-
+  [value] = "{{loginForm.password  +  loginForm.userName}}";
+  value = "loginForm.password  +  loginForm.userName";
+    
+way 1: 
+This is best approach in all case
+      <button (click)="onLogInClicked()" [disabled]="loginForm.btDisable" >Log In</button>
+      <div innerHTML="{{loginForm.password  +  loginForm.userName}}"> ------------- </div>
+      <input placeholder="name"  value="{{loginForm.password  +  loginForm.userName}}"/>
+All will work fine
+                                                                
+way 2:
+This is useful only if the property take the string value, so it isd good for "value", "innerHTML" etc.
+But not for "src", "disable" etc.
+      <button (click)="onLogInClicked()" disabled="{{loginForm.btDisable}}" >Log In</button>
+      <div [innerHTML]="loginForm.password  +  loginForm.userName"> ------------- </div>
+      <input placeholder="name"  value="{{loginForm.password  +  loginForm.userName}}"/>
+Button will not work fine, other two will be fine and same as way 1
+   
+
+
+@Component({
+  template: `<Child name="{{ name }}" 
+                    [nameBrack]="name"
+                    fml="{{fml}}"
+                    [fmlBrack]="fml"
+                    (parentPokingrFun)="onChildPoking()">
+             </Child>`,
+})
+export class AppComponent  {
+  name = 'Muf';
+  fml = {mom: 'rash', fat: 'sha', sis: 'arw'}
+
+  constructor () { this.name = 'Angular 6'; }
+  
+  onChildPoking() { }
+}
+
+--
+
+@Component({
+  template: 
+  `<div>Child.name:> {{name}} <br> 
+   Child.nameBrack:> {{nameBrack}} <br> 
+   {{fml}} <br> 
+   {{myjson.stringify(fmlBrack)}}</div>`,
+})
+export class Child  {
+  @Input() name: string;
+  @Input() nameBrack: string;
+  @Input() fml: any;
+  @Input() fmlBrack: any;
+  @Output() parentPokingrFun = new EventEmitter<any>();
+
+  constructor () {
+    // setTimeout(()=>{
+    //   this.name = 'Angular 7';
+    //   this.nameBrack = 'Angular 7';
+    //   this.fmlBrack.mom = 'rrrr';
+    //   this.parentPokingrFun.emit();
+    // }, 1000)
+
+  }
+
+}

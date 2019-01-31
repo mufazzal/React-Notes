@@ -1,0 +1,320 @@
+If you wants to understand Redux, you must first understand Immutability.
+
+immutability does not provide easier answers to a what exactly changed problem, it provides a great answer to the is it changed at all or not question.
+Whenever your object would be mutated, don’t do it. Instead, create a changed copy of it.
+
+Immutable is a principle which says 'NEVER CHANGE BUT CREATE NEW ONE WITH CHNAGE'
+
+Primitive and Immutability: 
+	primitive (unlike array and object) point to the actual value or a sequence of bytes.
+	Now read it carefully-
+	Primitive variable is mutable but the bytecode it pointing to will always ne Immutable.
+	Because you can change the pointer of variable but not the sequence of byte it reprsenting.
+
+For array and object: 
+By default all the array and object are mutable nad you can make ammendment in it(changes in it) without creating new one.
+But if you want then yu can avoid making any changes in that and instead create new one with required changes.
+Sticking to this principle is Immutability.
+
+So immutability is nither a library, framwork, data type or data functionality, it is simplay a principle.
+
+Keeping array immutale: 
+we will see how we can perform following operation and stick to immutability
+
+There is many way to keep the object immutable and do the deep copy, but in this doc we will concentrate on best approach.
+we will try to do al the thing with ES6 spread operator, but if it is not possible then we will fall back on ES5
+
+Note:
+spread operator and key as variable
+	var varName = 'myKey';
+	{...ar, myKey: 'mufa'} 					// will add the key 'myKey'
+	{...ar, 'myKey': 'mufa'} 				// will add the key 'myKey'
+	{...ar, varName: 'mufa'} 				// will add the key 'varName'
+	{...ar, [varName]: 'mufa'} 				// will add the key 'myKey'
+		
+#s1	
+Array- []----------------------------------------------------------------------------------------------------------------------
+	var mem = ['muf', 'hus', 'ras', 'arw'];
+
+	deep copy:								[...mem]
+		
+	deep copy + add at first/last:			['hsnd', ...mem, 'fat'];
+	
+	deep copy + add at i:					[...mem.slice(0, i), 'mak', ...mem.slice(i)];
+		
+	deep copy + delete at i:				[...mem.slice(0, i), ...mem.slice(i+1, mem.length)]
+		
+	deep copy + change at i:				Object.assign([], mem, {[i]: 'haj', 1: 'mak'});
+		
+	add+delete+change:						?????????????
+#s2		
+Array in Array- [[],[],[]]-----------------------------------------------------------------------------------------------------
+	
+	var aia = ['piplu', ['mufz', 'pune', 'eld'], ['arw', 'sir', 'mid'], ['mur', 'bar', 'yng']]
+
+	deep copy:
+		For deep copy of such thing you shpuld use map and slice function, use google for best recursive function for deep copy js.
+		add/change/delete
+		FOr any kind of operation on it you must create a deep copy first and then make chage in it.
+
+
+#s3
+Objects in Array: [{}, {}, {}]--------------------------------------------------------------------------------------------------
+	
+	var oia = [	{name: 'muf'}, 
+				{name: 'arw'},
+				{name: 'mur'} ];
+		   
+	deep copy:
+		var oia1 = oia.map( (it) => {return {...it}} );
+	add/change/delete
+		FOr any kind of operation on it you must create a deep copy first and then make chage in it.
+
+#s14	
+Object- {}----------------------------------------------------------------------------------------------------------------------
+	var obj = {fName: 'Muf', lName: 'hus', place: 'Bar'}
+	
+	deep copy:			{ ...obj };
+		
+	add:				{ ...obj, 'comp': 'Acc', [bikeKey]: 'hondas', id: 30}
+	
+	remove:				var {place, 				...objc} = obj;		OR 		-removed item obj.place will be assign in variable name place.
+						var {place: 	 redundant,	...objc} = obj;		OR		-removed item obj.place will be assign in variable name redundant.
+						var {'place': 	 redundant,	...objc} = obj;		OR		-removed item obj.place will be assign in variable name redundant.
+						var {[myplacek]: redundant, ...objc} = obj;				-removed item obj.place will be assign in variable name redundant.
+	
+	change:				{ ...obj, place: 'Pune'}
+	
+	
+		
+	add+remove+change:	var {place: redundant, ...obj8} = {...obj, fName: 'mufazzal', wife: 'fatti'} 
+
+#s5		
+Object in Object- {{}, {}, {}}-----------------------------------------------------------------------------------------------------
+	var oio = {	id: 100, 
+				pInfo: { name: 'Muf', age: 30, occ: 'emp' }, 
+				cInfo: {comp: 'Acc', eId: '111', from: '2015'}, 
+				fInfo: {mother: 'rash', father: 'shb', sib: 2}
+			  };
+			  
+	shallow copy:						{...oio}	
+	
+	deep copy:							{
+										  ...oio,
+										  pInfo: 	{...oio.pInfo},
+										  [key]: 	{...oio.cInfo},
+										  'fInfo': 	{...oio.fInfo},
+										}
+	
+	add/remove/change in parent:		var { cInfo: redundant, ...oio1} = {...oio, bike: {model: 'shine', no: '1876'}, fInfo: {}}		-this is 100% same as add/delete/chnage in '#s5'
+		
+	add/change in inner object:			{
+										  ...oio,
+										  cInfo: {...oio.cInfo, emId: 'm.sh', [prStr]: 'CS'},
+										  pInfo: {...oio.pInfo, name: 'Mufazzal'},
+										  fInfo: {...oio.fInfo },
+										}			
+	
+	remove in inner object:				var {occ: redun, ...pInfoCop} = {...oio.pInfo} 
+										var oioc = {
+										  ...oio,
+										  cInfo: {...oio.cInfo},
+										  pInfo: pInfoCop, 
+										  fInfo: {...oio.fInfo },
+										}
+	
+	All above discussed approach has one serious drawback. that is, in all this way we must need to know the key in inner object.
+	If you do not know the internal keys of parent object then use some cloning function for the deep copy. on is like -
+	function cloneObject(obj) {
+		var clone = {};
+		for(var i in obj) {
+			if(obj[i] != null &&  typeof(obj[i])=="object")
+				clone[i] = cloneObject(obj[i]);
+			else
+				clone[i] = obj[i];
+		}
+		return clone;
+	}
+	even with this cloning function, add, remove etc operation will not be possible without knowing key, only deep copy is possible.
+	
+
+Arrays in Object-{[], [], []}-----------------------------------------------------------------------------------------------------
+	aio = 	{ pun: ['yus', 'miz', 'abs', 'azz'],
+			  bar: ['mur', 'zoh', 'has', 'khu']
+			};
+		   
+	deep copy:							{	...aio, 
+											pun: [...aio.pun],
+											bar: [...aio.bar]
+										};
+	
+	add/remove/change in parent:		var {pun, ...aio2} = {	...aio, 
+																bar: [...aio.bar],
+																clg: [...aio.clg],
+																sut: ['kol', 'dpk']
+															 };
+			
+	in child add at first/last:			{...aio, bar: ['asf', ...aio.bar, 'gav'], ..}									-simmillar to '#s1'
+	
+	in child add at i:					{...aio, pun: [...aio.pun.slice(0, i), 'ume', ...aio.pun.slice(i)], ..} 		-simmillar to '#s1'
+		
+	in child delete at i:				{...aio, clg: [...aio.clg.slice(0, i), ...aio.clg.slice(i+1, mem.length)], ..}	-simmillar to '#s1'
+		
+	in child change at i:				{...aio, bar: Object.assign([], aio.bar, {[i]: 'haj', 1: 'mak'}), ..}			-simmillar to '#s1'
+	
+	in child add+delete+change:			?????????????
+	
+Array+Object in Object: {[], {}}-----------------------------------------------------------------------------------------------------
+	deep copy:
+	var aoio = {	city: ['ind', 'pune', 'bar'],
+					pInfo: {name: 'Muf', lName: 'hus'},
+					id: 100,
+			   };
+	var aoio1 = {
+					...aoio,
+					pInfo: {...aoio.pInfo},
+					city: [...aoio.city]
+			   }
+	
+Array+Object in Array: [[], {}]-----------------------------------------------------------------------------------------------------
+	
+		var aoia = [{name: 'muf'}, ['in4d', 'pune']];
+	Deep copy
+		var aoia1 = aoia.map((it) =>{
+		  if(Array.isArray(it)) {
+			return it.slice();
+		  } else if(typeof it === 'object') { 
+			return {...it};
+		  }
+		});
+	
+--------------------------
+
+getting a selected child:
+	var {pInfo} = oio
+		This will just assign the refrence of oio.pInfo to another variable pInfo, they both will point to the same.
+	var pInfo = {...oio.pInfo}
+		This will create a new copy of oio.pInfo and assign the refrence of new copied object to another variable pInfo, they both will point to the diffrent object.
+	
+	var {fName} = obj;
+	fName = 'mufazz';
+			
+			
+getting one copied value of primitive type:	
+	var {fName} = obj								OR		-A new fName variable will be created with value 'Muf'
+	var {fName: firstName} = obj							-A new firstName variable will be created with value 'Muf'
+	
+in both above example fName/firstName and obj.fName will point to diffrent variable, becoz 'obj.fName' is promiive. 
+
+--------------------
+
+Diffrence between this two-
+ {...pInfo, name:'muf'}  AND {name:'muf', ...pInfo}
+Ans
+A lot
+In first one whatever vlue of name come after spreading, will be overided by 'muf'
+in second, no ovveriding happen and value of name will be whatever come after spreading.
+So in spread operator, whar come in the right override the left.
+-------
+
+
+var {comp, ...wifeN} = {...oio.fInfo.wife}; VS var {...wifeN, comp} = {...oio.fInfo.wife};
+The second one will always give compilation error
+
+confusion between variable name and key: one of the most confusing thing in spread oprator is, is it key of variable name
+supposse you have an object  objAdd = {}
+Now you wants to aa a key-value pair as >> add : 'kasarwadi' 
+
+first way: 
+  objAdd1 = {...objAdd, add: 'kasarwadi'}                 //ST1
+second way
+  objAdd1 = {...objAdd, 'add': 'kasarwadi'}               //ST2
+Now suppose you assign the key in an string like below:-
+  var keyStr = 'add';
+Now lets use this refrence of string for key 
+  objAdd1 = {...objAdd,  keyStr: 'kasarwadi'}           //ST3
+
+There will be a big problem here,
+What is your first conclusion-
+  keyStr will emit 'add' as key and final objet will be like - {add : 'kasarwadi' }
+NO man-
+  Look at ST1 and ST3, look the similarity, ES6 do not emith the value refer by variable 'keyStr', instead conside the text 'keyStr' as a key itself.
+  So statement ST3 will result in - 
+    {keyStr: 'kasarwadi'}    
+Not {add: 'kasarwadi'}
+
+So what is the solution here, cant ES6 handle the scenario if key itsef a variable.
+No just do it
+  objAdd1 = {...objAdd,  [keyStr]: 'kasarwadi'} 
+This will give proper result.
+So in ES6 if you wants to use a variable as key in structurung or destructuring the object, you must wrap that variable in [];
+
+---------------
+
+Bug in spread  operator:
+But there is a bug in React lib : https://stackoverflow.com/questions/38490804/spread-operator-in-react-throwing-error-of-unexpected-token
+
+--------------
+
+Immutability-helper: 
+	This is a library to manipulate the state immutably.
+	Keeping the state immutable is very difficult so react provide there own api to handle it
+	First install and import: 
+		
+		npm install immutability-helper
+		and
+		import update from 'immutability-helper';
+	
+To use the methode 'update' you must first go to the exact element in the immutable object and with the help of predifined commnat you can do the changes
+EG:
+this.state = {name: 'muf', add: {line1: '13 bohra'}, work: {comp: ['adi', 'pnestec']} }
+Updating deep object: 
+	var nD = update(this.state, {add: {{line1: {$set: '14 bohra'} }} } );
+	this.setState(nD)
+apply: 
+	var nD = update(this.state, {add: {{line1: {$apply: function(oldVal){return oldValue + 1}  } }} } );
+	this.setState(nD)	
+Updating deep array:
+	var nD = update(this.state, {work: {{comp: {$push: ['zen', 'Acc']} }} } );
+	this.setState(nD)
+There are other command also available to use : 
+https://reactjs.org/docs/update.html
+-------------------------------------------
+
+
+What are the benefits of immutability?
+1.	no chance of changing data will release the resposibility of continous monitering
+2.	complex and time taking computation for detecting what changed in deep complex data structure not needed.
+3.	debigging tool with time travling make things easier.
+------------
+
+mapDispatchToprops((state)=> {
+	return {
+		prp1: console.log('prp1')
+		prp2: ()=> console.log('prp2')
+	}
+} )
+Here compilation will be fine and at a time of page load 'prp1' will be printed.
+But when you call 'this.props.prp1()' in inner template function then it will give error 'prp1 is not a function'
+prp2 will work as usaul
+-------------------
+
+PERFORMANCE:-
+The best thing you do to enhance the performance is to keeping the state as flat as possible. so that cloning will never be expensive.
+
+------------
+Why does the middleware signature use currying?
+1.	it is functional programming
+2.	it create a closure around a actual middlware execution code function. so we can define variable which will persist for liftime of that middlware
+3.	hahah, this is not as much required, but changing it may cause the changes in 1000s of developed app.
+
+----------
+What will happen if you mutate the state in reducer and return that but not a deep copy?
+	case LoginActions.validateUsername:
+		var nState = state;
+		nState.uName = action.payload.uName;
+		return nState;
+	....
+Here the render will not run at all. because a brand new state object will have to return.
+
+--------------

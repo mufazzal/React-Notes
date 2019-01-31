@@ -1,0 +1,982 @@
+One of the most prominent feature added in advance javascript is Promise.
+This change the wy of coding in Js dramitaically
+Though it is very aadvance and many js browse and enviormrnt yet to adpt this feature but this can be used any browser or enviorment
+with properly setup polyfill. Polyfill is not in scope of out study, we will focus on Promise.
+
+What is Promise?
+Technically it is simple jsvascript object. 
+Its behavior make him distiguish.
+
+Why it comes in picture - 
+This come as strong alternative of callback feature, that make nesting function nightmare.
+Ease of executing the asynch task(s) ->
+1.	If you have many asynch task(eg web service, timeout) to run one after another and they all should be run in exact sequence after pass/fail of its predecessor
+	then callback pattern become very confusing as lot of braces will come there.
+	but running in series becom easy and intutive with Promise 
+2.	If you need to run many asynchtask together(but not necessrily in certain sequence) and then need to do processing of all the result together
+	In this case managing typical callback pattern is hell.
+	but running in paraller becom easy and intutive with Promise
+Ease of handling the asynch task(s) result ->
+3.	in callback you attach a callback handler function to each asynch task, but with promise you have a option to attach the diffrent handler to 
+	each of asynch task or a single handler to for the group of asynch task, though it is possible with callback too, but its hell difficult.
+4.	No matter you executed 1 or more than one asynch task either in parraler or in series, the way to handle the result will always be simillar
+	(if not same), In callback each way need special care.
+5.	You can attach a single result-handler to group of asynch task(running in series or in paraller)  	 
+6.	You can attach the diffrent result-handler to each asynch task(running in series or in paraller) 	
+Ease of handling the asynch task(s) exception ->
+7.	No matter you executed 1 or more than one asynch task either in parraler or in series, the way to handle the exception will always be simillar
+	(if not same), In callback each way need special care.
+8.	You can attach a single exception-handler to group of asynch task(running in series or in paraller)  	 
+9.	You can attach the diffrent exception-handler to each asynch task(running in series or in paraller) 	
+Ease of handlinf synch\asynch task-
+10.	If you have a task that could be conditinally synch or asynch then managing callback for both cases ver very tricky. but with promise its too easy.
+
+To solve all this ise JS introduces Promise.
+Promise is a object that run an executor in it, and later point of time produce the either one of two result.
+executor is a function that is passed in Promise cunstructor.	
+	1.	Resolve - with sucess message.
+	2.	Reject - with error message.
+
+VIMP:
+Promise in itself is ot a asynch operation, it run in synch. If you wants to do a asynch operation than you have to add 
+the proper code in its executor.	
+	
+Simplet promise
+	var prm = new Promise(()=>{console.log('i am promise')});
+This promise do nothing but just run its executor and so pront the message.
+Here you are creating a new obect with new keyword.
+Passing a function which is an executor in this promise.
+This executor start running the code in it immediatly after the creation of promise object.
+To analyze the how all this tune in proper sequence see belo code-
+
+	console.log('Point A');
+	var prm = new Promise(()=>{console.log('i am promise')});		//LINEP2
+	console.log('Point B');
+
+This code open lot of mistry upon Promise-
+	First it will print 'Point A' as obvious.
+	Now it will create a Promise object. once created, it will execute its Executor
+	So now it prints 'i am promise'
+	finally 'Point B' will be printed
+	So you see here all thing run in synchronus way, executor itsef is in synch. 
+	So Promise in itself is completely synch, if you want to have a asynch behavior then you must add code for that. 
+Also if you print the prm with  console.log(prm) after libe LINEP2 then you will get below-
+
+	[[PromiseStatus]]: "pending"
+	[[PromiseValue]]: undefined
+This will tell you that, the promise in in pending state and so promisevalue remain undefined.
+
+	
+Above code hardly have any have use, to make promise useful, it must produce one of either two result.
+Promise run its executor immediatly, in this executor this promise can either be resolver or rejected.
+
+How to do it-
+You need to call the appropiate function in executor fir resolve and rejected
+
+Where you get this fucntion-
+You will get it in formal param of executor. 
+
+
+How to do the resolve/reject-
+ Just call the the function injected ub the executor.
+    new Promise( (resolve, reject) => {resolve('res msg') / reject('rej msg')  });
+
+How to handle after resolve/reject-
+   set the callback for bothe the scenario through .then() function
+  new Promise( (resolve, reject) => {})
+  .then(  resolveMessage => {},
+          rejectMessage => {}
+       )
+
+Doing resolve/reject many time-
+In that case only the first one who is executed will be conside rest of them, even executed later will be ignored
+ So below one will be rejected with 'rej msg 2'
+    new Promise( (resolve, reject) => {
+                                        if(false) resolve('res msg 1');
+                                       reject('rej msg 2');  
+                                       resolve('res msg 3');  
+                                       reject('rej msg 4')  ;
+                                      });
+
+
+When is the body of a Promise executed? 
+
+  
+
+Immediately, yes, by specification.
+From the official MDN:
+The executor function is executed immediately by the Promise implementation, passing resolve and reject functions (the executor is called before the Promise constructor even returns the created object).
+Promise functionality is written isn such a way that, when you create a Promise instance and pass the executor in it, that executor
+will run immediatly. All the code of of Executor will be ran, along with calling of resolve() and reject() in it.
+Now when you call the resole()/reject() in executor function body, the promise changes its state form pending to resolve/reject.
+
+  var myPrm = new Promise( (resolve, reject) => {resolve('res msg') / reject('rej msg')  });
+
+Now you can sy once the promise state hase been cahbged, then is there any way to know the state of promise through-
+  myPrm.getState() OR myPrm.status;
+Answer-
+No! And JS intentioanlly Muted this behavior so that developers not make all mess like never before.
+The only way to certainly know that Promise is resolved or not, is in the .then() block.
+If you wants to process the final result of promise than you must write the .then() block for that promise.
+So yon can never do somthing like-
+if(prm.isResolved)
+  {...}
+Also see #REFPROMISEISRESOLVED.
+
+Promise syas-
+Craete me and pass a executor in me, I will run that executor immediatly and when the executor call resolve()/reject() in it and current event loop is also finished. I will call the .then() block 
+
+Promise without .then() -
+  It is perfectly fine to do this, but in case of rejection it di give the warning, NOT ERROR.
+
+
+In the executor if you write the code even after the resole()/reject(), that code will also be called.
+ the complete executor function will be finished from top to bottom, ne matter where and how much resolv()/reject() is called.
+ once it is finish, it will go out of the executor and move to the next line after that promise. 
+ HERE IT WILL NOT GO IN THE .then() block yet.
+ Once the current event loop is completely finish and you are out of all the function stack
+ then only the .then() block will start executing in the next event loop.
+
+
+
+
+console.log('Point A');
+var v = new Promise((resolve, reject)=>{
+    console.log('In Promise Executor');
+    resolve/reject('I am resolve/reject');
+    console.log('I am after resolve/reject');
+   // resolve/reject('I am RE - resolve/reject');
+  
+  }).then(  
+    resolveMessage => {
+      console.log('in then resolve - ' + resolveMessage); 
+      console.log('in then - ', v);
+  },
+  rejectMessage => {
+      console.log('in then reject - ' + rejectMessage); 
+      console.log('in then - ', v);
+  },
+);
+console.log('Point B')
+console.log(v)
+
+We wil see the sequence-k
+ First 'Point A' as obvious.
+ Now executor will start and print 'In Promise Executor'
+ In next line the promise will be go in resolved/rejected state.
+ Yes! resolve/reject is called but it does not mean that next line in the executor will be ignored.
+ So next 'I am after resolve/reject' will be printed.
+ the next line resolve/reject(...) will be completely ignored because promise has already been set to resolve/reject in above lines.
+ Now control will go to the the next line after promise creation. NOT in the then() block.
+ So now 'Point B' will be printed.
+ Now the 'Promise<Resolved/Rejected>' will be printed.
+ Once the current event loop is finish, the .then() will come to execute in next loop.
+ if we have resolved the promise, then the first  callback 'resolveMessage' will be executed. and 'in then resolve - I am resolve' will be printed.
+ if we have rejected the promise, then the second callback 'rejectMessage'  will be executed. and 'in then reject  - I am reject ' will be printed.
+ finally   'in then - >Pormise {<Resolved/Rejected>}' will be printed.
+
+ So finally-
+   Point A
+   In Promise Executor
+   I am after resolve/Reject
+   Point B
+   >Pormise {<Resolved/Rejected>}
+   in then resolve - I am resolve/Reject
+   in then - >Pormise {<Resolved/Rejected>}
+
+Promise and asynchtask-
+ Most imp use of promise is to implement asynch task, promise itself is not asynch but you can use setTimeout/ajax kind of 
+ function to make it asynch.
+ you call those asynch functionality and do the needful in that asynch function, finally when that asynch functionality is finished,
+ with the output you can call resolve or reject.
+
+EG.
+
+console.log('Point A')
+var v1 = new Promise((resolve, reject)=>{
+    console.log('In Promise Executor');
+    //reject('I am reject in exec1');
+    setTimeout(()=>{ console.log('In Executor In Asynch func'); reject('I am reject in timeout'); },  5000);
+  }).then( 
+    resolveMessage => console.log('in then resolve - ' + resolveMessage, v1),
+    rejectMessage => console.log('in then reject - ' + rejectMessage, v1)
+);
+console.log('Point B')
+console.log(v1)
+
+output->
+ Point A
+ In Promise Executor
+ Point B
+ In Executor In Asynch func
+ in then reject - I am reject in timeout
+ Promise{<Pending>}
+
+
+what if you do this small change-
+ After line 'console.log('In Promise Executor');' add this line
+ reject('I am reject in exec');
+ Then, 
+output->
+ Point A
+ In Promise Executor                   -> even it will reject in second line but its executor will run all the code in its block. so timeout wil be called
+ Point B
+ in then reject - I am reject in exec  -> because promise is rejected alreday
+ In Executor In Asynch func            -> the rejection/resolution message of those who rejected/resolved first, all other will be ignored.
+
+
+
+/*
+
+Below two statement are 100% same, this is very useful if you need an conditinal synch/asynch functionality in your code.
+Advantage of Promise is very very obvious here, you can see how synch and asynch both are so same to handle in.
+It would have beem too tricky if we are on traditional callback.
+
+prm = new Promise((resolve, reject) => resolve(1234))
+      .then(rem => console.log(rem));             --> this consoloe will print 1234
+Promise.resolve(1234)
+      .then(rem => console.log(rem));             --> this consoloe will also print 1234
+
+First see the simple code for conditional statement on reolve without any asynch operation-
+var isAsynchMust = false;
+var res = (isAsynchMust ? new Promise((resolve, reject) => resolve(1234)) : Promise.resolve(567))
+                             .then(rem => console.log(rem));
+
+Lets see how the conditinal synck/asynch operation can be performed here.
+
+var isAsynchMust = true;
+console.log('Point A1')
+var res = (isAsynchMust ? new Promise((resolve, reject) => 
+                 {
+                    setTimeout(()=>resolve(159), 2000)
+                 }) : 
+              Promise.resolve(951))
+          .then(rem => console.log(rem));
+console.log('Point B')
+console.log(res)
+
+Now let say isAsynchMust is false.
+Output->
+1.  'Point A' will be printed
+2.  Promise.resolve(951) will be executed, and so res will become a resolved promise
+3.  'Point B' will be executed.
+4.  Now when the current event loop is finished, the .then() block of Promise will be executed now. and we have make the promise resolved so 
+    the first callback of .then()  will be executed. and it will print '951'
+So finally-
+  Point A
+  Point B
+  951
+Now let say isAsynchMust is true.
+1.  'Point A' will be printed
+2.  new Promise(...) will be executed, a timeout is setted and executed after 1000 ms
+3.  'Point B' will be executed immediatly after step 2(not after the timeout).
+4.  Now when the current event loop is finished and after that the timeout of 1000ms will begin, after 1000ms the promise will be set to resolve
+    and so after that, the .then() block of Promise will be executed now. and we have make the promise resolved so 
+    the first callback of .then()  will be executed. and it will print '159'
+So finally-
+  Point A
+  Point B
+  159
+
+Now lets compare the final output of isAsynchMust for true/false->
+You will see that the final result of resolve will always appear in the .then() block, and after the completion of current event loop.
+So the execution pattern for both the case remain strically same, and you do not have to implement the diffrent handler for output from
+synch or asynch operation.
+
+VVVIMP->
+The variable res in above code is objevt of promise, it is not at all the result generaten from that promise. 
+If you put the line 'console.log(res)' before 'Point B' then the output for that line will be-
+For isAsynchMust is false->
+  Point A
+  Promise {<Resolved>}
+  Point B
+  951
+For isAsynchMust is true->
+  Point A
+  Promise {<pending>}
+  Point B
+  951  
+
+#REFPROMISEISRESOLVED
+Lets see a simple synch promise-
+var myPrm = new Promise((res, rej) => {resolve('i am resolved')})
+Now cant yo do this in next line-
+if(myPrm.isResolved()) {
+  ...
+}
+Ans-
+No! Promise do not at all provide any such function. Why? because this will break the pattern of Promise API.
+You cannot detect the stste of promise from promise instance, otherwise developer will mess the code.
+The only way to know the sate in in .then() block
+Thats is why no matter the operation written in executor of promise is synched or not, the only way to get the final result is in .then() block.
+
+
+See two code snippet-
+Lets say you need a conditinal promise call for one of the web sevice [this is very simplest form though], we can do it by two way.
+  var isAsynchMust = true/false;
+  var res = (isAsynchMust ? new Promise((resolve, reject) => resolve('serviceOutput1')) : Promise.resolve('cacheOutput')).then(rem => console.log('then->' + rem));
+  console.log('res->', res);
+VS
+  var isAsynchMust = true/false;
+  var res = isAsynchMust ? (new Promise((resolve, reject) => resolve('serviceOutput1'))).then(rem => console.log('then->', rem))  :  'cacheOutput';
+  console.log('res->', res);
+  
+The first one is the only recommended way. The second one is disater to do
+Why?
+Simplay you can see that way to hadle the final output either isAsynchMust is true or false, are completely diffrent and managing it is too too difficult.
+In the first one, the final output 'serviceOutput' or 'cacheOutput' will be dilivered in .then() block, even if error is occured in any case, it will be delivered in .the() block
+So things are well connected and managable here.
+Output for isAsynchMust=true -->
+    res->Promise{...}
+    then->serviceOutput
+Output for isAsynchMust=false -->
+    res->Promise{...}
+    then->cacheOutput
+
+In second one though, if isAsynchMust is true then the final result will be delivered in the .then() block, so if output is 'serviceOutput' then it will come in .then() block.
+But if if isAsynchMust is false then the final result will be assign in variable 'res', so if output is 'cacheOutput' then it will come in 'res'.
+So in second case the output will come in diffrent way for diffrent value of 'isAsynchMust'.
+Also another more tension is, for isAsynchMust is true, then the output will be delivered asynchronusly when the event-loop finishes.
+                          But for isAsynchMust is false, then the output will be avialble synchronusly in next line immediatly. in same event loop so.
+Output for isAsynchMust=true -->
+    res->Promise{...}
+    then->serviceOutput
+Output for isAsynchMust=false -->
+    res->cacheOutput
+
+The then Chain-
+Then chain begin on first promise's resolve or reject.
+After that it keep going untill it is intetionaly stoped by any .then() in the chain
+This chain move on the basis of reutn value in both of the callbak(resolve and reject) of .then()
+It stop  if  No further .then() block prsent for next return value.
+
+
+The return of first promise-
+the return of first promise executor function is completely useless it goes in vain.
+  new Promise((res, rej) => {
+    ....
+    return user;  --> this line make no sense, it is useless.
+  })
+
+But the return value in the both the callbacks of .then() function has vary importance.
+
+  new Promise((res, rej) => {         --->first promise
+    resolve('first Promise Resolve')    //PRMLIN1
+    reject('first Promise Reject')      //PRMLIN2
+    return user;  --> this line make no sense, it is useless.
+  }).then(                            ---> 1st .then()
+    resolveN1 => {
+      ...
+      return <retFromN1ResolveMsg>
+    }, rejectN1 => {
+      ...
+      return <retFromRejectMsg>
+    }).then(                        ---> 2nd .then()
+      resolveN2 => {
+        console.log(resolveN2);     //CONLINE1
+    }, rejectN2 => {
+        console.log(rejectN2);      //CONLINE2
+    });
+
+We will see difrent senario how a value return  from a callback of nth .then() will reflect and behave and n+1th .then()
+  1.  Returning nothing:-
+		if there is no return statement explictly mentoned in reject-handler or resolve-handler of .then() block, then by default the return remain undefined and 
+		undefined is cosider as a resolved promise.
+		var pr = new Promise(()=>{
+			resolve('muf');
+		}).then(res=>{
+			resolve(res);		-> this will print 'muf', this then() block returning nothing so undefined return so this is resolved promise.
+		},rej=>{
+		
+		}).then(res=>{
+			resolve(res);		-> this will print undefined, 1st resolved .the() will propogate to resolve-handler of second one.
+		})
+  
+  retFromN1ResolveMsg/retFromRejectMsg->  
+  2.  Anything except new Promise()/Promise.resolve('msg')/Promise.reject('msg')
+        In this scenarion when n-th then return the value as above, then it will be considered as a resolved promise. and so  .then() 
+        it will be received in resolve-callback (the first callback)
+        So in this case 'resolveN2' in n+1th .then() will be called.
+        It is clear that nth .then() will forward the result to n+1th .then(),
+        It does not matter that, nth .then() may have frowarded it from either
+        resolved-callback or reject-callback. So obviously it is also independent of the fact that, the first promise was resolved or rejected.
+         
+         
+        no matter that first-promise was passed or fail and so no matter that 1st .then() is forwarding the result from its resoved-callback or reject-callbak, how the 2nd .then() 
+        will take it(in resolve-callback or reject-callback of 2nd .then()), that depend only on forwarded value.
+        How the n+1th .then() will behave? will it catch it in resolved or reject callback? it solely depend on what value nth .then() has sent. Not on from where it was sent. 
+        [ from resolved-callback or reject-callback of nth .then()] 
+        So if 
+        retFromN1ResolveMsg/retFromRejectMsg => 45 or 'muf' or null or false or undefined-
+          In all that case we will finally forwarded to resolved-callback of 2nt .then() block, preciecly at line CONLINE1.
+        
+  3.  Promise.resolve('msg')
+      As long as movement from n-th .then() to n+1th then() are concern,    return Promise.resolve('msg')    and    return 'msg'    behave in 100% same way.
+      So if 
+        retFromN1ResolveMsg/retFromRejectMsg => Promise.resolve('resmsg')-
+          In that case we will finally forwarded to resolved-callback of 2nd .then() block, preciecly at line CONLINE1.
+    
+  4.  Promise.reject('msg')
+      If from the 1st .then(), you return the    Promise.reject('msg')    either for resolved-callback or reject-callback of 1st .then(). 
+      then the result will be forwarded to the reject-callback of .then() block of 2nd .then().
+      So if 
+        retFromN1ResolveMsg/retFromRejectMsg => Promise.reject('rejmsg')-
+          In that case we will finally forwarded to reject-callback of 2nd .then() block, preciecly at line CONLINE2.
+     
+  
+  5.  new Promise(...)
+      This one is most complicated one.
+      If you return a promise form the 1st .then(), then the instance of this promise is not deliverd to next .then() as it happen in above two cases.
+      Rather, first the executor of this Promise will be executed and when that executor is resolve or reject, then that result will be delivered to 2nd .then().
+      So if-
+      retFromRejectMsg/retFromRejectMsg ->
+            new Promise((resolve, reject)=>{resolve('the-1 Resoved')})
+      Then the value catched in the resolved-callback of 2nd .then() will be 'the-1 Resoved', preciesly at CONLINE1
+      Simillarly if
+            new Promise((resolve, reject)=>{reject('the-1 reject')})
+      Then the value catched in the reject-callback of 2nd .then() will be 'the-1 reject', preciesly at CONLINE1
+      
+
+A promise move to resolved or rejected state if resolve()/reject() called, and a promise in .then() block will be moved to resolved or rejected state if
+proper value is returned.
+But waht will happen if-
+1.	in executor of a promise runtime error occure before call of resole()/reject()
+2.	in .then() resolve/reject-handler runtime error occure before return statement
+In both cases the promise will be considered as rejected, and so reject-hadler of next .then() block will be called.		
+		
+Summary->
+A promise created with new keyword will be change its state if resolve()/reject() called, no matter what its executor return.
+But if nothnig is called then promise stay in pending state and .then() block never be called.
+And if somthing goes wrong and runtime error occure before completion, then it will be consider as rejected so reject-hadler of next .then() be called.
+
+A promise auto-created in .then() block will be change its state if proper value is retuned form it
+But if nothing is returned then it will automatically be consider as resolved-promise. the message in resolved-handler will be undefined.
+And if somthing goes wrong and runtime error occure before completion, then it will be consider as rejected so reject-hadler of next .then() be called.
+	  
+What happen, When in then chain, a then appear in inner .then() block?
+
+see the code below-
+  console.log('Point A')
+  var v1 = new Promise((resolve, reject)=>{
+      resolve('First promise resolve message');      
+    }).then(resolveMessage => {
+        console.log('in 1st then-resolve-block -> ' + resolveMessage);
+        var prm1 = new Promise((resolve, reject)=>{resolve('First then-block resolve message')})
+                      .then((resove, reject)=>{                     //INNERTHEN
+                          console.log('inner then -> ' + resove);
+                          return 'inner then resolve message'
+                      });
+        return prm1;
+    }, rejectMessage => {
+        console.log('in then-1 reject - ' + rejectMessage);
+    }).then(resolveMessage => {                                     //OUTERTHEN
+      console.log('in then-2 resolve -> ' + resolveMessage);
+    }, rejectMessage => {
+      console.log('in then-2 reject - ' + rejectMessage);
+    });
+    console.log('Point B')
+      
+First promise is resolved so in the 1st .then() it will go in resolved-callback.  
+In the first .then() there is patch, it is creating a another promise there and also adding
+a .then() block there. But there is .then() block in the series also.
+So you have two .the() block, INNERTHEN and OUTERTHEN.
+They both will execute in series, first INNERTHEN and next OUTERTHEN.
+The value (Promise also) return in INNERTHEN will be catched in OUTERTHEN, and they both will behave in same way as they were in series as usual.
+
+Output-
+  Point A
+  Point B
+  in 1st then-resolve-block -> First promise resolve message
+  inner then -> First then-block resolve message
+  in then-2 resolve -> inner then resolve message
+-
+n+1th .then() will be called only if nth .then() have return something from two of its callback, if not then n+1th .tenn() will go in vain.
+
+--
+
+console.log('Point A')
+new Pomise(...)
+.then()
+.then()
+.then()
+console.log('Point B')
+
+No matter how much then are there, 'Point A' and 'Point B' will be ran exactly one after another immediately .
+
+---
+var pr1 = new Promise((resolve, reject) => {
+			...
+			resolve(msg)/reject(msg)		//RSRJLINE1
+			...
+		})
+VS
+var pr2 = new Promise((resolve, reject) => {
+			...
+			resolve(msg)/reject(msg)
+			...
+		}).then(res=>{
+			return new Promise() {...}		//RSRJLINE2
+		}, rej=>{
+			return new Promise() {...}		//RSRJLINE3
+		})
+pr1 vs pr2-
+pr1 is the promise that will be resolved or rejected when line RSRJLINE1 get executed.
+pr2 is the promise that will be resolved or rejected when line RSRJLINE1/RSRJLINE2 get executed.
+
+-----------------
+
+
+Running promises in paraller-
+Promis.all:-
+In simple word, this funtion take the array of promises. All the Promisses are executed in paraller independent of each other.
+Once all of then have called their resove or reject function and so set their status to either reject/resolve, then the .then() of Promise.all() 
+fucntion will be executed.
+Now how this block will be executed, this depends on what all the promises executed produced as a result
+1.	If all of the promises are resolved then, the resolve-handler of .then() block will be called.
+	Also the value injected in that resolve-handler will be an array of resolve messages which are passed in resolve methode of respective promise.
+	the size and order of array is same as size and order of promises passed in .all() function
+2.	If any single of them is rejected then, the reject-handler will be called. 
+	Also the value injected in that reject-handler will be an a rejection message passed in reject fuction of failed promise.
+	When any single of promise is rejected then, the .all() will be considered as rejected immediatly and .then() block will be executed with reject-hadler.
+	but it does not mean that it will not execute other promises, it will execute all the promises till the end but there result will not be considred 
+	in the reject-hadler callback of .then() block for .all().
+	
+	Actully Promis.all([...]) says->
+	If all the promises ar resolved then i am resolved and provide you sucess message for each one.
+	If any single one is rejected then i am rejected and provide you the rejection message, no matter for other promises sucecced or not.
+
+	console.log('Point A');
+	var promise1 = Promise.resolve('First Promise');
+	var promise2 = 'Second Promise';
+	var promise3 = new Promise(function(resolve, reject) {
+	  console.log('Third Promise begin-');
+	  setTimeout(()=>{ resolve('Third Promise Resolved'); console.log('Third Promise finished'); }, 5000);
+	});
+	var promise4 = new Promise(function(resolve, reject) {
+	  console.log('Forth Promise begin-');
+	  setTimeout(()=>{ resolve('Forth Promise Resolved'); console.log('Forth Promise finished'); }, 3000);
+	});
+	var promise5 = new Promise(function(resolve, reject) {
+	  console.log('Fifth Promise begin-');
+	  resolve('Fifth Promise Resolved');
+	});
+
+	Promise.all([promise1, promise2, promise3, promise4, promise5])		//PRMEXLINE1
+	  .then((resolves) => {
+		  console.log('resolves >> ', resolves);
+	  }, (rejects) => {
+		  console.log('rejects >> ', rejects);
+	  });
+	console.log('Point B');	
+	
+In the above code we are creating 4 promises and all are resolved one as obvious.
+First 'Point A' will be printed.
+Then promise1(already resolved) and promise2(its a simple string but will be considred as resolved promise inside .all() function) will be initilized. 
+Now promise3 will be created and so immediatly its executor function will start executing
+So now 'Third Promise begin-' will be printed. Also a timout of 5 second will be schedule, and finally executor of promise3 finish here.
+After executor of promise3 finished, Now promise4 will be created and so immediatly its executor function will start executing
+So now 'Forth Promise begin-' will be printed. Also a timout of 3 second will schedule, and finally executor of promise4 finish here.
+After executor of promise4 finished, Now promise5 will be created and so immediatly its executor function will start executing
+So now 'Fifth Promise begin-' will be printed. In next line promise5 will go in resolved state. and finally executor of promise5 finish here.
+
+Now here the Promis.all() will execute, 
+It does not mean that this promise will start executing now, they have already started executing there executor function, and some may have already been resolved
+or rejected. eg promise1, promise2, promise5 are already resolved.
+ 
+Then 'Point B' will be printed.
+Here the event-loop is ended.
+  After 3 second
+Timeout of 3 second will completed and so now promise4 will go in resolved state. after that 'Forth Promise finished' will be printed(in an another event-loop)
+  After 5 second
+Timeout of 5 second will completed and so now promise3 will go in resolved state. after that 'Third Promise finished' will be printed(in an another event-loop)
+Now at last all the promises are finished and resolved too.
+So now the resolved-handler of .then() block will be executed. (in an another event-loop)
+in here the formal parameter of resolved-handler of .then() block will be an array of all the messages passed in resolve functions called in all the promises.
+So the next ine to be print is-> 
+	
+Output-
+	Point A
+	Third Promise begin-
+	Forth Promise begin-
+	Fifth Promise begin-
+	Point B
+	<evnt-loop finish;3 sec wait>
+	Forth Promise finished
+	<evnt-loop finish;3+2 sec wait>
+	Third Promise finished
+	resolves >> ["First Promise", "Second Promise", "Third Promise Resolved", "Forth Promise Resolved", "Fifth Promise Resolved"]
+
+	
+What will happen if you pass only already resolved promises-
+chnage PRMEXLINE1 to 	Promise.all([promise1, promise2, promise5])	
+At the time of calling of .all() function all of promiss are in resolve state, but it does not mean that .then() block will be ignored
+instead here too the behavior will remain striclly simillar.
+Though promise3 and promise4 are not in array of .all() but they all will execute their executor one by one anf finish them.
+promise5 will also execute its executor and finishes.
+Now .all() function execute. even though all the promises in the array are in resolved state, but it does not mean that it will call the .then() block
+Rather it will keep this information and call the .then() block once the current event loop finishes.
+Now 'Point B' will be printed. ans so event-loop ended.
+Now current event loop ended. 
+in next event-loop, Now the resolve-handler of .then() block will be executed. the injected value in this callback will be an array of 
+resolve messages of three promises.
+After 3 and 5 seconds the timeout of third and forth promises will be finsih and print their respective promises.
+ 
+Output-
+	Point A
+	Third Promise begin-
+	Forth Promise begin-
+	Fifth Promise begin-
+	Point B
+	<evnt-loop finish;3 sec wait>
+	resolves >>  (3) ["First Promise", "Second Promise", "Fifth Promise Resolved"]
+	<evnt-loop finish>
+	Forth Promise finished
+	<evnt-loop finish>
+	Third Promise finished
+
+In case you chnage PRMEXLINE1 to 	Promise.all([promise1, promise2, promise3])	   
+output-
+	Point A
+	Third Promise begin-
+	Forth Promise begin-
+	Fifth Promise begin-
+	Point B
+	<evnt-loop finish;3 sec wait>
+	Forth Promise finished
+	<evnt-loop finish;3+2 sec wait>
+	Third Promise finished
+	resolves >>  (3) ["First Promise", "Second Promise", "Third Promise Resolved"]
+	
+In case you chnage PRMEXLINE1 to 	Promise.all([promise1, promise2, promise4])	   
+output-
+	Point A
+	Third Promise begin-
+	Forth Promise begin-
+	Fifth Promise begin-
+	Point B
+	<evnt-loop finish;3 sec wait>
+	Forth Promise finished
+	resolves >>  (3) ["First Promise", "Second Promise", "Forth Promise Resolved"]
+	<evnt-loop finish;3+2 sec wait>
+	Third Promise finished
+
+What will happen if one of them is rejected->
+	This case pretty simple, if any one of then is rejected then .all(0 considred to rejected as whole.
+	So the reject-handler of .the() will be executed, and the rejection message in it will be message given by the first rejected promise
+	The first promise that is rejected will be consider as a culprit of complete rejection, It doesnt matter that waht happened to other promises.
+	no mater all promises after the first rejection are also rejected or resolved, the .all() will be remain rejected with reason of first rejected-promise
+
+
+---
+ 
+ Suppose all remain same exept you change promise3 to   reject('Third Promise Rejected')
+ Now all flow remian same but in the end the .then() block of .all() will execute the reject-handler once the promise3 get rejected after 5 sec.
+ Output-
+    Point A
+    Third Promise begin-
+    Forth Promise begin-
+    Fifth Promise begin-
+    Fifth Promise finished
+    Point B                       
+    <evnt-loop finish;3 sec wait>
+    Forth Promise finished              
+    <evnt-loop finish;3+2 sec wait>
+    Third Promise finished              
+    rejects >> Third Promise Rejected
+    
+  In the above first the .all() function wait til 5 sec so that all the promises finishes their eexecution, that is because all the 4 that has been finishes before 5 seconds are resloved
+  and fifth one(promise3) is also resolved then we would have consider .all() as resolved otherwise reject.
+  
+  Now les say promise4 also get rejected, change promise4 to   reject('Forth Promise Rejected')
+  In this case the rejection occure in 3 second once the promise4 calls the reject. After that .all() do not wait for promise4 to be completed, instaed it will call the reject-handler
+  of .then() immediatly after it is out of event-loop.
+  Output-
+    Point A
+    Third Promise begin-
+    Forth Promise begin-
+    Fifth Promise begin-
+    Fifth Promise finished
+    Point B
+    <3 sec wait>
+    Forth Promise finished              
+    rejects >> Third Promise Rejected
+    <3+2 sec wait>
+    Third Promise finished              
+  
+  Lets change promise1 to-
+    var promise1 = Promise.reject('First Promise rejected');
+    One of the promise passed in array is already rejected, and so .all() will be rejected immedietly too. 
+    But of course the reject-handler of .then() block will execute after the event-loop finishes.
+
+Output-
+    Point A
+    Third Promise begin-
+    Forth Promise begin-
+    Fifth Promise begin-
+    Fifth Promise finished
+    Point B
+    rejects >> First Promise Rejected
+    <3 sec wait>
+    Forth Promise finished              
+    <3+2 sec wait>
+    Third Promise finished    
+  
+ .then() in .all() and promise passed both-
+ 
+ Lets change the promise3-
+ var promise3 = new Promise(function(resolve, reject) {
+  console.log('Third Promise begin-');
+  setTimeout(()=>{
+    resolve('Third Promise Resolved');                 
+    console.log('Third Promise finished-');
+  }, 5000);
+  }).then((p3InnerThenResolve)=>{
+    console.log('inner then of promise3' + p3InnerThenResolve);
+  }); 
+  
+Now when you pass promise3 in .all() then it will need to answer the two .then() block, .then() of itselt and .then() of .all().
+whenver it call the resolve, the .then() of itself will be immidietly get executed.
+Also now promise3 is the promise returned from the .then() block, here we did not reuturn anything so in final result of .all() undefined will come.
+but the .then() of .all() will be executed once all other also produced results.
+
+Output-
+    Point A
+    Third Promise begin-
+    Forth Promise begin-
+    Fifth Promise begin-
+    Fifth Promise finished
+    Point B
+    <evnt-loop finish;3 sec wait>
+    Forth Promise finished              
+    <evnt-loop finish;3+2 sec wait>
+    Third Promise finished              
+    inner then of promise3 - Third Promise Resolved
+    Resolved - (5) ["First Promise reject", "Second Promise", undefined, "Forth Promise Rejected", "Fifth Promise Resolved"]
+    
+
+thing goes tricky when you return a another promise from .then() of promise3.
+ Lets change the promise3 again-
+ var promise3 = new Promise(function(resolve, reject) {
+  console.log('Third Promise begin-');
+  setTimeout(()=>{
+    resolve('Third Promise Resolved');                 //___1___
+    console.log('Third Promise finished-');
+  }, 5000);
+  }).then((p3InnerThenResolve)=>{
+    console.log('inner then of promise3' + p3InnerThenResolve);
+    return 'return from inner then of promise 3' / new Promise(){..}
+  });
+  
+In this case
+    Point A
+    Third Promise begin-
+    Forth Promise begin-
+    Fifth Promise begin-
+    Fifth Promise finished
+    Point B
+    <evnt-loop finish;3 sec wait>
+    Forth Promise finished              
+    <evnt-loop finish;3+2 sec wait>
+    Third Promise finished              
+    inner then of promise3 - Third Promise Resolved
+    Resolved - (5) ["First Promise reject", "Second Promise", "return from inner then of promise 3", "Forth Promise Rejected", "Fifth Promise Resolved"]	
+	
+----------------------------
+	
+for any allreday resolved or rejected promise .then() will run once the event-loop finish So for all below cases-
+  console.log('Point A');
+  var promise5 = new Promise(function(resolve, reject) { resolve('Fifth Promise Resolved');}).then((resolveMsg)=>{ console.log('I am in then -', resolveMsg)});
+  OR
+  var promise5 = Promise.resolve('Fifth Promise Resolved').then((resolveMsg)=>{ console.log('I am in then - ', resolveMsg) });
+Output-
+  Point A
+  Point B
+  I am in then - Fifth Promise Resolved
+  
+--------catch-----------
+ 
+The call .catch(f) is a 100% same as .then(null, f), it’s just a shorthand.
+This is useful if you wants to handle only the error scenario.
+So unlike .then() catch have only reject-handler.
+Also here you can return the Promise or anything, that will create a then-chain.
+EG-
+var promise5 = new Promise(function(resolve, reject) { 
+  vv.i = 0;  OR reject('rejection message')
+  resolve('Fifth Promise reject');})
+.catch((error)=>{
+    console.log('I am in catch -', error)
+  })
+.then(res=> {
+  console.log('resolve-handler of then block below catch')
+});
+Output-
+  Point A
+  Point B
+  I am in catch - ReferenceError: vv is not defined/rejection message
+  
+  
+What will happen if same promise passed twice in .all()
+	They both will be consider the two diffrent promise and for both the resolve message will be come 
+
+What will happen in error occured
+	It will be a rejected peomise
+error VS reject
+	It will be a rejected peomise
+	
+----------
+
+
+------
+
+Promise.resolve('I am resolver Promise')                                                        //EMPTYTHENLINE1  
+.then()                                                                                         //EMPTYTHENLINE2  
+.then(res=>console.log('in resolve - ' + res), rej=>console.log('in reject - ' + rej));         //EMPTYTHENLINE3
+
+1.  What happen in above code
+    Here the promise is resolved, the immediate .then() do not handle it so this resoved promise go to resolve-handler of next .then()
+      output >> in resolve - I am Promise
+2.  Change EMPTYTHENLINE1 to Promise.reject('I am Promise')
+    Here the promise is rejected, the immediate .then() do not handle it so this resoved promise go to resolve-handler of next .then()
+             >> in reject - I am Promise
+
+#REFSNI
+Promise.reject('I am Promise')
+.then(res=>console.log('in resolve T1 - ' + res), rej=>console.log('in reject T1- ' + rej))
+.then(res=>console.log('in resolve - ' + res), rej=>console.log('in reject - ' + rej));
+
+1.  What happen in above code
+    Here the promise is resolved, the immediate .then() will handle if its resolve-handler, As resolve-handler is returning nothing so resolve-handler will return a resolver promise again.
+      output >> in resolve T1 - I am Promise
+                in resolve - undefined
+2.  Change EMPTYTHENLINE1 to Promise.reject('I am Promise')
+    Here the promise is rejected, the immediate .then() will handle it in its rejet-handler, As rejet-handler is returning nothing so rejet-handler will return a resolver promise again.
+             >>  in reject T1 - I am Promise
+                 in resolve - undefib=ned
+
+Promise.reject/resolve('I am Promise')
+.then(()=>{}, ()=>{})
+.then(res=>console.log('in resolve - ' + res), rej=>console.log('in reject - ' + rej));
+
+What happen in above code: 
+  actully this snippet is very simillar to #REFSNI, only console of first then is not there. and both of its handler is also returning resolved promise.
+
+what happen if you provide only resolve-handler in first .then() ->
+  in that case if promise is rejected then, this rejection will be deliver to next .then
+vice cersa is also true.
+
+
+In promise
+  1.  If you do not write .then() block
+        After promise all go in trash, the calling of resolve()/reject() go unnoticed
+  2.  You write .then() block but leave it empty :                                                                      .then().then(.....)
+        The thing [resolve()/reject()] coming from above promise will propogate to next .then() in line. AS IT IS
+  3.  You write .then() block provide only resolve handler :                                                            .then(f).then(.....)
+        The resolve() of promise will be handled by first .then(), now whatever happen in this resolve-handler will 
+        determine that, should the resole-handler or  rejecet-handler of next .then() be called.
+        But the reject() of promise will drectly propogate to reject-handler of .then() next in line
+  4.  You write .then() block provide only reject handler :                                                             .then(null, f).then(.....)
+        The reject() of promise will be handled by first .then(), now whatever happen in this reject-handler will 
+        determine that, should the resole-handler or  rejecet-handler of next .then() be called.
+        But the resolve() of promise will drectly propogate to resolve-handler of .then() next in line
+  5.  You write .then() block, provide handler too, but handler return nothing :                                        .then(()=>{}, ()=>{}).then(.....)
+        By default, if nothing is returned from the .then(), then the a resolved promise will be sent to next .then() 
+        with message null.
+  6.  You write .then() block, provide handler too, but handler return something :                                      .then(()=>{return ..}, ()=>{return ..}).then(.....)
+      A. If that something is equivalant to resolved promise then, it will sent a resolved-promise in next .then()
+      B. If that something is equivalant to rejected promise then, it will sent a reject-pomise in next .then()
+  7.  What is runtime error occure in .then()                                                                           .then(()=>{..}, ()=>{..}).then(.....)
+      then it send a rejected promise to next .then()
+
+	
+---------------------
+Will it work-
+	'OOOOOOOOOOO'.then((resolveMsg)=>{console.log(resolveMsg)})
+Ans-
+	No, A simple string is considered as resolved promise if either it is returned from resolve-handler or reflect-handler of .then() block
+	or passed down in array param of Promis.all() function.
+	
+-----------------------
+
+One of the most useful pattern in promise is below one.
+Here you are calling promises one after another, but if some error occure then single catch is there fro handling error/rejection
+
+	buildForEnv(..) {return new Promise() {....}}
+	
+                       buildForEnv('dev', 'EU')
+  .then(() => { return buildForEnv('uat', 'EU');})
+  .then(() => { return buildForEnv('prod', 'EU');})
+  .then(() => { return buildForEnv('dev', 'APAC');})
+  .then(() => { return buildForEnv('uat', 'APAC');})
+  .then(() => { return buildForEnv('prod', 'APAC');})
+  .then(() => { return buildForEnv('dev', '');})
+  .then(() => { return buildForEnv('uat', '');})
+  .then(() => { return buildForEnv('prod', '');})
+  .then(() => {finalSuccessMessage()})
+  .catch(error => {
+    console.error(error);
+    process.exitCode = 1;
+  });
+  
+ --------------------------------fetch--------------------------
+
+
+One of the most prominent feature on todays JS is fetch api, earlier Js was using XMLHTTPRequest for any http operation but 
+now fetch make all the thing very easy.
+
+in fetch for doing any service call you need to deal with 3 player basically
+1.  request   - A simple JS object 
+2.  fetch()   - A function that do the needful and return promise
+3.  response  - Result that return in promise
+
+The most simplest form is-
+  fetch(request).then((response)=>{...}).catch((error)=>{...})
+request->
+    this contain all the information needed to make a http request, only url is must all other are optional
+    How to create a request, see below:
+      First create a headers:
+        headers = new Header({
+          name: 'Mufda',
+          age:  '28'
+        })
+    request = new Request(url, {
+      method                                  - GET, POST, PUT, DELETE, HEAD
+      headers                                 - associated Headers object
+      body                                    - Blob, BufferSource, FormData, URLSearchParams, or String object
+    })
+
+This is fine if you do not need to send any data in body of request, but suppose you need to send the multipart data or a JSON in body of request then->
+  body: new FormData({name: 'muf', email: 'asds@ff.c', image: $('@img')[0].file[0]})
+  OR
+  body: JSON.stringify({
+		email: document.getElementById('email').value,
+		answer: document.getElementById('answer').value
+	})
+                                                         
+response:-
+  In the result you get the response object, it is not a simple strin but a advance object with some imp functiuon like
+  It has below imp functions/parans-
+    status      - status code (ex: 200, 404, etc.)
+    ok          - Boolean for successful(true) response (status in the range 200-299)
+  It provide below function that enable some quick computing
+    blob()      - Returns a promise that resolves with a Blob.
+    formData()  - Returns a promise that resolves with a FormData object.
+    json()      - Returns a promise that resolves with a JSON object.
+    text()      - Returns a promise that resolves with a USVString (text).    
+
+fetch:-
+  this is the central function to the call, it cab called in diffrent way
+  1.  Passing a request object
+        fetch(request)
+  2.  Passing the ingredient of requets
+        fetch('https://davidwalsh.name/some/url', {
+          method: 'get',
+          headers: {
+            name: 'muf'
+          }
+          body: String/FormData
+        }).then(function(response) {
+			return response.json()/blob()
+        }).catch(function(err) {
+          // Error :(
+        });        
+     

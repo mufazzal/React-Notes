@@ -1,0 +1,377 @@
+To understand the im/exp here first we must understand module in noejs. 
+
+What is module: 
+Module is actully piece of code that can be exposed to the external js files to use. 
+It provide way to encapsulate and show only specific part of code to the external world.
+If you are working in Nide enviorment than module could be as small as a single JS file only or a complete nod library.
+
+in most of the part of this document we will study it for single js file only, in the end we will have small discussion for how to use library.
+
+
+
+------
+what we can export from a js file.
+we can export variable, function, class.
+
+There are two way to export: 
+by export or by module.export 
+this both are same thing, module.export is actully wrapper around all export 
+
+
+var myVar = 4;
+var function myFun = ()=>{}
+var myClass = Class {}
+... etc...
+
+export myVar;
+export myFun;
+export myClass;
+or 
+module.exports = {myVar, myFun, myClass}; or exports = {myVar, myFun, myClass};
+
+The first three export statment above you can also re-write this way (if you wants to hide there real name)
+exports.nameForOutWorld_myVar = myVar;
+exports.nameForOutWorld_myFun = myFun;
+exports.nameForOutWorld_myClass = myVar;
+exports in this lines and in module.exports are same variable.
+
+Down to the lime into the js library 'export myVar;' is transformed to 'exports.mayvar = <its value>'
+
+module.exports = {} is 100% same as exports = {}.
+They both have global scope and points to same thing
+
+Intresting:
+Somewhere in nodejs lib this are defined like this
+...
+module.exports = exports = {};
+...
+
+
+If you use both of the thing in same file than module.export will always have the upperhand and ovveride others either u use it before or afters
+
+export myClass;
+module.export = {myVar};
+export myFunc
+
+Here the exported item will be myVar only.
+
+So with above article you understand that we can export the piece(s) of code from our file to outside world and hide other. This is very very useful 
+for good arch.
+
+Default export (unnamed export) 
+For each indivisual js file of node module we can have multiple nammed export nut one and only one unnamed export
+how to do it 
+simple 
+export default myVar;
+If you try to use it twice in a file than: Error: Only one default export allowed per module. (9:0).
+
+All the other thing for unnamed export is same as we discussed above. But why it is important? 
+we will discuss it in import section
+
+Remember export and module.export belongs to NODE JS library not js itself
+
+
+Q: 
+what happen if we use both
+module.exports = {var_contact}
+exports = {'sads'}
+then it will give error same as: Only one default export allowed per module. (9:0).
+
+You can assign value the 'module.exports' or 'exports' only once.
+If you try to do it multiple time it will gives error.
+E.G:
+	module.exports = {var_contact};
+	module.exports = {"sad"};		// Error while build
+OR
+	module.exports = {var_contact};
+	exports = {"sad"};		// Error while build
+But
+	if(cond)
+		module.exports = {var_contact};
+	else 
+		module.exports = {"asd"};		// Work fine
+-------
+
+VVVIMP: 
+May time you will get error if you do multiple export like below in one file
+
+	export Es6Class;
+	export es6Fun;
+	export vv;
+They all should do the nammed export but it will give compile time error 'Support for the experimental syntax 'exportDefaultFrom' isn't currently enabled '
+for this do below fix-
+	export {Es6Class};
+	export {es6Fun};
+	export {vv};
+Though only default export will work in this way always-
+	export default Es6Class/es6Fun/vv  	>> will work fine
+	export Es6Class/es6Fun/vv			>> may work not fine
+	
+
+inline export-
+var-
+	export var myVar = 5 						No Error
+	export var myFun = (pr) => {...}			No Error
+	export class MyCls {}						No Error
+																import {myVar/myFun/MyCls} 	from '..'		No Error
+																import  randm  		 		from '..'		randm will be undefined
+																
+	var myVar = 5; export myVar;				Compile Error
+	var myFun = (pr)=>{}; export myFun;			Compile Error
+	class MyCls {}; export MyCls;				Compile Error
+	
+	var myVar = 5; export {myVar};				No Error
+	var myFun = (pr)=>{}; export {myFun};		No Error
+	class MyCls {}; export MyCls;				No Error
+																import {myVar/myFun/MyCls} 	from '..'		No Error
+																import 	randm  		 		from '..'		randm will be undefined	
+																
+												----With Default----				
+	export default var myVar = 5;				Compile Error
+	export default var myFun (pr)=>{};			Compile Error
+	
+	export default class Es6Class {..}			No Error
+																import {MyCls} 				from '..'		MyCls will be undefined
+																import  randm  		 		from '..'		No Error
+	
+	var myVar = 5; export default myVar			No Error
+	var myFun = (pr)=>{}; export default myFun	No Error
+	class MyCls {}; export default MyCls;		No Error
+																import {myVar/myFun/MyCls}	from '..'		myVar/myFun/MyCls will be undefined	
+																import  randm  				from '..'		No Error	
+	var myVar = 5; export default {myVar}		No Error
+	var myFun = (pr)=>{}; export default {myFun}No Error
+	class MyCls {}; export default {MyCls};
+																import {myVar/myFun/MyCls}	from '..'		myVar/myFun/MyCls will be undefined	
+																import  randm  				from '..'		{myVar/myFun/MyCls: 5/fun/clsss{}} will be returned	
+-----------
+
+Now lets come to import part 
+
+importing through Node.js function: require()
+This methode import the exported items which are prsent in the given lib/js file
+
+Importing fron nod_module 
+var m = require('targetmod')  e.g. 
+var re = require('React')
+
+Importing from js
+var mymo = require('./myfile')
+
+if your perameter in form for 1 then it will look into this node module library (all module inside folder nod_module)
+but if it contains (./, / or ../) then it will look into (relative to) current directory.
+In case of same two name, you  have to provide the exact .js/.node/.json file path to work
+
+Return value is always being in object foramate. 
+e.g.
+src/myMode.js
+..
+var myVar = 5
+export myVar
+export myFun
+export default myDefVar;
+..
+index.js
+var im = require('./src/myMode')
+im.myVare  // 5
+im.myFun();
+im.myDefVar
+
+So in the variable im you have all the thing you have exported in myMode.js file
+
+Now if you look close you see the disadvantage here
+in the variable you have all the things which are exported, Can i have only the specific one like myFun not myVar ?
+Yes.
+But not with require(), you must use 'import' instead
+
+But REMEMBER import is the methode of es6 not of Node.js (or JS)
+so you can use import syntax only if you have es6 (babal module)
+
+with this you can import specif part only and left other.
+
+syntax:
+import <item to import> from <path of js file of name of node module>
+
+Lets dive in single js file
+
+you can import like
+1. import {myVar} from './src/myMode'  : this will import only variable myVar
+console.log(myVar);  // 5
+2. import {mayVac, myFun} from './src/myMode'
+console.log(myVar); // 5
+myFn();
+3. import * as Obj from './src/myMode'
+Obj.myVar
+Obj.myFun()
+Default export can also be accessed with same way
+import {myDefVar} from './src/myMode'
+console.log(myDefVar); //5
+
+Above discussed imports are nammed import, because there you must need to know thae name of varibale you wants to import
+
+unnamed import :
+In All the above import except one with * statement we must need exact name of exported item to access them. 
+But default exported item  have one unoque property.
+You can access it without even knowing its name (but slight change in import statment)
+unnamed import only work with 'import', require() methode totally ignore default keyword.
+
+myMode.js
+var intVar = 55
+export default intVar;
+
+import anyRandomName from './src/myMode'
+console.log(anyRandomName); //55
+
+
+import {anyRandomName} from './src/myMode'
+import intVar from './src/myMode'
+console.log(anyRandomName); // undefined This will not work because {anyRandomName} will be consider as nammed import, but nothing exported with that name
+console.log(intVar); // 55
+
+Why we need default export and unnamed import?
+because here we can export our most imp function or class and leave all other behind.
+E.G.
+import React from 'react'
+Here we import react object and leave all other part untouched.
+
+
+Importing from node module 
+import React from 'react'  // Do not use /, ./, or ../ in path part.
+
+./ : in the same directory relative to current file
+../ : in the parent directory relative to current file
+
+-----------
+
+Exporting a constructor function: 
+
+api.js>>
+	var ApiFun = function Api(type, data) {this.type = type ...}
+	export ApiFun;
+helper.js>>
+	import ApiC from 'api'
+	var apiC = new ApiC('GET', {});
+--
+
+Exporting a normal function: 
+
+operat.js>>
+	var opFun = function operate(type, data) { .... }
+	export opFun;
+helper.js>>
+	import OpFun from 'operat'
+	opFun('GET', {})
+----------
+
+If you are importing somthing from node module in unnamed manner like:
+	import react from 'react'
+The exported value will be from the file which is nominated by 'main' attribute in 'package.json' file of that module
+Even if that file do not have any default export, it will return all the exported item.
+
+Reason:
+because in the internal Node lib the framwork take the note of 'main' attribute in package.json file.
+whatever exported form this file nominated by 'main' attr, will be set ar defaul export.
+
+E.G:
+
+in react module package.json: 
+	main: "index.js"
+in index.js of react module:
+	module.export = ..blablabla...
+Please notethis is not default export
+Now in your code
+app.js 
+	import rr from 'react'
+here 'rr' should have the default exported value and so be undefined.
+but it has
+because somewhere in nod lib: 
+	...
+	var rectlib = ...react lib....
+	defaul export rectlib;
+	...
+That is why rr has value.
+--------
+
+VIMP:
+in any export/import contract the name of the item to export/import must and must match except if export is done with 'default'	
+	
+
+----------
+exporting the constructor function is wildely used thing that is whu u see this alot
+	import ApiC from 'api'
+	var apiC = new ApiC('GET', {});
+You write and define all the functionality in it.
+
+
+----------
+
+
+
+---------------
+
+VVVIMP: 
+import and require fuction both are valid for NODE only not with plan JS, So this two methode will never be run on client side browser. 
+This two run at the compile time when build was making, and in final build all the refrence of this two will disappear. 
+
+import logc from './core/logincontroller';   // This is fime
+var vv = require('./core/logincontroller');
+
+in the client side bundle JS this two line will not exists, insteat it had already been consumed at the bundling time.
+
+Now loot ak this line
+document.getElementById('header1').onclick = function() {alert('rrrr'); var r = require('./core/registercontroller');}
+Q: Is this valid, and how this will work
+A: Yes, and in the build.js it will be transforment like this
+document.getElementById('header1').onclick = function() {alert('rrrr'); var r = ...blablabla__webpack_require__(91)blavlabla....;}
+
+-----------------------
+circular import?
+
+Node handle it by itself but it is very messy. because exported item may be half built
+"When there are circular require() calls, a module might not have finished executing when it is returned."
+
+Node.js does support circular require/import statements between modules, but it can get messy quickly. 
+In the Node.js docs, it says, “Careful planning is required to allow cyclic module dependencies to work correctly within an application.”
+
+----------------------
+
+'import' and 'require' in plain js :
+If you are using plain javascript without Node/Es6. then do remeber both of the syntax will not work. 
+and if you still wants to modularize the code in small file then do this: 
+
+index.html: 
+	<script>
+		...JS content...
+	</script>
+	<script src="my1.js" />
+	<script src="my2.js" />
+	<script src="my3.js" />
+	<script src="my4.js" />
+There is no other way around without Node.
+
+-----------------------
+
+In any api.js file if you do below thing: 
+	import React from 'react';
+	import ReactDOM from 'react-dom';
+	import Hall from './react/hall';
+It will be converted to below after build process, because Node.js consume import statement.
+
+	var _react = __webpack_require__(97); 		var _react2 = _interopRequireDefault(_react);
+	var _reactDom = __webpack_require__(170); 	var _reactDom2 = _interopRequireDefault(_reactDom);
+	var _hall = __webpack_require__(171);		var _hall2 = _interopRequireDefault(_hall);
+
+
+-----------
+if
+export default store
+Correct:-
+import store from './file' 
+incorrect
+import {store} from './file' 
+
+default export is always imported as an unnammed export, never as nammed one
+--------
+
+What will be imported if nothing is exported?
+of course undefined.

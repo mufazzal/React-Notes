@@ -1,0 +1,167 @@
+
+
+Advanteges of fragment --
+1.  code is properly modularuze
+2.  rich userinterface
+3.  multiple screen layout
+
+------------------------------------------------------------------------------------------------------------------------
+Activity Lifetime --
+	onCreate <---> onDestroy == entire lifetime
+	onStart <---> onStop == visible lifetime	==> activity is visible to user but may be covered by other activity
+								user can see activity bt may not be able to interact
+	onResume <---> onPause == forground lifetime	==> activity is on top of all other activity
+								user can see activity be able to interact also
+
+Visible vs Forground Vs Stopped/Backgropund Avtivity:
+	Forground: means user can interact with it.
+		Ex: simply any activity user is actully using
+	Visible: means user can only see the activity but can not interact.
+		EX: u r using activity press a share button and dialog for "Complete action with.." appear. now activity is visible state and not in forground.
+				while using facebook somones ping arrived on whats app dialog
+	Stopped/Backgropund: nither user can interact nor seen
+		EX: simply if other activity come over our activity. after onStop before onDestroy()
+			*	when locked screen activated [by user or by idle time] activitu goes in stop state
+
+------------------------------------------------------------------------------------------------------------------------
+
+A --> startActivity(B)  .first time
+onPause(A) --> 												--> onStop(A)
+				onCreate(B) --> onStart(B) --> onResume(B)
+
+A --> startActivity(B); finish(); .first time
+------------------------------All SAME----------------------------------- --> onDestroy(A)
+
+A --> B -- > finish(B)
+				onRestart(A) --> onStart(A) -->
+onPause(B) --> 									onStop(B) --> onDestroy(B)
+**
+for any activity it is impossible to call onCreate() and onRestart() [of same activity] in any type of transaction
+**
+------------------------------------------------------------------------------------------------------------------------
+
+Lifecycle for singletask and singletop activity
+Standard: Activity opens normally
+singleTop: Activity opens normally unless it is top of the stack otherwise older instance will be delivered with niew intent in omNewIntent() methode.
+			Both above will always open in same task
+	for the firsttime this activities started callbacks are same as innitiate from onCreate() to onResume()
+	and now if i start this activity again without finishing last one
+	onNewIntent() --> onResume() will be called, onStart not called
+
+
+singleTask:	IF Activity instance is NOT prsent in task THEN NEW activity will be created and opened in NEW TASK.
+			IF NOT then older instance would be delivered with that intent in onNewIntent()
+SingleInstace:	Always creat new activity in new task.
+			Both above will always open in new task
+
+
+
+------------------------------------------------------------------------------------------------------------------------
+effect on UI elemets refrence on screen rotation -->
+When we rotate the screen and configurationChanged is not set to hadle screen rotation then whole actity destryed and reCreater.
+U have to reintilize all UI element (dialog, views) and use them.
+if u tried to use older one, it will not give exception but it will cause WindowLeakedException coz context with wich view refrence creater no longer exist.
+------------------------------------------------------------------------------------------------------------------------
+
+ onSaveInstanceState(), onRestoreInstanceState(), onCreat(bundle)
+	suppose i am using app and on activity A
+	now i call finish or press button, A will be destroyed and user will never navigate back to A again. FINE.
+	but now suppose -->
+	i navigate inside activities like
+		A --> B --> C --> D (No one is finished)
+	now at D system feel resourse crisis and decide to kill A for resouce retrival.
+	so he finish A by himself and dump its instance.
+	Now when user start navigating backward he will must expect A to be there but as it is finished and no longer exist.
+	Here system will recreate the activity and to show it, systen uses saved instance bundle object.
+		1. savedinstance save data in key value formate
+		2. in function super.onSavedInstaceState() it store id of all views in that activity as key and its value in value
+			and retrive it in onRestoreInstanceState(bundle) and onCreat(bundle) to populate the UI once activity is recreated
+		3. ovrride this both function to add some extra kay value pair if u want.
+		4. this bundle is redilivered in onCreate() and onRestoreInstanceState().
+		5. onSavedInstance: this methode will called only whaen activity is destroying, but will have to be re-launche at certain point, but if it
+			never ewquired to relaunche it will never call (dont mingle it with lifecycle)
+			EX A --> B --> C : and i press back button or finish C, then onSavedInstance() for B will not called.
+			but if system kill the A then onSaveInstanceState() will be called for A
+			**If called, this method will occur before onStop(). There are no guarantees about whether it will occur before or after onPause().
+		6. onRestoreInstanceState: this methode called only when activity is re-created fron saved instance
+			and never be called if activity creteded from simply startActivity() function, [this methode used rarly coz we can handle same in onCrreate()]
+			** This method is called after onStart()
+		7. onCreate(bundle): this methde called always either activity re-created from savedInstace or created first time. But in case of first time bundle is null
+			and if it is recreating then bundle will never be null.
+		8. activity follow this concept when device is rotaed (or any congiguration changes occure) and activity is recreatd with new configuration.
+					^^2
+------------------------------------------------------------------------------------------------------------------------
+
+Imp functions in Activity:
+	onUserInteraction: called if user touch anything in activity, useful for idle session managment
+	onUserLeaveHint: this called when user do somthing that suggest app is going to in background/stopped state
+		called when: press Home button, another app open over screen
+		never called at: press back button, call finish()
+
+------------------------------------------------------------------------------------------------------------------------
+android:windowSoftInputMode:
+	this is imp perametere use to control the visibility and UI of keypad, it contain two enum variable.
+	state+____ :>>	use to specify that should keypad be open or not if user open or navigate back to activity
+		____ = Hidden, Visible
+		there are are other also but this two are mostly used and work as name suggest
+		keypad will be visible or hidden as activity starts
+	adjust+_____ :>>	define how layout and view should change itself to fit keypad on window
+		Resize: screen will devide itself to give room to keypad and other ui element so even if keypad is open user can see all ui element
+			first system will try to fit it without scrool but if not possible than it will add it.
+			* even if keypad open no single UI element will be covered by the keypad panel and user will be able to interact with all part of UI.
+			EX: full screen relative layou with button at bottom will show the that button at over kepad.
+		pan:
+		  (dictinary meaning of pan is  -  A freely floating piece of ice that has broken off a larger floe.)
+		  keypad will show as pan over activity UI.
+		  so it is possible that for large UI screen part of some UI will be covered by keypad and user will have to close keypad to interact with them.
+		  it is worst if we have Edittext at some lower part of screen.
+		  that is why it is rarely used
+
+		  *	adjust____: it works vert nicely with Relativelayout as parent
+		  but gives issue with other
+		  And it also have some issue with onConfigcahnges and all
+
+------------------------------------------------------------------------------------------------------------------------
+
+
+
+	Screen Rotation:
+		it could be handle by two way
+		1.	simply let activity recreated with new all new resources for landscape mode as seee [^^2]
+		2.	not let recreat it and instaed call a callback in activity
+			in manifest do this   android:configChanges="orientation|screenSize"
+			When screen is rotated we will recive a callbake in    onConfigurationChanges()    of activity
+
+		in second scenarion no resource either image, string or anything will show any changes,
+		even if u have an diffrent set of image [ and string etc in land-___  folders] for landscape and portariat, it will not reflect.
+		u have to de coding for this manually in 		onConfigurationChanges()   		function
+		if your activity is created when screen is portarait than it will take all resorce [layou, image etc] of portrait folder and if u rotate
+		same will also be prsent there..
+		viceversa for landscape
+
+		**	There hell lot of issue in    2nd   approach even google recommend us to not use this
+				http://stackoverflow.com/questions/18752810/refreshing-resource-after-screen-orientation-changes
+
+
+------------------------------------------------------------------------------------------------------------------------
+
+A very IMP methode 'isFinishing()'
+USE >> 
+	lets assume somthing happen over the activity and now its going in paused or stopped or destroyed state.
+	you already know the flow callbacks of all metdes onPause, onStop(), onDestroy()
+	firstly you will be in onPause >>
+		in this methode how will you determine that what is actully happening, Is activity going to pause, stopped or destroy.
+		For this you can use isFinishing(),
+		So in onPause and onStop you will know what is happening.
+
+
+
+
+
+
+
+
+
+
+
+

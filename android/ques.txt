@@ -1,0 +1,25 @@
+dialog when screen rotated , oncreate and onPrepareDialog
+what happen to memver varible is activity destroyed
+Oautt2.0
+security and permissions:  http://developer.android.com/training/articles/security-tips.html
+storages
+volatile variable
+start asynchtask in broadcastrecvr
+permission vs uses-permission
+multitouch  http://www.vogella.com/tutorials/AndroidTouch/article.html
+can we cancel the AsynchTask excecution
+PopupWindow vs dialog
+dp vs dip vs sp vs px
+Parcelable
+detect if it is jsonarray or jsonobject or string:	use    get() and inStanceOf
+image processing
+number and there casting
+Diffrent menus in aandroid
+what is namespace in xml
+optionmenu vs contextmenu  and  popupMenu
+static inner vs inner class
+** SparseArray
+String vs CharchterSequence
+AbstractQue Framwork
+UTF-8 vs 16 vs 32
+drawable vs mimap

@@ -1,0 +1,204 @@
+Date is one of the most widly used class.
+
+First we will see how date object is converted to string without formatter:-
+There is 6 methode for this
+	3 without any local intervention
+	3 for with the local intervention
+	
+without any local intervention:	
+This methode work 100% same in any local or laguage.
+	suppose you have the following date    'Thu Mar 13 1988 15:18:20 GMT+0530 (India Standard Time)'
+
+	<-----------------------toString------------------------------------->
+		Thu Mar 13 1988             15:18:20 GMT+0530 (India Standard Time)
+	<----toDateString--------->		<------------toTimeString-------------->
+No matter where, how what language you run your code, the result formate will always be the same.
+
+with the local intervention:
+3 function provide us the way to get the string in particular local (default value of local is 'EN')
+
+	<------------------------------toLocalString('DE')-------------------------------->
+				21.6.2018					,					15:08:20
+	<----toLocalDateString('DE')--------->		<------------toLocalTimeString('DE')-------------->
+
+Form the date objevt we can get the any local formate we wants, just pass the proper param.
+
+-----------
+
+getYear VS getFullYear: 
+this is very silly: 
+Back in the day, when memory was expensive and the Year 2000 was far in the future, 
+it did make sense for people to represent 1975 as 75. In retrospect a short-sighted decision.
+SO >>
+	date.getFullYear() == date.getYear() + 1900
+you should always use 'getFullYear' to get proper value
+By simple math it is clear that 'getYear' will return -ve value for year <1900
+				getFullYear		getYear
+13 03 1988 			1988		88
+13 03 2018	 		2018		118
+13 03 1800			1800		-100
+13 03 1900			1800		0
+
+
+---------
+
+as in java too : -
+month here is 
+	0		---		11
+	jan		---		Dec
+
+----------
+
+Date constructor: 
+two most imp constructor of date:-
+1.	new Date(milisecond)
+	You pass the long int in millisecod 
+2.	new Date(y, m, d, h, m, s)
+	you pass all the thing in int or string-convertable-to-int formate.
+	y:	1988
+	m:	0 - 11 					->	m%11							[jan to dec]
+	d:	1 - 30/31/28 			->  d%30/31/28 						[depending on m]
+	h:	0 - 24  				->	h%24							this is in 24 hour formate.		
+	m:	0 - 60					->	m%60
+	s:	0 - 60					->	s%60
+	
+new Date(y, m, d, h, m, s, ms): [year, month, date, hour, minute, second, milisecond]
+	This constructor is decode from left to right (from year to second)
+	first it tale y as it is.
+	then take month as m%12
+	then it take date as d%30/31/28  deoendeing on value of m=(month of 31 day/month of 30 day/feburuary)
+	then it take hour as h%24 {so that you not need to supply AM, PM}
+	minute as m%60
+	second as s%60.
+And that is how the date is build.
+you could left righs side param to null but nt the intermediate one.
+minimum you have to pass the year  and month to work it properly. other u can left but it will be sutomatically set to the default value:
+	(1988 )							>>		01  01  1970 	0   0  0	
+	(1988, 2)						>>		01  03  1988 	0   0  0		
+	(1988, 2, 13)					>>		13  03  1988 	0   0  0		
+	(1988, 2, 13, 22)				>>		13  03  1988 	22   0  0		
+	(1988, 2, 13, 22, 45)			>>		13  03  1988 	22  45  0		
+	(1988, 2, 13, 22, 45, 30)		>>		13  03  1988 	22  45 30		
+	
+-----------
+any setter function of date 'setDate/Month/Year/FullYear/Hour/Minute/Second' do the procewssing and change on same date, they do not create a new date
+so return for all of them are undefined
+
+-----------
+if you make change in any param of date object or provide unmatching value in constructor of date, it will process the left part of date for adjustment.
+if in the constructer values is any param is not in the proper limit then it will also process from right to left.
+always remember: 
+	Adjustment in date done from right to left never left to right.
+Handling of date change: 
+suppose you have >> 
+	var myBirthday = new Date(1988, 2, 13, 22, 45, 30)
+
+1.	new Date(1988, 15, 13, 22, 45, 30)  OR
+	myBirthday.setMonth(15) OR
+	myBirthday.setMonth(myBirthday.getMonth() + 13)
+	in the constructor you will see adjustment is required from month onward, so all to the right of the month will be taken but to the left will be processed
+	>>	month wil be set to 
+			15%12 >> 3
+	>>	and and a remaing 12 month are adjusted in year as 
+			1988 + (12 month) >> 1989
+	res- 13 3 1989 (13 apr 1989)
+	
+1.	new Date(1988, 2, 35, 22, 45, 30)  OR
+	date is special case bcoz it has varity of length in a given month: 
+	as usual it will start from most righ and will first look the date which need adjustment but for this it first also look to month to know the month-size
+	>>	month = mar so size = 31
+	>>	Date will be set to 
+		35%31	>>	4
+	>>	and a remaining 31 days will adjusted in motht
+		1st March(2) + 31 days >> May(3)
+	res- 4 3 1988 (3 May 1988)
+	
+1.	new Date(1988, 2, 370, 22, 45, 30)  OR
+	myBirthday.setDate(370) OR
+	myBirthday.setDate(myBirthday.getDate() + 367)
+	as usual it will start from most righ and will first look the date which need adjustment but for this it first also look to month to know the month-size
+	>>	month = mar so size = 31
+	>	now it will 
+			370 day --> 31-day-of-march + 30-day-of-apr ..... + 30-day-of-jan + 28-days-of-feb  + 5-day-of-march
+			>> Total 11 month (u must exclude march in the count)
+	>>	Month will be set to
+			12 + 2 >> 14
+		after adjustment
+			14%12 >> 2
+		so a year will be added and month is 1
+	res- 05 2 1989 (82 feb 1989)
+		
+	>>	and a remaining 31 days will adjusted in motht
+		1st March(2) + 31 days >> May(3)
+	res- 4 3 1988 (3 May 1988)	
+	
+1.	new Date(1988, 2, 13, 27, 45, 30)  OR
+	as usual it will start from most righ and will first look the hour which need adjustment
+	>>	hour is 27
+		after adjustment
+		27%24 >> 3
+	>>	24 hour will be adjusted in a date 
+		d4 hour --> 1 day
+		so date is now 14
+	if date would have been >28/30/31 then it had needed furteh adjustment. but not now
+	so
+	res- 1988 2 14, 3 45 30  (14 mar 1988)
+	
+------
+Can we change the week of the day in date?
+No! ther is no such methode,
+But you can get it by getDay()
+getDay() will given
+0	--->	6
+Sun			Sat
+
+-----------------------
+effect of <HTML lang='DE'> the Date class:-
+It has none, no matter the value of 'lang', date class behave 100% same, 
+if you wants to play with a local then use the function given in section 'with the local intervention'
+--------
+	
+set week of day-	
+	
+Date/Time to string:-
+	only date:- 
+		> you can use toLocalDateString('local') and pass proper local as above.
+	only time:-
+		> you can use toLocalTimeString('local') and pass proper local as above.
+	both:-
+		> you can use toLocalString('local') and pass proper local as above.
+	Best:-
+		use member methode and concat all the value.
+		
+
+String to Date:-
+	Only date:-
+		parsing the date from string is higly depend on type of browser so  
+		best way to do this to always split the string in smaller part and then use 
+			new Date(1988, 2, 13, 22, 45, 30)
+		bcoz this will nullyfy all the browser dependencis and unreadability.
+		
+
+setting time after date:-
+	When you have not set up the time in the date, then it will take time as the first moment in this date, that is midningh 12
+	You can set the time with 
+		setHour(), setMinute(), setSecond() 
+	this accept the 24 hour pattern 
+	if you give anything > 24 hr, then it will be adjusted in date.
+		d = new Date(1988, 03, 13)
+		d.setHour(2);		13 Mar 1988, 2:00:00 (2 AM midnight)
+		d.setHour(18);		13 Mar 1988, 2:00:00 (6 PM evening)
+		d.setHour(27);		14 Mar 1988, 2:00:00 (3 AM night)
+	-Simillarly for minute and second
+	In the date most of the time we deal from year to second, milisecond is ignore most of the time.
+	But you can set in the last param of constructor.
+	or by:
+		d.setmilisecond(ms)  ms is from 0-999
+	to get
+		d.getmilisecond()
+		
+You can also pass only milisecond elapased from 1 Ja 1970 to create a date:
+			new date(12456789212)
+			d.setTime(123456952315)
+		
+	

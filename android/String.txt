@@ -1,0 +1,189 @@
+String in itself so vast and conceptual i decide to dive into it rather deep.
+
+Why it is so imp, Many reason:
+	1.	Used in classloader
+	2.	80% of data in this formate
+	3.	most of the time it is key to hashmaps
+	4.	shared between multiple thread without any syncronization framwork
+	5.	All imp security raw data like dbConnection, hostmneme. ids are in string
+	
+That is why it has very special treatment
+
+Defination:
+    String can be defined in two ways
+    1.  Litral String sl = "muf"
+    2.  Object String so = new String("muf")
+
+    Both are 100% same execpt how they are allocated in the memory.
+    Litral: Here object is allocated in the String pool, in this pool JVM first check if String with same content ("muf") is prsent in
+     the pool or not,
+     if yes then s1 will repsent that same string also
+     if not JVM will create new one.
+    Object: JVM will always create new string in string pool, does not care if already have with same content,
+
+    Why String Pool :
+        As you know string is too much used and almost 90% data lies in this formate, Initially string was treated as simple object but due to
+        excessive use of Strings system keep coming out of resources oftenly.
+        To resolve this JVM provide a concept of String Pool.
+        Here if we create String with some value (By litral) we will first we will see if same value already prsent if yes we will point to that one
+        if not then we will make new string in memory, Therby we are saving lot of memory resorces in system.
+        This String pool is shared across the whole JVM so even, in some other class some other function we declare
+         String so1 = "muf",  it will also point to same string.
+
+        Dive in more:   In the end string is backed by the char[], so first time in JVM you declare "muf" it will allocate
+        [m][u][f]
+        then next time whenver same string value is used, that char[] array will be pointed
+
+        so
+        String sl = "muf"
+        String s2 = "muf"
+        fn() {String s3 = "muf"}
+        class { String s4 = "muf"}
+        anywhere in java app
+        String sn = "muf"
+
+         s1,s2,s3,s4,sn --->  [m][u][f]   0XFE   //Just for example
+             s1 == s2 == s3 == s4 == sn                --> TRUE
+             s1/s2/s3/s4/sn.equals(s1/s2/s3/s4/sn)     --> TRUE
+
+         So you can see how much of resourses we have saved.
+
+         Now if you want to oveeride this functinality and wants to create new Object (who is backed by very new chr[] array) than :
+            Than use
+            String so = new String("muf")
+            String so1 = new String("muf")
+
+         so --->  [m][u][f]   0XDE   //Just for example
+         s1 == so                       --> FALSE
+         so == so1                      --> FALSE
+         s1/so/so1.equals(s1/so/so1)    --> TRUE
+
+
+POSSIBLE Problem with the pool:
+         Problem you can analyze simpally, it is very very heigh degree of COUPLING,
+         if you change somthing via s2, it will reflect on all other refrences too (s1,s3,s4,sn)
+         1. so it wont be thread safe, {m u f} could be change by any thread and i end up as looser
+         2. i  make s1 a key to the Hashmap{ <"muf", MyObject> }, and then somone chnged it so+"hus"
+            so it will become Hashmap{ <"mufhus", MyObject> } so all thing will fall apart
+
+       To solve this problem Geniuses decide to make String class Immutable
+------------------------------------------
+
+Source code String.java:
+public final class String
+{
+    private final char[] value;
+    private final int offset;
+    private final int count;
+    private int hashCode;
+
+    public append/replace/substring()
+    {
+        char[] newBuffer = new char[];
+        ...
+        ...
+        System.arraycopy(values, _offset, newBuffer, 0, _count);
+        ...
+        ...
+        return new String(0, count, newBuffer);
+    }
+}
+-----------------------------------------
+
+
+Immutable:
+    No matter String declare by Litral or Object they all are always IMMUTABLE
+    Lets dive littile:
+    As you know String is backed by char[] once you declare the string by  = "muf" or new String("muf") Jvm gives him
+    char[3]/values --> {m,u,f}  (no matter he got it from pool or create new).
+
+    Now if you see the source code of String class you will see values array is final and initilzed in the constructor only.
+    So once it is set no one can make any change in this array or string state.
+
+    So how does append/replace/substring functions works:
+    Whenever you call such functions it actullu does not make any changes on caller object (on caller objects char[]), instead it
+    makes a new String with new char[], produces that string acording to called function and finally returns that NEWLY FORMED STRING.
+    Therby caller string and its char[] remain intact all the time.
+    See the methods snippet in code above:
+        in the return statment we return new string with new char[] (newBuffer)
+        nowhere in the methode values srray will be changed (it is impossibe as it is final already)
+        logic will be wrote according to methide called and its input may be fron values array.
+
+"If a class is immutable than its objects (not refrences) are final and its state can never be changed"
+
+    Ex:
+        String str = "muf" / new String("muf")
+                str --> { m u f}    0XEF
+        str.rplace("m" , "t")
+                str -->  { m u f}    0XEF
+   		 	 { t u f}    0XDA
+        ----
+        String str = "muf" / new String("muf")
+                str --> { m u f}                0XEF
+        Strint st2 = str.rplace("m" , "t")
+                str --> { m u f}                0XEF
+                st2 --> { t u f}                0XDC
+        -----
+        String str = "muf" / new String("muf")
+                str --> { m u f}                0XEF
+        str = str.rplace("m" , "t")
+                        {m u f}                 0XEF // now may be pointed by any other refrence
+                str --> {t u f}                 0XAC
+
+
+Advantages of immutability:
+	robust String Pool:
+	    Now string pool is completely safe as it will be impossibe to make any change on string itself by any attached refrence
+	Absolute thread safty without any syncronization:
+	    once initilze no thrad can make any changes on string.
+    Fast hashCode() :
+    	 one major thing String class provide is ultra fast implementation of hashCode() methode,
+    	 As we already know internal state of Strin can never be changed so once initilized it will be same for whole life.
+    	 So string class determin the hashCode() just in the constructor itself and returns it in   hashCode() {retutrns hashCode}
+    	 By this speed to manuplate HashMap with String key would become very vert fase (as no calculation required at a time of hashCode() called )
+    Security:
+        Suppose you provide a third party library which has a methode
+            myapi.setPassword(String psw)
+        Somone use it like that
+            ...
+            ...
+            psw = "muf";
+            myapi.setPassword(psw)
+            ...
+            psw.replace("t","m");
+            ...
+        If String were not mutable, there will be heigh risk of setting psw as {t u f} instead of { m u f}. but as it is not so
+        psw will always {m u f}.
+
+
+------
+StringBuilder:
+    StringBuilder is same as string class but this class is mutable, so char[] array in this class is not final and can be changed after
+    initilization.
+    So if you open its source code
+        public final class StringBuilder
+        {
+            private final char[] value;
+
+            public append/replace/substring()
+            {
+                ...
+                values = new char[...]
+                return this;
+            }
+        }
+
+        Generzally it is useful if you are concatinating the string many time (eg in  loop)
+            do/while/for()
+            {
+                s = s + "mu";  // less efficient
+                sb.appent("mu")
+            }
+
+------------------------------------------
+StringBuffer : 
+	100% same as StringBuilder + it is synchronized 
+	So it is very slow 
+StringBuilder is recommended always
+
+*** Java compiler in the very end change all string litral in stringBuilder

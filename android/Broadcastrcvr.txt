@@ -1,0 +1,94 @@
+BroadCastRecevier:
+
+	Registering the broadcast:
+		by manifest
+		by registerRecevier(brcr, intentFilter, permission, handler)
+	Sending broadcast
+		by system event
+		by  s.1	sendBroadcast(intent)
+			s.2	sendBroadcast(intent, permissionString)
+
+			s.3	sendStickyBroadCast(intent)
+
+			s.4	sendOrderedBroadcast(Intent, permissionString)
+
+			s.5	sendStickyOrderedBroadcast(Intent, resultBroadcastReceiver, Handler, int, String, Bundle)
+
+
+	** Can i show dialog with context of  BroadCastRecevier: NO
+		Toast:	Yes
+
+
+
+	once u send the broadcast intent it will be availaiable to all recivers across the mobile,
+	but you can limit it by permissions and other params.
+		at the time of registration
+			set export = false so that reciver will only answer to intent generated from inside app in this senario try using LocalBroadcastManager.
+			set a custom permission of reciver so that it will answer to the intent of app which has that permission [permission must be matched]
+				if by manifest:	<android:permission = "com.----.mypermission">
+				by code:	 Context.registerRecevier(brcr, intentFilter, "com.----.mypermission", null)
+
+			
+
+			at the time of receving:
+				when u send the some broadcast intent with set permission then it will be recevied only by the recevier
+whos app has that permission in its xml
+<uses-permission....
+
+
+
+Receiver Lifecycle:
+	Object of broadcastrecevier exist untill and unless onRecevie() returs, after this it is killed.
+	That is the reason that we should never ever do any Asynchronous opration in onReceive(),
+	coz it may be possible that
+	  onRecive() is completed and that recevier is now inactive
+	  and
+	  Asynctask is still in progress,
+	  and
+	  no other component of process(Activity, Service) is running so
+	  finally system decide to kill the process without even care about status of AsynchTask.
+	it will bring lot of troubles.
+	*	that is why we should never show dialog or bind a service with context of recevier instead start a service or activity at this point.
+	* 	while in onRecevie() app has extreme importance and highest priority (least likely to be killed)
+		but once onRecevie() returnce than priority of process depends upon active component of app and coud be killed immidiatly.
+
+
+
+SimpleBroadcast:
+	all reciver run asynchronusly.
+	when you use sendBroadcast(), all recevier executed without any order and generally they all executes parallerly at a one time.
+	this is more efficient and faster but we can not implement data propogation and abort api in this
+OrderBroadcast:
+	all reciver run synchronusly.
+	when you use sendOrderBroadcast(), all recever run in a proper order and one by one only. no two recevier() run toghter.
+	if two recevier have same priority than they will run arbitarily but not toghter.
+	priority can set with <android:Priority=""> or by intentFilter.setPriority()
+	*	Data Communication:
+		Use this functions
+			setResultCode(int), setResultData(string), setResulrExtra(bumdle) // exact like onActivityResult() concept
+			getResultCode(   ), getResultData(		), getResulrExtra(		)
+			This methodes are useful only in OrderBroadcast not in SimpleBroadcast.
+	*	Abort:
+			just call the methode abortBroadcast() in onReceive() and that broadcast will be
+			terminated and all reciver which are yer to receive that intent will no longer recive it.
+
+
+
+Good use case of sticky broadcast:
+	suppose u register a broadcastrecever in an onStart() of activity and unregister it in onStop() .
+	so if broadcast occure when activity was background, it will completely forgeted by the recevier.
+	to avoid this condition use stiky.
+	so once use start this activity again and we re register the broadcastrecvr, it will immediatly receive that intent.
+	When u processing such broadcast u may wants to know that if the intent is just now be broadcasted or
+	received from the sticky cache.
+		for this use	isInitialStickyBroadcast ()
+			true	from sticky cache
+			fale	simple
+
+
+
+
+
+permission vs uses-permission
+	http://stackoverflow.com/questions/3850799/diffrences-between-uses-permission-and-permissions-tag-in-androidmanifest-xml
+running service and broadcast in diffrent process

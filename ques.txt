@@ -1,0 +1,27 @@
+go through: http://es6-features.org/#Constants
+
+props value when a react page return to previous component from Router
+ 
+http://ccom.uprrp.edu/~humberto/very-small-rsa-example.html
+ 
+Detailing of spread operator and Object.assign at #REFREST_PARAM in 'es6.txt'
+
+instance vs typeof
+
+https://www.fullstackreact.com/30-days-of-react/day-11/
+
+Cockies
+
+-----------------------------NEXT PHASE--------------------
+bower
+jest
+node.js server
+springboot
+maven
+controller/service
+rest api
+single page apple
+Server certificates
+DEpendency injection
+Yaml file
+Load balancing

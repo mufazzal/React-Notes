@@ -1,0 +1,246 @@
+Q. 		try catch finally return
+Ans.	if u had return in finally block then regardles of what happen in try and catch retun will always be of finally. 
+		no matter exeption occure or not or it is cautched or not
+		
+
+------------------------------------------------------------------------------------------------------------------------
+Default Constructor Concept -->
+By default every java clsaa have one defauly cosntructor.
+Ex:   A extends B
+A and B both will havwe by default  A(){super()}; and B(){super()} respectivly.
+but if i put any perameterized constructor in A then A() wotll no longer exists and u have to write it down if u wants
+if u do not write u get error here
+class A 
+{
+A(int){}
+}
+class B extend A // error 
+{
+}
+
+class B extend A
+{
+	B(int){suer(int);} // OK 
+	B(int){suer();} // error 
+}
+so we have to ovrride at least one perameterize constructor in of base class (which do not have default constructor) in child class
+and that is why we have to declare(not neccesarily override) one of three constructor when we extends view class in andrpoid.
+------------------------------------------------------------------------------------------------------------------------
+
+why multiple imherince not possible
+coz of Dimond crossing problem   http://javarevisited.blogspot.sg/2011/07/why-multiple-inheritances-are-not.html
+
+
+what is immutable
+	Immutable class is class for which is it is impossible to change the INTERNAL STATE of its objectes once they are intialized.
+	So once you made the object with constructor, than you can not make any change in its internal data (a single bit can not be changed)
+	Real world Ex: you brought a bike now in accident you lost headlight if bike is immutable than you cannot change its headlight, you have
+	        to buy new bike only.
+	 How to make a class Immutable:
+	    1.  Make class final, so its behavior cant be change in child class.
+	    2.  Make all peramter in class as private,  (if perameter are final also, they will be either intilized in constructors or defination time
+	    3.  dont gives any setters
+
+    Use: Apart from String class there is almost 0% use of this.reason is simple >> if you wants to change some littile information in object
+        (Eg. 'liked' in class 'User') u will just do it on same object itself, u wont create a whole new object for this :)
+        But the only best thing it provides is it make the objct 100% thread safe without any synchronization.
+         How: man if you cant change anything in that then it will be same all the time no matter what thread using it what time.
+        I am not diminizing the immutable (God forbid). If you wants to see its real power go to string tutorial.
+        bcoz String is immutable class.
+
+    Hey Hey:    U i told you to buy a new bike when you damaged its headlights, I know you are smart and wont do that.
+                But what if i told you that keep ur bike but lets just change the headlight. ok?
+                you will be happy.
+                Now this HEADLIGHT is STRING in java and that bike is your java program.
+                Now do you understand the power of mutability and String class in java....
+
+------------------------------------------------------------------------------------------------------------------------
+Overriding Static Methode:
+	public static void main(String[] args) {
+    // ......
+    SuperClass superClassWithSuperCons = new SuperClass();
+    SuperClass superClassWithSubCons = new SubClass();
+    SubClass subClassWithSubCons = new SubClass();
+
+    superClassWithSuperCons.staticMethod();
+    superClassWithSubCons.staticMethod();
+    subClassWithSubCons.staticMethod();
+    // ...
+}
+}
+
+Output:-
+SuperClass: inside staticMethod 
+SuperClass: inside staticMethod 
+SubClass: inside staticMethod
+
+SO static methode call rely only upon the CLASS NAME of that instance, not on type of OBJECT it refer
+
+8) Can we call static method with null object?
+
+I bet this is the most tricky Java interview question I ever encountered. Yes we can call because static method is bound at compile time and only type of variable is used for static binding not the value of object
+
+------------------------------------------------------------------------------------------------------------------------
+
+check vs uncheck exception
+	First is th one who haso be hadled at compile time itself by declaring methode Throws E or by try-catch
+		EX: JsonException, IOException, 
+	U can declare custom
+		SquarmessCheckedExeption extends Exception {}
+	Use: throw new SquarmessCheckedExeption()
+ 
+	Second is actully a logical mistakes, and may occuer runtime, like 1\0 or nullpointer
+	any exception extends RuntimeException ar unchecked.
+	U can declare custom
+		SquarmessUnCheckedExeption extends RuntimeException{}
+	Use: throw new SquarmessUnCheckedExeption()
+
+9)
+ArrayList getData()
+{
+	List l;
+	return l;
+}					// It will give Error and Compiler will ask to typecast the  l   to arralist so    return (ArrayList)l;
+
+List getData()
+{
+	ArrayList al;
+	return al;
+}					// will be fine ** (here even though u r returning the ArrayList but function will just give u refrnce of   List   not   ArrayList, but u can typecast it
+											ArrayList  aal  = (ArrayList) getData())
+											
+	** function can return either instance of its return type or instance of child classes of that return type.
+		So return type of function can be any instance of any classe that comes down to class of return type of function.
+	   But it cannot return the instance of parent classes of that return type so cannot return any class instance that come above class of return type of function.
+
+10)
+First class of the file 
+
+	only public, abstract & final modifier are  permitted
+	this classes cannot be 
+		static
+		private
+		protected
+		
+		
+11)
+public class Global
+{
+	public  class  User{
+		public String name;
+	}
+}
+
+	User class is not static :
+		it means, that User class[not object or instance] is like a non-static member of 
+		Global, 
+		So if you try to access this this class you must do it with instance of Global class not directly like static syntax
+		Here:
+			Global.User :> is nothing 
+			new Global().new User() :> make a object of User class
+		So user class does not have any existence without instance of  Global  class
+		so if we make a static instance of User in Global class by
+			public static User user = new User();
+		it will give error
+			//No enclosing instance of type Global is accessible. Must qualify the allocation with an enclosing instance of type Global (e.g. x.new A() where x is an instance of Global).
+			
+			so u must do yhis
+	public static User user = new Global().new User();
+
+
+		
+		
+--------------
+
+When you come downwards in Inheritance heirarchy, Information will always increase [this is a THUMB RULE]
+Thats why
+	1.	visibility of overrided function cannot be decrease
+		function declare as   public  in base class cannot be override with   private or protected   modifier
+	2.	if function suppose to return class A, than it can return object of   child classes of A too but cannot returns   parent of class A
+	3. 	if yoou have collection( Collection<Context> ) of type  Context   u can add context, activity, service in it, but if its type of Activiy ((Collection<Activity>) ) 
+		u can add onlu activity in it
+		
+		
+		
+		
+IMP
+		Integer oi = 5
+		Integer xi = 5;
+		
+		xi == oi ==> false
+		xi.equals(oi) ==> true
+		
+		---
+		
+		xi = oi
+		xi == oi ==> true
+		xi.equals(oi) ==> true
+		
+		
+		Integer oi = null;
+		void myFn(int i)
+		{
+		}
+		if u call function >> myFn(oi);
+		It will give u NullPointerException
+		
+
+		
+
+--------------
+
+
+Suppose there is a Generic argument T
+like 
+class myClass<T>   or    class myClass<T extends String>    or   T myfn <T> (T var) {T var3}
+Now you declare a var aomwhere like 
+T varname;
+
+now can you do 
+varname  =  new T() ?
+
+Ans No
+Why		?
+Coz dear frnd this T can be 'ANYTHING' (any class).
+And that any class may not have default constructor
+	
+		
+
+-----------------------------------------
+
+
+
+Java Multiple inheritence : Dimond crossing :-
+
+				Calss Grand fn()
+	Calss Mother fn()				Calss Father fn()
+				Class Son{}
+
+
+	Grand ref = new Son()
+	ref.fn()
+	Now which function is to call Mother or Father
+	That is why Multiple inheritence not possible
+
+--------------------------------------------------------
+
+you override private or static method in Java ?	
+	you can not override private or static method in Java, 
+	if you create similar method with same return type and same method arguments 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

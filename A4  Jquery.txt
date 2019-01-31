@@ -1,0 +1,80 @@
+You have to put JQuery link on the top so all the js who are using jQuery will have window.jQuery or window.$ defined
+If you put the jQuery link properly then
+This both ($ and JQuery) are simplay a global variable which lies in window object.
+And that is whay the variable 'Jquery' is available everywhere, in HTML doc, in scripts tags, in linked js, in imported JS.
+
+In the jqury lib this lime lie at the bottom :
+	window.jQuery = window.$ = jQuery;
+	
+if index.html >>
+
+	<script src="firstone.js" />
+	<Script>
+		console.log(jquery)  >> will not Work
+	</Script>	
+	<script src="jquery.js" />
+	<script src="index1.js" />
+	
+	<Script>
+		console.log(jquery)  >> Work
+	</Script>
+	
+firstone.js
+	console.log(jquery)		>> will not work
+	
+index1.js:
+	imporrt api from 'api'
+	console.log(jquery)		>> work
+
+api.js	
+	console.log(jquery)		>> work
+
+If you are using Node you can include the jQuery by two way 
+1:	linking into the script tag in html doc
+2:  Import in js by 
+	import imJquery from 'jquery'
+
+But if you are building an UI app (not back end server) with Node than u must ans always must use first one, never used second one.
+But why?
+First of if you are building a backend server u will never need an jQuery.
+Even if you are building UI app, approch two is highly inefficient.
+Because im the first approch if you put the src of jQuery on top of .html doc, you will have a global variable
+ 'jQuery' and '$' available to you all the time in all the file, Whereas 'imJquery' is available only in corrosponding file.
+Also 'jQuery' is used in thousand of library, so its best to have a common 'jQuer' global variable available to all.
+That is why way 2 is highly discouraged.
+
+import vs link the Js :-
+Most imp if you do   import $ from 'jquery'  then $ will only available in current file and  window.$ will be null.
+but if add via link then it wil be avialable  at window.$
+
+$ vs jQuery: 
+This both reprsent the same thing, but '$' also have one more feature - 
+$ work as alias for jquery, it may be possible that some of the libarary u maay have included changed the valye of '$' like
+windiw.$ = 'muf'. 
+Now jQuery will override this value here. with 'jQuery'
+But you can restore it value again by calling
+$.noconflict()   OR   jQuery.noconflict()
+after this value of '$' will again be set to 'muf'
+
+E.G.:
+
+$ = 'mufDoll';
+console.log($)  // 'mufDoll'
+<Script src="jquery.js">
+console.log($)  // jQuery {...}
+$.noconflict();
+console.log($)  // 'mufDoll'
+
+------------------------------
+
+
+Bootstrap->
+Simillar to JQuery, bootstrap can also be used in two way
+1.	via link of css and js in html file - most prefered
+2.	via npm module
+
+First one is widelu used and simple. for 2nd one->
+ 
+
+
+

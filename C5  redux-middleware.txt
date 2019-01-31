@@ -1,0 +1,362 @@
+THIS IS TRICKY!
+
+Middleware in react is very tricky but very intresting at the same time.
+In short:-
+It is a piece of code executec between action and reducer.
+
+Long answer-
+
+When you perform any UI changes, you call a proper action creator to create an action and finally the container dispatch it in store
+Basicaly you call store.dispatch(myLoginAction(...)) methode.
+
+The store will diliver this action to the reducer.
+
+At this point come the middleware.
+With the hlp of middlware, you can inject a piece of operation in between store and reducer.
+How:-
+When you call the applyMiddlware(...) with valid middlewares in it.
+It will  do this-
+
+	function applyMiddleware(...middlewares) {
+		...
+		dispatch = compose(...chain, store.dispatch);
+	}
+
+---
+When we call the dispatch function (in container or other) with action in it, it passes to the reducer.
+But If you have set up proper middlewares (more than one is also possible), Then they will interperate this operation
+and execute there code in between.
+Each of middle ware will execute its code and forward/block the operation to the next middleware.
+once the last middleware is reached, it will forward/block the operation to the designated reducer.
+
+HOw do we write a middleware-
+
+The redux allow you to write multiple middleware in app. internl libs of redux call them one by one.
+In very simple term each middleware is processing unit injected in between 'store.dipatch' and reducer.
+this small processing unit accept two thing 
+1.	action:- Obviously, this is the one who is propogating from action creater to reducer.
+2.	next:-	 this is the refrence of next middleware function [processig unit] 
+
+The current processcing unit (middleware) will operate on action, then inside its processing funtion it may or may not call next() function.
+If it call then process will move in next middleware.
+Otherwise the flow of action to the next middleware or reducer will be blocked.
+
+Also at the time of initial setup you also receive two variable as input
+1.	getState:- use this to read the current state.
+2.	dispatch:-	use this for dispatching another action.
+
+lets write one-
+
+First write a function which has a formal perameter be ijected as below-
+	function loggerMiddleware({ getState, dispatch}) {
+		.....
+	}
+We will discuiss the body of the function later.
+The refrence of this function now will be passed in applyMiddleware methode. Remeber we are just passing the refrence not calling that methode.
+	const store = createStore(mainReducer, applyMiddleware(loggerMiddleware, .....));
+As we are passing only refrence of this methode, calling will happen internally in redux framwork.
+so redux framwork expect some special behavior for this methode. that-
+	This methode should accept a formal param objecl with getState and dispatch as its two key. I (redux framwok) will inject it.
+	In return you will give me a aother function-
+	This another function will also have following behavior
+		-	It will have one input formal param [next], I will inject it and you will use it to propogate the process to next middleware.
+				So in the body of your middlware code you will call next() to further the process.
+		-	This function will also return another function, and that function is actully the midleware code or a proccessing unit.
+				This function also behave as i expect-
+				This function is actully the code where all the magic happen, here only the dipatched action is interperated and consume by 
+				midleware to do its task.
+				Redux framwork will call this function or processing unit, each time a dispatch happen.
+					behavoir-
+						-	This must accept one input formal pram [action], i will inject it {this is obvious becos this processing code will be called for 
+							each dispatch of the action, and whats action is dispatched, that information has to be provided}
+						-	return: as you know that in middilware chain process, n-th middilware is executed when, n-1-th middleware call the 
+							'next()' function, so next() in n-1 is actully the processing code of nth, so whatever that is return in next() is
+							the return value of nth processing middleware.
+							
+
+Final code-
+This is how the middilware function look like, it is very confusing to understand, but lets go to bold points and avoid going too much in detai
+
+1-	The refrence of function 'loggerMiddleware' is paassed in applyMiddleware function. if more than one then they all will be passed. [M1, M2, M3...]
+2-	loggerMiddleware is called by internal redux libs at a time of page loading [boilerplating], returned value is a also a refrence of another function [say F1]
+3-	internal do above two operation for al the middilware and save the refrence of another function [say F1, F2, F3...].
+4-	now internal lib do one more round of iteration for all the middilwares 
+5-	this time it call all the function whose refrence are saved during step 2/3
+6-	this function return a refrence of yet another function, which is actully a processing unit of middilware[say PF1, PF2, Pf3...].
+7-	in this iteration where F1, F2, F3 is called, the n-1-th middilware is injected with refrence of processing unit(PF1, PF2, Pf3...) of nth middilware.
+*	By this way the n-1th midlware got the way to further the prces, when the dipatch happen, n-1th call the nth middlware by calling 'next()' in itself.
+*	if n-1th middilware never call the 'next()' then nth and all the further middilware will be blocked.
+*	All till above happen at a time of page-load/boilepalting, Now we will see what happen at a time of action dispatch by any exxternal event.
+8-	external event call 'dispatch(mAction)'
+9-	As we have applied the middilware so dispatched actioin will now be interperated by the registerd middilware.
+10-	first the exection go to the left most then move to right finally end in reducer.
+11-	first the processing code in 'PF1' executed, the refrence of this code saved in step 7
+12-	when 'PF1' comes to the line 'next()' in it, the flow moves to 'PF2', if it never call 'next()' then all things stop after 'PF1' finish.
+13-	when 'PFn-1th' comes to the line 'next()' in it, the flow moves to 'PFnth', if it never call 'next()' then all things stop after 'PFn-1th' completed.
+
+
+	function M1/M2/M3({ getState, dispatch}) {		--->		refrence saved in step 1/called in step 2/3
+	  ....											--->		executed in step 2/3
+	  return function(next) {						--->		return statemet executed in step 2/3, and refrence of returned function is saved.
+		...											--->		executed in step 4/5
+		return function(action) {					--->		return statemet executed in step 6, and refrence of returned function is saved.
+L1			...										--->		executed after step 8
+		  const returnValue = next(action); 		--->		executed as per step 12, and so the proces move to next middleware, these next middlware may return some value if he wants
+L2		  return returnValue						--->		executon move to privous middilware now, and the returnValue here will be reflect in next() of privous middilware
+		}
+	  }
+	}
+
+Lets speak practically->
+Most of the time when you writinf middilware, you do not have to worry about step 1 to 7, this all remain same and its code is always static.
+in above function we have written, we onle wripe the processin code from line 'L1' to 'L2'
+
+and with ES6 we can duruce this statement to ->
+
+M1/M2/M3.js :-
+
+	export const ({getState, dispatch}) => next => action => {
+		.... My middleware processing code....
+	}
+Whatever you write here is executed as middilware processcing unit.
+Here at this point you have following things to use :-
+	getState:-	to read the state of currunt status of store. [avoid using it as much as possible becoz buisness logic should be in action creator]
+	dispatch:-	to dispatch any action [avoid using it as much as possible becoz buisness logic should be in action creator]
+	next:-		to move the flow to the next middilware in line
+	action:-	for which dispatched action this midlware is invoked.
+
+Suppose we wants to write two middlware, one for checking security of dipatched action and other to tracks the log.
+first it will go to the log tracker and later will go for security check, both will perform some operation.
+	
+we do it like this:-
+
+	loggerMiddlware.js :>
+		export const ({getState, dispatch}) => next => action => {
+			console.log('action to dispatch: ' >> action,...)
+			action.passedFromLogger = true;
+			var resultFormSecMiddlware = next();
+			console.log('security clearance for action: ' >> resultFormSecMiddlware)
+		}			
+
+	securityMiddlware.js :>
+		export const ({getState, dispatch}) => next => action => {
+			isav = isActionValid();
+			action.passedFromSec = true;
+			if(isav) next();
+			return isav;
+		}	
+		
+in store.js:
+	const store = createStore(mainReducer, applyMiddleware(loggerMiddleware, loggerMiddlware, securityMiddlware));
+
+In above code 'loggerMiddlware' is first from the left so it will receive the action first time.
+it do the logging for this.
+after that it further the flow to next middilware in row, that is 'securityMiddlware'
+securityMiddlware perform its duty check weather all is fine in action, if not then avoid callng next otherwise
+further the flow to next, But as you know this is last middleware in chain so flow will transfer to the reducer. so next() here will call the reducer. 
+finally the dispatched action will be delivered to designated reducer
+So you cn see how we can use the middlware to stop any dipatched action also.
+Also see that the action object flow in all this middlware can be changed by all of them. see how we can set a boolean to analyze the flow
+
+When we flow in the middleware chain, the action object flow with it and it is shared among them all. so any changes done by any of middilware
+will reflect on everybody in the chain.
+
+
+-----------
+redux-thunk:>
+Whats is thunk? a lib. No man its just a 10 line of code. open the index.js of this library and you will only 10 line.
+But waht does this 10 line do
+
+You know that you always dispatch an action asa plain object. what if you dispatch an function not s plain object.
+
+So here we will dispatch an function as a action and our midlwasre interperate it, 
+if he detect it as a function
+	first it will execute that function and later avoid it to go further into the next-middilwares/reducer, becoz reducer/next-middilwares can hadle only a plain action not an ation-function
+if he detect it as a plainobject
+	it wll move it further int the reducer
+
+If middlware coming next is capable of handling the functuin then you have to make extra arrangement, but for 99% of the time it not needed.
+
+so code for the middilware be-
+	
+	thunkMiddleware.js :>
+		export const ({getState, dispatch}) => next => action => {
+			if(typeof action === 'fucntion')
+				return action();
+			return next()
+		}
+so yhis very obvious from the code if dispatched action is an function than just execute that function, and move out
+otherwise move the flow to the next.
+
+for providing some more flexibility in called action function, lets inject avilale info too-
+	...
+	return action(getState, dispatch);
+	...
+So this function will have two formal params injected in it, which can be used for reading the state and dispatching an nexw action.
+This is the main task and above code is the only code of thunk middlware, 
+it only iterperate an dipatched action and if it is an action then execute it, otherwise n=nove to next.
+
+We use redux thunk not bcoz we wants to do a web service call or do any asynch part
+But we do it solely because we wants to access the 'dispatch' fuction of store in action creator.
+For this we use redux-thunk. and redux-thnuk says you just write a function in action creator with 'dispatch' as formal param and return 
+refrence of this funtion. I will call it with injected dispatcj fuction.
+All of this will happen synchronusly. in same event loop in sequence.
+-----
+
+
+Asynch operation >>
+
+Usual operation in redux is synchronus. now lets suppose you eants to call a web api, as you know that you do all the buisness operation in actioncreator 
+so do it in action.js file
+
+	callWebAction.js :>
+		callGoogle(dispatch) {
+			dispatch(onBegin())
+			fetch('google.com').then(dispatch(onEnd()));
+		}
+		onBegin(){ return {type: 'fetchBegin' ...} }
+		onEnd(){ return {type: 'fetchEnd' ...} }
+		
+		diIncrement() {return {type: 'inc'}}
+		
+
+Now suppose by some external event you call :>
+	inside container or iner component - 
+	
+	mapDispatchToProps = dispatch > {
+		callGoogle: callGoogle(dispatch);		// L3
+		doIncrement: dispatch();      			// L4
+	}
+Now look this two function, 'callGoogle' and 'doIncrement'. both are in actioncreator file. 
+one of them is synch operation other is asynch
+synch one can be dispatched as simple action (line L4) and asynch one can not (L3) 
+This is antipattern for redux. 
+Though all thing work here perfectly, but for the sake of maintaining the uniformity we should choose the proper one.
+and the proper one is of line L4.
+
+So the quetion arrive here is how would we do the asynch operation in L4 way 
+
+For this we will use thunk.
+Here instead of returning a plain action oject from action creator function, we will return a function.
+Defintly this function will be executed by the redux-thunk middlware later and then prohibited to enter into the reducer.
+Also this function be injected with 'dispatch' and 'getState' also, so we can lated dispatch more actions once the asynch operation has produced the result.
+
+see the code:-
+
+callWebAction.js :>
+	callGoogle() {
+		dispatch(onBegin())
+		return (dispatch, getstate) => {
+			fetch('google.com').then(dispatch(onEnd()));
+		} 
+	}	
+Now in container :-
+	mapDispatchToProps = dispatch > {
+		callGoogle: dispatch(callGoogle());		// L3
+		doIncrement: dispatch();      			// L4
+	}
+--------
+VVIMP:- If you are using redux thunk and returning a function as aaction. it does not ever mean that it is a asynchronus operation.
+It is indded a synchronus operation completely.
+asynch part come o ly when you actully call 'fetch' ot 'setTimeout' kind of function.
+
+  props.dispatch({type: 'tm0'});
+  props.dispatch((dis, getstate) => {
+    props.dispatch({type: 'tm1'});
+    setTimeout(() => {
+      props.dispatch({type: 'tm2'});
+    }, 0);
+  });
+  props.dispatch({type: 'tm3'});
+
+output here will be-
+	tm0
+	tm1
+	tm3
+	tm2
+Here only the line 'tm2' will run in next event all other will run in same event loop.
+tricky part is 'tm1', we are returning a function as Aaction, this action-function  will execute in same event-loop..
+but tm32 is dispatched in after timeout, so it will be execute after uts time arrive. 
+-------
+
+Question:-
+What will happen below, and what will ececute first, what will be the lifecycle-
+
+fun() {
+	dispatch({type: 't1'})
+	dispatch({type: 't2'})
+	dispatch({type: 't3'})
+	dispatch({type: 't4'})
+} 
+	Here all the passing action are plain object so surely they all are synchronus. 
+	There is nothing like lifecycle and other thing here come to picture.
+	all thing will execute one after another in strict line.
+	Its straightforward, no much detail need to explain here.
+	the output will be:
+	t1
+	t2
+	t3
+	t4
+	
+	
+Now:-
+fun() {
+  props.dispatch({type: 't1'});
+  props.dispatch({type: 't2'});
+  props.dispatch((dis, getstate) => {
+    props.dispatch({type: 'tm1'});
+  });
+  props.dispatch({type: 't3'});
+  props.dispatch({type: 't4'});
+} 
+What will happen here? this is tricky one.
+up to t1 and t2 all thing are as usual.
+now for the next dispatch it is a action-function-so it will be intruptted by thunk
+thunk will first execute that action-function immediatly
+this eecution will happen in synch way. because all thing in redux in synch, so 'tm1' will be dispatched.
+so the the next here will be 'tm1'
+and then the next two will be called
+so output:
+	t1
+	t2
+	tm1
+	t3
+	t4
+
+Now 
+  props.dispatch({type: 't1'});
+  props.dispatch({type: 't2'});
+  props.dispatch((dis, getstate) => {
+    props.dispatch({type: 'tm1'});
+    setTimeout(() => {
+      props.dispatch({type: 'tm2'});
+    }, 0);
+  });
+  props.dispatch({type: 't3'});
+  props.dispatch({type: 't4'});
+ 
+Redux itself is not do nay kind on asynch operation, but the Js can do
+ 
+here all thing discussed above will remain same, but for tm2 there is timeout even though it is for 0 second, it will execute after the current event cycle completed.
+Output
+	t1
+	t2
+	tm1
+	t3
+	t4
+	tm2
+
+---
+Think of middlewares as skills you give to your store. i.e: By attributing the redux-thunk to your store, 
+you're giving the store the ability to dispatch async actions
+
+----
+Dev tool for redux: 
+use ​redux-devtools​ lib.
+This is very cool lib which can do many smart work
+
+
+
+
+
+

@@ -1,0 +1,36 @@
+SET: 
+It have only add and remove methode, it is impossible to update any entery at all
+
+Watever type of collection it is, it is impossible to add/remove any entery while yiu are itrating it 
+in any way.
+
+Hashmap
+
+Set<String> keys = map.keySet();
+Set<Map.Entry<K, V>> mm = mapr.entrySet();
+
+Collection<String> vl = map.values();
+ArrayList<String> alist = new ArrayList<>(vl);
+
+
+
+		EnterySet		KeySet			Values()
+
+Add		NO[UO]			No[UO]			NO[UO]
+
+Remove		YES			YES			NO[UO]
+
+Update key	NO[NA]			NO[NA]			NO[NA]
+
+update value	YES			NO[NA]			YES
+
+
+UO:	UnsupportedOperationException.
+NA:	Not avaliable in APIs
+
+
+
+
+
+all add/remove opration done above must ne outside of itration loop, otherwise 
+cocurentMoificationException will occure
