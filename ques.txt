@@ -11,7 +11,7 @@ instance vs typeof
 https://www.fullstackreact.com/30-days-of-react/day-11/
 
 Cockies
-
+String object vs strin primitive
 -----------------------------NEXT PHASE--------------------
 bower
 jest
