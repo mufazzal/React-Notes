@@ -21,8 +21,8 @@ in this tutoroal we will call this functioin as : processorFunction(value, index
 		<return if required>
 	})
 	ffff((v,i) => {..})
-	ffff(v => {..})		For single line body and one param
-	ffff(v => ..)			For one param
+	ffff(v => {..})		
+	ffff(v => ..)			For single line body and one param
 
 
 internal structure of array: 
