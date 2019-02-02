@@ -488,7 +488,7 @@ function Dg() {
 	this.myfun = function() {console.log(this)}
 }
 var dg = new Dg();
-let vv = dg.myfun();
+let vv = dg.myfun;
 vv()							// 'this' will be undefined here becoz it is not called in any contex
 var vv1 = dg.myfun.bind({})	
 vv1()							// 'this' wil be {} here, as it is binded.
