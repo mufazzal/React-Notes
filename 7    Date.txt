@@ -120,8 +120,11 @@ suppose you have >>
 	>>	month = mar so size = 31
 	>	now it will 
 			370 day --> 31-day-of-march + 30-day-of-apr ..... + 30-day-of-jan + 28-days-of-feb  + 5-day-of-march
-			>> Total 11 month (u must exclude march in the count)
-	>>	Month will be set to
+			>> Total 13 month but u must exclude the first march in the count. 
+			so now toral month is 12. 
+			also add the 2 month of 1988 
+
+	>>	Month will be set
 			12 + 2 >> 14
 		after adjustment
 			14%12 >> 2
