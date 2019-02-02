@@ -12,6 +12,7 @@ https://www.fullstackreact.com/30-days-of-react/day-11/
 
 Cockies
 String object vs strin primitive
+relation between object class and primirive
 -----------------------------NEXT PHASE--------------------
 bower
 jest
