@@ -50,7 +50,7 @@ module.exports = exports = {};
 If you use both of the thing in same file than module.export will always have the upperhand and ovveride others either u use it before or afters
 
 export myClass;
-module.export = {myVar};
+module.exports = {myVar};  OR  exports = {myVar}; 
 export myFunc
 
 Here the exported item will be myVar only.
