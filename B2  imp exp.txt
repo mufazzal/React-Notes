@@ -46,6 +46,9 @@ Somewhere in nodejs lib this are defined like this
 module.exports = exports = {};
 ...
 
+Actuuly at compile time of file the 'module' is global variable, like the 'window' in browser side. It contains 'exports' variable in it
+So module.exports and exports are same. 
+Just like 'console' and 'window.console'
 
 If you use both of the thing in same file than module.export will always have the upperhand and ovveride others either u use it before or afters
 
