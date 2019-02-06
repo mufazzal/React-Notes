@@ -938,6 +938,24 @@ ES5
 	  render/willMo/willU/didU...: function() {return <h1>Hello, {this.props.name}</h1>;}
 	});
 ---
+Functional comp 
+
+Es5     var function Greet(props) {
+         return <div> props.greet <\div>
+	}
+Es6     var Greet = (props) =>{
+         return <div> props.greet <\div>
+	 }
+can not use refs in both case here at all.
+---
+Class comp
+
+Es5      var Greet = React.createClass(....)
+
+Es6      Class Greet extends React.Component {
+         ....
+	 }
+---
 defaultProps:-
 Es6	  : for functional and class comp both
 	Greeting.defaultProps = {name: 'Mary'};
