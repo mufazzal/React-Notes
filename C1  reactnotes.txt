@@ -986,8 +986,25 @@ ES5
 
 React without JSX:-
 	React.createElement('div', null, `Hello ${this.props.toWhat}`);
+	
+	
+	
 
 ----
+After babel
+
+Class MyCom extends React.Component {
+..}
+will be converted to
+var MyCom = React.createclass(...)
+
+var mm = <MyComp>
+will be converted to
+
+var mm = React.createelement(...MyComp...)
+ 
+
+
 
 Booleans, Null, and Undefined Are Ignored :-
 All below expression will render nthing -
