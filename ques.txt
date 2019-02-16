@@ -5,6 +5,7 @@ vue.js
 express
 ember
 Jade
+loadash
 
 go through: http://es6-features.org/#Constants
 
