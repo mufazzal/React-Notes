@@ -271,11 +271,18 @@ In this case 'em2' will have a new perameter of same name in its object but the 
 ----------
 
 Inheritance for the object whithout constructor:
-	var a = {city: 'bar'}
-If you wnats this instace in be child of 'Person' Do this
-	a.__proto__ = personObj;
-Not
-	a.prototype = personObj;
+For the objects that are defined by a function constructor can be extended but what about simple object defined by simple litral-
+EG:-
+For constructor function-
+ function Employee() {...} 
+ Employee.prototype = Object.create(Person.prototype)
+For litral
+var em = {id: '789'} ???
+Do it like below
+	em = Object.Create(Person.prototype, {id: '789'})
+
+Alternative but bad way-
+	em.__proto__ = personObj;
 
 ---------
 IMP __proto__ point to the pointer so any change here will reflect everywhere (except overrided one)
@@ -626,15 +633,6 @@ console.log(f1.prototype);		//undefined		because this is not a constructor funct
 console.log(f1.__proto__);		//proto chain
 	
 -----------
-For the objects that are defined by a function constructor can be extended but what about simple object defined by simple litral-
-EG:-
-For constructor function-
- function Employee() {...} 
- Employee.prototype = Object.create(Person.prototype)
-For litral
-var em = {id: '789'} ???
-Do it like below
-	em = Object.Create(Person.prototype, {id: '789'})
 	
 
  
