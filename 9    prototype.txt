@@ -638,6 +638,22 @@ Do it like below
 	
 
  
+----------------------------------
+
+Employee.prototype = personObj
+Vs 
+Employee.prototype = Object.create(Persion.prototype)
+
+
+in 1->   Employee.prototype.name === personObj.name
+in 2->   Employee.prototype.name === Persion.prototype.name !== personObj.name
+
+
+
+
+
+
+
 
 
 
