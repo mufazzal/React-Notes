@@ -625,4 +625,21 @@ console.log(f.prototype);		//f()..
 console.log(f1.prototype);		//undefined		because this is not a constructor function but a object itself.
 console.log(f1.__proto__);		//proto chain
 	
+-----------
+For the objects that are defined by a function constructor can be extended but what about simple object defined by simple litral-
+EG:-
+For constructor function-
+ function Employee() {...} 
+ Employee.prototype = Object.create(Person.prototype)
+For litral
+var em = {id: '789'} ???
+Do it like below
+	em = Object.Create(Person.prototype, {id: '789'})
 	
+
+ 
+
+
+
+
+
