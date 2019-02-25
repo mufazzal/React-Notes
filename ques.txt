@@ -1,5 +1,10 @@
 https://codesandbox.io/s/1v8lnol937
 
+Higher Order Function 
+Higher Order COmponent 
+Higher Order Reducer 
+
+
 JS libs-
 vue.js
 express
