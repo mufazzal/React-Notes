@@ -836,4 +836,60 @@ rdf2.j :>
 	break;
 ---------
 
+Redux undi-redo-reset >
+
+
+One of the most beatiful things in redux is that it is  very easy to implement reset and redo/undo. 
+Reset-> 
+	For this it is simple and tricky
+	Just little tweak in combineReducer,
+	Make the higher order funtion from combine reduce like
+	
+	var mainReducer = combineReducer(...)
+	var finalReducer = function(state, action) {
+				if(action = "RESET")
+					state = undefined;
+				return mainReducer(state, action)
+			   }
+	You know that in any reducer we do this while declaring
+		var logReducer = (state = initState, action) {  --> In this line when state is undefined then automatically it will be reseted to default state.
+					...
+				} 
+	
+	undo/redo -> For this you have to maintain the prsent, past and future variable of state of all the reducer.
+	The one good lib for this is -> https://github.com/omnidan/redux-undo.
+	with the use of this lobrary you can make any reducer to remeber its previos state for undo/redo.
+	In one app some reducer may or some may not remember their history.
+	
+	EG: 
+	var forgetfulReducer = {state, action} => {....}
+	var rememberingReducer = {state, action} => {....}
+	
+	import undoable from 'redux/redo'
+	rememberingReducer = undoable(rememberingReducer, {..config..})
+	
+	For more detail search this lib.
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+
+
+
+
 
