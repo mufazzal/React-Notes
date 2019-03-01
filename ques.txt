@@ -4,6 +4,14 @@ Higher Order Function
 Higher Order COmponent 
 Higher Order Reducer 
 
+HTML-
+-moz
+-webkit
+flex
+
+CSS-
+less
+scss
 
 JS libs-
 vue.js
