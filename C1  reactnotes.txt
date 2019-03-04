@@ -1209,6 +1209,16 @@ see below-
 	);
 -----------------------
 
+React.PureComponent - 
+This is a add on of React.Component, if you extend React.PureComponent instead of React.Component then that component will auto write the 
+shouldComponentUpdate methode and do the shallow equality check on state and props, if one of them is not equal then it will return the 'true' otherwise false.
+
+So Developer do not have to write the equality check code. and it also improve the performance becaues may of the unrequireed render is avoided.
+
+--------------------
+
+------------------
+
 constructor vs componentWillMount; what a ...
  This is very confused topic, firstly if you are using ES6 then calling API either in willMount/constructor will behave same.
  But if you are using ES5 and creating the component by React.createclass(...), then you do not at all have any constructor function so you must use willMount.
