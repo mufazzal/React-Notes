@@ -1002,3 +1002,14 @@ first install it then-
 Do notice how we inject the enviorment specific resource. also note that you do not need to use blob pattern **/*.* to copy all the file
 it will take all the file automatically.
 To ignore some of them use ignore option, google it.
+
+------------------------------------------------------------------
+Code Spliting-
+As you discussed above, we can split the code in small chunk through properly setting up entry and output tag.
+like loginModule.js/purchaseModule.js ETC.
+This feature is called code splitting, Now you do not have to load all the module on client machine, jjust load the required one.
+
+
+
+
+
