@@ -1,0 +1,238 @@
+Every function when called each time , it creat a kind of hidden storage where all the variable declared in its scope (with 'var' not this./obj.) will lie, 
+This storage remain in existence even after function return and exit. and this storage later used by the inner functions of that function.
+this storage is called closure.
+
+A clousre contain all the variable of outer function, this copy is shared between all the inner function together. 
+This copy remains even after outer function returns.
+if any one of inner fuction change anything in closure of outer function, it will reflect in all the inner function too. 
+Because changes are done in clousre and this closure is unique and shared among all inner function
+
+Whenever a function is called either in context of any object or not, It will give two thing:
+	1.	A returned item whatever he is suppose to return.
+	2.	A refrence to the closure
+
+	- If you call function n times, n closure of that function is created. Closure attached to a calling of function not to function itselft
+	- Whenever a function is lying inside a another function, Then that insider function will automatically has a clouser of its parant function attached to it.
+		The insider function, that insider function will have a three kind of scope: 
+			1.	Local			:declare inside 
+			2.	Global		:window.<bla bla>
+			3.	Closure		:contain 'var' declared in immediate parant function
+	- closure is a kind of scope like global and local, in closure the variable are shared among specific set of function 
+	- Formal param also get stored in closure, so it also behave in same way.	
+
+-------------	
+
+First we will examin if it is a nromal function (non-constructor) In first level nesting
+
+	function home() {
+		
+		var name = "pipluwala";
+		var memberCount = 4;
+		var kitchen = function() { }
+		var hall = 		function() { }
+		var bedroom = function() { }
+		
+		return {kitchen, hall, bedroom}
+	}
+
+
+	After return a closeure be made somthing like this:-
+
+		__pointerTocloseure__ = {name: "pipluwala", memberCount: 4}
+
+	This will be shared among all inner function somthing like thus:
+		kitchen.__closure__ 	= 	__pointerTocloseure__;
+		hall.__closure__ 			=		__pointerTocloseure__;
+		bedroom.__closure__ 	=		__pointerTocloseure__;
+
+	
+	- Above pattern of returning the refrence of inner function is very useful as it will give you the way to use inner function later in very 
+	- To let the closeure work you must and must call the parent function first, then its nested one.
+	- If one of them make any change in this variable, then it will relect everywhere.
+	
+You can read it like this: 
+	when you call a home(), 
+	it create a stack and run the methode 'home'
+	it go line by line and create all variable like 'name' etc.
+	it also created the refrence to a inner functions and assign them to variables.
+	now finally it went to a return function, now it detect that a pointer of inner function is preserved.
+	So now it create one closure object from existing state of all the local variable in methode 'home'
+	now it will share the refrence of this closure to all the pointer of inner function.
+	So now whenever any of inner function is called it also have all the local variable of 'home' methode exist for them.
+
+-----------
+
+Closure is related to function call not function itself: 
+See in the below example that, for two diffrent object of same class two difftent closure are created.
+
+	var City = function () {
+		var my 			= 'muf';
+		var setMy 	= function(v) { my = v; }
+		var printMy = function() 	{ console.log(my); }
+		return {setMy, printMy}
+	}
+
+	var cbar = new City();		//	__closure_cbar__ => {my: muf}
+	var cbad = new City(); 		//	__closure_cbad__ => {my: muf}
+	cbar.setMy('bar');				//	__closure_cbar__ => {my: bar}
+	cbad.setMy('bad');				//	__closure_cbad__ => {my: bad}
+
+	cbar.printMy();						//	bar __closure_cbar__.my	=> var
+	cbad.printMy();						//	bad	__closure_cbad__.my => bad
+
+-----------------------
+
+Parent function must be called before calling of its inner one:-
+		var outVar;
+		function home() {
+			var name 	= 'mufa';
+			outVar 		=	function() { console.log(name)  }
+		}
+		
+	Below will work fine:-	
+		home();
+		outVar() 				// mufa
+		
+	Below will not:-
+		// home();
+		outVar() 				// It will give error that outVar is undefined			
+
+------------
+
+Clousre and parent Constructor function:
+	As you know that constructor function should never have a explicit return statement so we will never be able to return any methode.
+	Closure of the cusntructor function is assosiated with every constructor call/object creation.
+	So if you write statement 'new HomeCls()', It create two thing`
+		1.	An object of 'HomeCls' that is 'myHomeObj', In this lies all the element declared with 'this.'
+		2.	An Closure of 'HomeCls()' that is '__myHomeObj_HomeCls()__'. In this lies all the variable declared in 'HomeCls' constructor (not inner function) with 'var'
+
+	When you declare a variable with 'this.', You explicitly says that the declared varaible lies in context of instanc of 'HomeCls' that is 'myHomeObj'.
+	But when you declare it with 'var' inside 'HomeCls' (not in its inner function)	You explicitly says that the declared varaible lies in closure of '__myHomeObj_HomeCls()__'
+		
+	var HomeCls = function (name, memberCount) {
+	
+		this.name = name;
+		var memberCount = memberCount;
+		
+		var kitchen / this.kitchen = function() { console.log('kitchen - ' + name); }
+		$('#id').click = kitchen/this.kitchen;
+	}
+	var myHomeObj = new HomeCls('pipluwala', 5);
+
+	This will give following two thing :-	
+		myHomeObj 							=>  A real object 	=> {name: 'pipluwala'}
+		__myHomeObj_HomeCls()__	=>  A closure 			=> [memberCount: 5]
+
+
+	Now if you created one more
+		var myHomeObj1 = new HomeCls('dawawal', 50);
+		
+	Then 1 more set of closure and object will be created
+		myHomeObj1 								=>  A real object 	=> 	{name: 'dawawal'}
+		__myHomeObj1_HomeCls()__	=>  A closure 			=>	[memberCount: 50]
+
+	So every time you create an object of 'HomeCls'. a closure and a object is created.
+
+
+	- Closure pattern only applicable on the variable declare with 'var', if they are declared with 'this.' then closure has no effect on hime. 
+	- Closure play no role in the accesibility of the variable declared by 'this.'
+
+------------------------
+
+For loop and clouserof its index >>
+		fff() {
+			for(var i; 0 - 10)  { el[i].onClick = function() {console.log(i)}}
+		}
+	For click on nth element it give:>  10, 10, 10....10
+	here the i lies in the closure of 'fff' and so it will get updated in the end of loop, after the click it will print the laatest value
+	above code is 100% same as
+		fff() {
+			var i = 0;
+			for(i; 0 - 10)  { el[i].onClick = function() {console.log(i)}}	//10  10  10....
+			console.log(i)													//10
+		}
+
+	Now look below code
+		fff() {
+			for(var i; 0 - 10)  { el[i].onClick = myClick(i)}
+			function myClick(k) {
+				return function() {console.log(k)}
+			}
+		}
+	For click on nth element it give:>  1, 2, 3....10
+	here the 'k' lies in the closure of 'myClick' and so 'k' will nit be changed by the loop, so after the click 'k' will print its stored value.
+	
+	if you use let instaed of var then:-
+		fff() {
+			for(let i; 0 - 10)  { el[i].onClick = function() {console.log(i)}}			\\ 1, 2, 3,...10
+		}	
+		because let has the scope in the for clock nlu
+-----------------
+
+Closure always preserve the latest value no matter where the inner function is defined:
+	function home() {
+		var name = 'mufa';
+		var retVar = function() { console.log(name)  }			// Methode define here
+		name = "murtuza"																		// Value changed later		
+		return retVar;
+	}
+	var hh = home();
+	hh()  //murtuza																				// latest value reflected
+
+----------------------------------------------------------------------------------------------------------
+
+Context  VS	 Closure : 
+	*		Context 'this.' belongs to object.     
+	*		Closure belongs to parent methode call  
+	**	Context available if methode called with 'this.' or with 'bind'
+	**	Closure available if methode is a child of any function.
+--------------------------------------------------------------------
+Closure and Anunymus function:-
+	If function is passed as anonymus ten also it will have the closure access of parent on 
+			var vMemberIntHome = function() {
+				var myVar = 'muf';
+				setTimeout(function() { console.log(myVar);  }, 3000)
+			}
+	If you ever confuse in anonymus function, Just break it down in your mind like this:-
+			var vMemberIntHome = function() {
+				var myVar = 'muf';
+				var myFun = function() { console.log(myVar); }
+				setTimeout(myFun, 3000)
+			}
+--------------------------------------------------------------------
+
+#REFCLOSUREMINI
+	function City() {
+		this.tHome = function() {
+			var vMemberIntHome = function(va) {
+				setTimeout(function() {
+					console.log(va);
+				}, 3000);
+			}
+			this.getvMemberIntHome = function() {return vMemberIntHome};
+			getvMemberIntHomeGlbExpo = function() {return vMemberIntHome};			
+		}
+	}
+
+	var cityBar = new City();
+	cityBar.tHome();
+	cityBar.getvMemberIntHome()('mmm');
+	
+	var cityBar11 = new City();
+	cityBar11.tHome();
+	cityBar11.getvMemberIntHome()('sss');	
+	
+	After 3000 ms output :-
+	mmm
+	sss
+Above example illustrated that function (vMemberIntHome) declared with 'var' inside 'this.' function (tHome). 
+For each call of 'vMemberIntHome' a closure of 'vMemberIntHome' will be created and each of them remain seprated from each other.
+
+--------------------------------
+
+global variable is overrided by the closure variable:
+	in index.js: 
+		var x = 10;
+		function createFunction1() { var x = 20; return function() {return x;}; }
+		console.log(createFunction1()());    
+	This will print '20'

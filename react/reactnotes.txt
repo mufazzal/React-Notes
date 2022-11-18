@@ -1,0 +1,610 @@
+
+
+Use of non-State variable:
+
+	In the react component you can use the non state variable, also can use it in render function. 
+	But This variable have very big disadvantage, it do not reflect by default on UI as the state-var.
+	So if you make any change in such variable and you have your render function dependent on it. 
+	You must ask react framwork to reun the 'render' methode by itself. To do this you can either call 'forceUpdate' or 'setState({})': 
+
+		..
+		render() {... <div> {this.nonStateVar} </div>  ...}
+		..
+		myFun() {
+			this.nonStateVar = 'newVal'
+			this.setState({}) OR this.forceUpdate();
+		}
+	
+------
+
+Mutating state:
+	Technically state is mutable object you can make any change after its initiation, But But But React strically say not to that and say
+	One should not mutate the state and instead traet it like a immutable object.
+	So mutating state is strongly unrecommended in react but not prohibited.
+	Reason:-
+	If you try to update the deep value in the state like this: 
+  
+		this.state.name = 'muf';
+  
+1.	Then render will not be called, and you have to call 'this.setState({})' or forceUpdate().
+2.	if you do something like below	
+		this.setState({name: 'muf'})		//ML1
+		this.state.name = 'hus';			//ML2	
+		
+	Depending on where you are in life-cycle, the first statement may schedule the state change for later time. in that case 
+	first a, event is schedule by seatState for later time. [line 'ML1']
+	then the value of the name is set to 'hus'				[line 'ML2']
+	then the event loop completed
+	a schedule event qued for setState executed and the value is set to muf.
+	
+So problem here is that this kind of programming is very tricky and cause uncertain bugs. so avoid using direct mutation.
+3.	Still you wants, then you can use the direct mutation, but then you you will loose following beauty of react	
+	>	shouldComponentUpdate become useless
+	>	batching of changes of multiple state not possible by internal framework
+
+
+Nobody will stop you to mutate the stae object, but then nobody guarantee the perfetness of the code.
+For immutability read 'Immutable.txt'
+  
+
+--------------
+Default prop:
+	Default prop is setup in <CompName>.defaultProp and default props set the value of props if not provided form parent
+PropTypes:-
+	PropTypes is setup in <CompName>.PropTypes and make sure that parebt always set correct type of porps.
+	
+------------------------------
+
+Almost all of the time we use JSX with the react, this JSX syntax are not a javascript. after the build with babel, it is changes in simple jsvascript see below examples :-
+
+	const hall = <Hall/>											after babel ->		var hall = _react2.default.createElement(_hall2.default, null)
+	const home = <div > {hall} </div>					after babel ->		var home = _react2.default.createElement('div', null, ' ', hall, ' ')
+		
+	<Hall welcomeText='Sit in our Hall' />		after babel ->		var hall = _react2.default.createElement(_hall2.default, { welcomeText: 'Sit in our Hall' });
+
+	const hall = <div > <Hall />  </div>			after babel ->		var hall = _react2.default.createElement('div', null, ' ', _react2.default.createElement(_hall2.default, null), '  ' );	
+
+	const home = <div > Welcome to home  {hall} </div>				
+												after babel ->		var home = _react2.default.createElement('div', null, ' Welcome to home  ', hall, ' ');
+
+	const hall = <div > <Hall welcomeText='Sit in our Hall'/>  </div>
+												after babel ->		var hall = _react2.default.createElement('div', null, ' ', _react2.default.createElement(_hall2.default, { welcomeText: 'Sit in our Hall' }),'  ');
+
+-----------------------------
+
+What if no render methode in comp: 
+	Error: TypeError: instance.render is not a function
+what if no return in render
+	Error: Nothing was returned from render. This usually means a return statement is missing. Or, to render nothing, return null.
+-----------------
+
+	
+-------
+	
+Fumctional Component:-
+You can declare a simplest functional comoinent like below:-
+
+
+	function Welcome(props) { return <h1>Hello, {props.name}</h1>; }			ES5-functional-comp
+	Or
+	const Welcome = (props)=>{return <div> Hello {this.props.name}</div>}		ES6-functional-comp
+	
+	ReactDOM.render( <Welcome name="Sara" />, document.getElementById('app') );
+	
+Funtional component do not have state and lifecycle methode. 
+It is only useful as a pure component. 
+If you want to just show thing on UI and not to hadle anything, Use this.
+This is best if you wants to use a simple HTML like template with props nad no data manuplation.
+This are also called Pure component or stateless-functional-conponent bcoz state is missing here.
+	
+Also functional component do not have 'this' attached to its instance as there is no class. 
+and when you attacht the click listener then you do not have to worry about the bind.
+
+attaching click in funcion compo:-
+
+	function NumberListParent(props) {
+		var clkFun1 = () => {....};
+		return (<div onClick={clkFun1}> Change Array </div>);
+		OR
+		return (<div onClick={()=>{clkFun1()}}> Change Array </div>);
+	} 
+So you can attach the click in both way. do notice that here we declare the function 'clkFun1' in the component function 
+so it will remain in closure and so props will be available for 'clkFun1'
+Now suppose u declare it outside-
+
+	var clkFun1 = (props, e) => {....};
+	function NumberListParent(props) {
+		return (<div onClick={clkFun1}> Change Array </div>);
+		OR
+		return (<div onClick={(e)=>{clkFun1(props, e)}}> Change Array </div>);
+	}
+Here if you do it by way 1 thaen you wil not have props injected as formal param. but in second one you do have.
+
+Sending default props in functional Comppo-
+const Component = ({ prop1, prop2 }) => ( <div></div>)
+Component.defaultProps = {
+  prop1: false,
+  prop2: 'My Prop',
+}
+OR
+const Component = ({ prop1 = false, prop2 = 'My Prop' }) => (
+  <div></div>
+)    
+
+	
+Class component:
+Just extend React.Component. as we did it almost all the time (No all the time)		Es6-class-comp
+Aniother way: by React.createCalls methode in ES5: 
+
+	const Contacts = React.createClass({											Es6-class-comp			
+	  propTypes: { },
+	  getDefaultProps() { return { }; },
+	  getInitialState() { return { }; },
+	  render() { return ( <div></div> ); }
+	  componentWillUpdate() {};
+	  
+	});
+This is 100% same as simple Es6 class with those function. In all those function 'this.' will reprsent the component
+
+React.createClass[JSX] VS React.extend{JS}:
+Only one: after the compilation the ES6 code will getconverted to ES5 by bable, 
+React.createClass is atready in ES5 so babled do almost nothing and generate the same amount of code 
+But React.extend is ES6 so babel do lot of work, also it generate big chicnk of code in ES5 pattern So	
+	1.	Increase build time
+	2.	Increase file size
+But then why we use 'extend' all the time: 
+ANS: Simplicity
+	
+StateLess component: no state - better if we use function component pattern 
+Statefulcomponent: with state - cant be used with functional component pattern, so onlu with class component.
+
+-------
+
+Renderig:
+You can render this too: one lineer stateless function component
+	ReactDOM.render(<h1>Hello, world</h1>, document.getElementById('root'));
+
+----------
+
+
+----
+
+output plz-
+const cc = <div> I m HomePage {false} </div> ;
+Ans
+ I m HomePage
+ 
+const cc = <div> I m HomePage {false + ''} </div> ;
+Ans
+ I m HomePage false
+-----
+
+--------------------------------------------------------------------------------------------------------------------------------
+
+
+Accessibility :-
+	It is actuly a way to make the UI more easy to use
+
+	Managing the Focus >>
+	you can manage the focus by using the refs. thi is very imp as it make the apliction usable and also react keep rendering the 
+	DOM so many time we could lost the focus to uncertain place. to regain focus to proper place do this-
+		render() {
+			return(
+				<div>
+					<input type="text" ref={(refI2_) => this.refI2 = refI2_} />
+					<button onClick={()=>{this.refI2.focus()}}> click </button>
+				</div>)
+			}
+		}
+---
+
+
+-------------------------
+
+refs :--
+
+we already know where we use ref. but react have made a major change in the ref.
+till now wr were using ref as a sinple string but now react will soon not allow it and has already deprecated it.
+for current verswion it is highly recommended that we use ref call back instead of simple string.
+
+in callback ref you do not provide the string instead a callback function with one formal param.
+this callback is called at the time of rendering and its formal param is injected by internal libs.
+this injected value is a 
+
+	<input type="text" ref={(formalRef) => this.myref = formalRef} />
+
+here the 'this.formalRef' can be used for accessing the dom elements and function od react component.
+	eg: this.myref.focus()
+imp diffrence: if ref were simple string then we use 'this.refs.inputRef.focus()' but in callback ref you no need of 'refs'
+
+For cutom component: 
+	<MyComp ref={(myComRef) => this.myComRef = myComRef}/>
+	click() {
+		this.myComRef.anyFunctionImMyComRef();
+		this.myComRef.setState({...})
+	}
+
+ref and findDOMNode :-
+	findDOMNode is useful when you are using the ref as string, but as you know this is deprecated so use of 'findDOMNode' is also heavuily demoralized.
+	
+	
+There is one more way now avilable for ref: search createRef() function.
+ -
+ 
+VVVIMP: ref can only be used if component passes from all the component lifcycle. but as you know functional component do not pass via the 
+component lifecycle so we cant ise ref on function component. though we can use it insile it.
+	
+	MyFunctionComponent = (props) => {
+		<MyClassComp ref={(q_)=q=q_}>				//This line will be fine
+	}
+	
+	MyFunctionComponent ref={(p)=>this.p=p} />		//This line will give error
+	
+ref should not be used extensivly, officially it should be use only for gaining focus, scroll etc. 
+never u shall call a function with ref that make state and prop changes in code.
+
+---
+
+
+gaining focus :- 
+suppose you have a parent and two child. 
+one child has text input and other a button. and you wants to gain a focus on text input on button click.
+In the child first we will send a callback function 'onInputBoxRenderedCb' which will evoke when the input text is rendered on UI, 
+we will preserve its refrence in 'onInputBoxRendered'. 
+
+function Parent(props) {
+  var onInputBoxRendered = null;
+  
+  var onInputBoxRenderedCb = (_onInputBoxRendered) => {
+    onInputBoxRendered = _onInputBoxRendered
+  }
+  var gainFocusToInpText = () => {
+    onInputBoxRendered.focus();
+  }
+  
+  return( 
+  <div>
+    <Child1 onInputBoxRenderedCb={onInputBoxRenderedCb}/>
+    <Child2 gainFocusToInpText={gainFocusToInpText}/>
+  </div>);
+}
+var Child1 = (props) =>   { 
+                            function funInChild1() {alert('funInChild1')}
+                            return <div ><input type="text" ref={(e)=>{props.onInputBoxRenderedCb(e)}} /></div>;
+                          }
+var Child2 = (props) =>   <button onClick={props.gainFocusToInpText}>sa </button>;
+
+Calling any user define function:-
+       <Child ref={instance => { this.child = instance; }} />
+       <button onClick={() => { this.child.anyChildFunction(); }}>Click</button>
+   
+-------------------------------------	
+	
+----------------------------------------
+
+
+--------------------------------------------------
+
+
+---------------------------------------------------------------
+
+Input Elements and React -  
+
+
+Whenever you are using input elements and you set the value by 'value' attribute without using onChange. then things may become very uncertain
+Why?
+if you do one of this
+ <input value={this.state.inp} />
+ <input value={this.props.inp} />
+  <input value={'muf'} />
+Whenever use type anything in input box, it will fire the onChange with new value. but this onchange will remain unattended as we
+have not set the callback. once onChange-cycle completed the typed new value goes in the garbage. Now typing happen on actaul DOM
+Not on virtual one so react framwork never know that somthing is done by user. so react engine remain unconsious of any envent.
+So no matter what user type in text box, render will never be called. becoz just typing will not make any state changes to triggr the render.
+And so the value in in the input box never chages. user keep pressing the key but nothing happen
+So from user point of view all this three input box are readonly
+
+If you wants to allow user to make change, the instead of value use 'defaultValue'.
+this will enable the user to change the text in input-box by typing.
+BUT there is still one glitch.
+As you have not configure the onChange event so when user chage the value in input-box, it do reflect on UI. but react never know about this changes so 
+all this changes goes in garbage and no render will be called. 
+So from user prospective it is editable but at the backend it does not care about changes.
+
+value and defaultValue together without onchange:-
+if you use both then value attribute will have the priority. but if value is null or undefined then defaultValue will be populated.
+otherwise always value will be populated. 
+If value is not a null or undefined then element will remain readonly otherwise it will be editable for the user.
+also note that if value is empty string then also value will have the priority and empty input box will be shown and remain uneditable.
+ <input defaultValue={props.inp} value={undefined/null}/> : 'inp' will be shown and elemets is editable
+ <input defaultValue={props.inp} value={'muf'}/>          : 'muf' will be shown and elemets is readonly
+ <input defaultValue={props.inp} value={''}/>             :  elemnt is empty and readonly
+
+In all above way we discussed the component has one thing in common 
+It may be editable or not, but whatever the changes user made by typing. It will goes in vain.
+In such a cases the componenet is called uncontrolled component.
+
+Simillar thing will happen with chckboxes and checked/defaultChecked attr.
+
+ <input type="checkbox" checked={props.inp} />
+ <input type="checkbox" checked={this.state.inp} />
+ <input type="checkbox" checked={true/false} />
+ All above will populate the checkbox with the given value but remian uneditable for the user
+
+checked and defaultChecked together without onchange:-
+<input type="checkbox" defaultChecked={props.inp} checked={null/undefined}/>   : 'inp' will be shown and elemets is editable
+<input type="checkbox" defaultChecked={props.inp} checked={true} />            :  element is checked and readonly  
+<input type="checkbox" defaultChecked={props.inp} checked={'mm'} />            :  element is checked and readonly
+<input type="checkbox" defaultChecked={props.inp} checked={0/false} />         :  element is unchecked and readonly
+
+This concept is true for <textArea>, <select> and <radio> as well.
+
+var FunComp = (props) => <input type="checkbox" checked={true} defaultChecked={props.inp}/>
+
+class ClsComp  extends React.Component {
+  constructor(props) { super(props); }
+  render() { return <input defaultValue={this.props.inp} /> }
+}
+
+class ClsCompControlled  extends React.Component {
+  constructor(props) { super(props); this.state={inp: this.props.inp}}
+  render() { return <input defaultValue={this.state.inp} /> }
+}
+All above three component are read only
+
+
+To make something sensible tou will have to configure the onChange. and make it a Controlled Component.
+For this you have to maintain the value/checked in some state variable. As you need to have a state so you cannot use functional component here.
+So you have to use class componenet. see below this basic impl
+
+class InputBox extends React.Component {
+  constructor(props) { 
+    super(props); 
+    this.state =  {
+        inp: this.props.inp
+    }
+  }
+  render() { 
+    var input = <input 
+                  defaultValue={this.state.inp} 
+                  value={this.state.inp} 
+                  onChange={this.onChange.bind(this)} 
+                  ref={this.props.refInitForFocus}/>;
+    return input;
+  }
+  onChange(e) {
+    var v = e.target.value;
+    this.setState({inp: v});
+    if(this.props.onChange)
+      this.props.onChange(v, e);
+  }
+} 
+
+	- this is highly discouraged as it is uncontrolled and changes should be in synch with state and props.
+	- also you must use this.ref to access the UI element in uncontrolled comp. which is no go.
+
+--
+
+React and Radioo button:-
+there is two way:-
+1.	By simple HTML uncontrolled component.	
+	render() {
+		return ( 
+		  <div onChange={this.setGender.bind(this)}>
+			<input type="radio" value="MALE" name="gender"/> Male
+			<input type="radio" value="FEMALE" name="gender"/> Female
+		  </div>
+		 )
+	  }
+
+instead do this:-
+<input type="radio" name="site_name" 
+		   value={'muf'} 
+		   checked={this.state.site === result.SITE_NAME} 
+		   onChange={this.onSiteChanged} />{result.SITE_NAME}</td>
+<td><input type="radio" name="address" 
+		   value={result.ADDRESS}  
+		   checked={this.state.address === result.ADDRESS} 
+		   onChange={this.onAddressChanged} />{result.ADDRESS}
+		   
+		   
+IMP: value attribute in chechbox and radio button is for label only
+
+------------------------------
+
+ES6 VS ES5 in React context - 
+
+ES6 
+	class Greeting extends React.Component {
+	  render() {return <h1>Hello, {this.props.name}</h1>;}
+	}
+	Greeting.defaultProps = {name: 'Mary'};
+ES5
+	var Greeting = createReactClass({
+	  render/willMo/willU/didU...: function() {return <h1>Hello, {this.props.name}</h1>;}
+	});
+---
+Functional comp 
+
+Es5     var function Greet(props) {
+         return <div> props.greet <\div>
+	}
+Es6     var Greet = (props) =>{
+         return <div> props.greet <\div>
+	 }
+can not use refs in both case here at all.
+---
+Class comp
+
+Es5      var Greet = React.createClass(....)
+
+Es6      Class Greet extends React.Component {
+         ....
+	 }
+---
+defaultProps:-
+	Es6	  : for functional and class comp both
+		Greeting.defaultProps = {name: 'Mary'};
+	ES5
+		var Greeting = createReactClass({
+			getDefaultProps: function(){ return { name: 'Mary' }; },
+		});
+--
+propTypes:-
+	ES6  : for functional and class comp both
+		Greeting.propTypes = {
+			initialValue: React.PropTypes.string
+		};
+	ES5
+		var Greeting = createReactClass({
+				propTypes: {initialValue: React.PropTypes.string}; 
+		});
+--
+initil state :-
+Es6		: for comp only as no state in functional comp
+	this.state = {...}
+ES5
+	getInitialState: function() {...}
+
+
+ 
+-------------------------------JSX-------------------------
+
+React without JSX:-
+	React.createElement('div', null, `Hello ${this.props.toWhat}`);
+	
+	
+	
+
+----
+After babel
+
+Class MyCom extends React.Component {
+..}
+will be converted to
+var MyCom = React.createclass(...)
+
+var mm = <MyComp>
+will be converted to
+
+var mm = React.createelement(...MyComp...)
+ 
+
+
+
+Booleans, Null, and Undefined Are Ignored :-
+All below expression will render nthing -
+
+	<div></div>
+	<div>{false}</div>
+	<div>{null}</div>
+	<div>{undefined}</div>
+	<div>{true}</div>
+Though if you make the a string then it will render its content-
+--
+
+
+
+
+Capitalized types indicate that the JSX tag is referring to a React component. 
+These tags get compiled into a direct reference to the named variable, so if you use the JSX <Foo /> expression, Foo must be in scope.
+
+---
+
+Since JSX compiles into calls to React.createElement, the React library must also always be in scope from your JSX code.
+
+	import React from 'react';
+	function WarningButton() {
+	  return <div color="red" />;
+	}
+In the above code if you remove import statement then error will come. 
+thoug react is not used directl but after compiling it will transform into React.createElement('div', ...)
+
+--
+
+JSX children:-
+In JSX expressions that contain both an opening tag and a closing tag, the content between those tags is passed as a special prop: props.children. 
+There are several different ways to pass children:
+
+	<MyComponent>Hello world!</MyComponent>				:	props.children ->	"Hello world!"
+			
+	<MyComponent>										:	props.children ->	[MyFirstComponent, MySecondComponent]
+	  <MyFirstComponent />
+	  <MySecondComponent />
+	</MyComponent>
+
+	<MyComponent> 										:	props.children ->	[MyFirstComponent, MySecondComponent]
+		[MyFirstComponent, MySecondComponent] 
+	</MyComponent>
+
+Functions as Children
+
+	<MyComponent>
+		{ (name)=> <div> {name} </div>}
+	</MyComponent>
+	
+	MyComponent(props) {
+		return props.children('muf')
+	}
+-------
+
+
+In below code you can observe that we imported the React but never used it. But why? 
+It is beacuse if we are using JSX then we will have to import React. becoz in the end 
+those lines will be changed to React.createElement(...) after passing from JSX transpiler.
+
+	import React from 'react';
+	function WarningButton() { return <CustomButton color="red" />;}
+
+If not imported then-
+	 'React' must be in scope when using JSX   react/react-in-jsx-scope
+	
+----------------
+Multi-mini component in one object : -
+	const Messages = {
+		Error: (props) => <div> I am Error </div>
+		Warnig: (props) => <div> I am Warnig </div>
+		Logger: (props) => <div> I am Logger </div>
+	} 
+	var App = (props) => {
+		return 	<div>
+					<Messages.Error />
+					<Messages.Warnig />
+					<Messages.Logger />
+				</div>
+	}
+----------
+If you pass no value for a prop, it defaults to true. These two JSX expressions are equivalent:
+	<MyTextBox autocomplete />
+	<MyTextBox autocomplete={true} />
+
+-----------
+
+--------------------------------------------------------------------------------------------------------
+
+
+-----------
+
+style:-
+recomendded ways is to use class always.
+But still if you wants then
+The style attribute accepts a JavaScript object with camelCased properties
+
+eg:
+	<div style={{ color: 'black' }}>
+	  Hello World!
+	</div>
+	
+	
+	
+----------------------------------------------
+
+
+--------------------
+
+------------------
+
+constructor vs componentWillMount; what a ...
+ This is very confused topic, firstly if you are using ES6 then calling API either in willMount/constructor will behave same.
+ But if you are using ES5 and creating the component by React.createclass(...), then you do not at all have any constructor function so you must use willMount.
+ Also do not confuse-> if you wants to be sure that UI must have been properly rendered before api call, then call the api in didMount

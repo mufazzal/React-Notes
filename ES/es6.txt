@@ -1,0 +1,276 @@
+let and const:-
+	let and const both are from ES6, so they are processed and consumed at conpile time only, 
+	any error in there use also detected at compile time at by the 'babel-loader'.
+	So if you write the following code in imported JS: 
+		let x = 9098789;
+		const xed = 78945651;	
+	Now if you go into bundle.js (after succesful compilation by 'babel-loader') it will be converted to : 
+		var x = 9098789;
+		var xed = 78945651;	
+
+	let:-
+		let is substitute of 'var' when we need scope of variable only in some 'if/for' block.
+		If you use let instead of 'var' the scope will confined into the enclosing 'if/for' block;
+			function fun() {
+				for(..)/if(true/false) { let x = 5;}
+				console.log(x)						//red 'error' in console [but if u would have used 'var' than it will give undefined/5 in the console]
+			}
+		let in for loop bracket not body :-
+
+			function fun() {
+				for(let i = 0; i < 4; i++) { .. }
+				console.log(i)						//red 'error' in console 
+			}		
+		So in for loop if we declare in indexer (i) with var than it will have scope outside too, but if we declare with 'let' it will have scope inside only.
+
+		scope of var leak outside (before and after) of if/for block  but not out of function block
+		scope of let leak not of any enclosing block.
+		
+	const: 
+		No need to explain. all thing of let apply to const too excect that in cannot be re-assign.
+		Is there any way to make const in Es5 ? 
+		Yes! you can use 'Object.defineProperty(..)' and keep 'writable' param false. though it must be lies in some context (mns object 'obj' will wrap him)
+			Object.defineProperty(obj, 'pi', {value: '3.14', wriatable: false, ....})
+
+	Hoisting:-
+		let and const both support hoisting so 
+			console.log(x1)	
+			const/let x1 = 90;
+		will not give red error.
+		But
+			console.log(x1)	
+			x1 = 90;
+		will give red error
+		
+------
+
+lambda fnction: 
+	To make the function tiny this is invented: 
+	thoug after the compilation this function is converted into the normal js function '=>' is completey consumed and removed in 'bundle.js'
+	EG:
+		1.	normal lemda function
+				var lftyp = (name, city) => { ... return <...> };	
+		2.	lemda function with only one param
+				var lftyp = name => { ... return <...> };			
+		3.	lemda function single line body 
+				var lftyp = (name, city) =>  name + ' -- ' + city;				// return the formatted string.					
+				var lftyp = (name, city) =>  c.l(name + ' -- ' + city);		// return undefined
+		4.	lemda function single line body  + 	only one param
+				var lftyp = name =>  'name : ' + name;
+		5.	lemda function with no param
+				var ff = () => ....
+
+	lembda function and 'this.' [the lexical this]:-		
+		'this.' in the lembda function always and always point to whatever the 'this.' of parent function is pointing.
+		NOW THE MOST IMP POINT TO REMEMBER:  YOU CANNOT BIND THE 'lambda' FUNCTION, so that 'this.' can not be chagerd at all.
+		if the parent function hase this=undefined, then its lenda function is alsp give 'this.' undefined, no matter you bind it with something else.
+		At a time of declaration of lemda function, it is binded with context of parents function context by internal framwork
+
+			context of arrow function === context of its parent function.
+			
+			var obj = {name: 'hus'}	
+			function Home() { 		OR 		calss Home
+				this.name = 'muf'
+				var inffEs5 = function()  	{ console.log('inffEs5', this.name); }
+				var inffEs6 = 				() => { console.log('inffEs6', this.name); }
+				
+				inffEs5();				//error
+				inffEs6();				//muf
+
+				inffEs5.bind(obj)();	//hus
+				inffEs6.bind(obj)();	//muf		//BINDING make no effect in it in any way
+			}
+			var home = new Home();
+	
+	Secret detail of lexical this:-
+		if you open the bundle.js and look for lembda function you will see all of them are converted to normal function and 'this.' used in those function 
+		has also been changed to '_thisX.'  [where X = 0 1 2 3 4....infinity], 
+		the value of '_thisX' is assign at the top of the immediat parent function of those lembda function
+			function Home() { 
+				...
+				var inffEs6 = 		() => { console.log('inffEs6', this.name); }
+				....
+			}
+		will be converted to:-
+			function Home() { 
+				_this1 = this;
+				...
+				var inffEs6 = function inffEs6() { console.log('inffEs6', _this1.name); };
+				....
+			}
+--
+	
+
+if you are declaring lembda function in es6 class, then you will either declare it in 'constructor' or in 'member' function.
+in both of the cases conversion happen in same way
+
+	class Compcls {
+		constructor () 	{ (()=>{console.log('constructor lembda', this)})() }
+		mfLembd () 			{ (()=>{console.log('mfLembd lembda', this)})() }
+	}
+after conversion:-
+	class Compcls {
+		constructor ()  {  _this8 = this; (()=>{console.log('constructor lembda', _this8)})() }
+		mfLembd () 			{  _this9 = this; (()=>{console.log('mfLembd lembda',     _this9)})() }
+	}
+	
+---------------------------------------
+
+Map and Set:-
+		A very new thing in ES6 is addition of Set and Map, this is very simmilar to one in Java, but its use is very limited bcoz of strong functionality of Object 
+		itself.
+	Set:-
+		var idSet = new Set(['12', '23', '23', '45', 45]);
+		out- ['12', '23', '45', 45]
+		So set dicriminate between numeric-string and string
+		Most useful function:-
+			size()
+			has()
+			clear()
+			delete()
+		iterate: 
+			You can itrate it with 
+				for (let item of idSet) console.log(item);
+		Set to Array:
+			let arr = [...idSet];
+		Array to Set: 
+			new Set(arr);
+		
+	Map:-
+		this is also same as in java to create a map pass a two dimention array:-
+		var m = new Map([
+				[ 1, 'one' ],
+				[ 2, 'two' ],
+				[ 3, 'thr' ]
+			])
+		imp fun:-
+			has()
+			delete()
+			clear()
+			size()
+		iterate:-
+		best way-
+			for (let [key, value] of  m.entries()) console.log(key, value);
+			also you can use m.keys() or m.values()
+		map to array of key/value/kv-pair :
+			let arr = [...m.keys()/m.values()/m.enteries()];
+		
+-------------------------------------		
+		
+	There are some more thing left to study the ES6: read futher topic after 'Map and Set' from link 
+	https://www.tutorialspoint.com/es6/es6_collections.htm
+
+-------------------------------------
+
+varax/spreead operator: ...
+	Uses
+		1.	this operator can be used to send formal param in function without knowing the count 
+					myFun(p, d, ...vx) { ...vx[0]....}
+		2.	merging in the array
+					[2, 5, ...vx]
+		3.	nodelist to array:
+					[...document.querySelectorAll('div')]
+		4.	array destructuring: 
+					let [ x, y, ...a] = [  1,  2,  3,  4 ];
+					a-> [1, 2]		
+		5.	array concat:
+					[...ar1, t, y, ..ar2, ...ar3, ]
+			
+	This is very useful to creat a shallow copy of objevt: 
+		var vv = {name: 'muf', add: {line1: '13 bohra'} }
+		var cvv = {...vv}
+		Now cvv is shallow copy of vv.
+		For deep copy :
+		 cvv = {...vv, add: {...vv.add}}
+			
+	also see "#REFREST_PARAM" in js.txt
+--------------------
+
+String template/interpolation:
+	Another beautiful feature is string interpolation.
+	in es5: 
+		var str = 'Count: ' + item.count + 'price:' + item.price + ' total: - ' + (item.count * item.price)
+	in es6:
+		var str = `count ${item.count} | price ${item.price} Total: ${item.count * item.price} `
+		Out>> count 5 | price 50 Total: 250
+		
+	This work only with `
+	it will not work with ' or "
+	if you use ' or " in the string wrapped by ` then it will be considered as simple string
+		so 
+		`"count": ${item.count} ` >> "count" : 5
+	
+---------------------
+
+Quick property assignment :
+		var x = 0, y = 0
+		obj = { x, y }		//{x: 0, y: 0}
+	in ES5:
+		var x = 0, y = 0
+		obj = { x: x, y: y }		//{x: 0, y: 0}
+
+---------------------
+Advance litral assignment:
+	let obj = {
+		name: "muf",
+		[ "his " + getAgeString() ]: 42
+	}
+	in ES5:
+		obj[ "his " + getAgeString() ]: 42
+		
+-----------------
+Object mapping : 
+		var { name, add, comp, greet } = getASTNode()
+		function getASTNode() { return {greet: 'Hello', name: 'muf', add1: 'bar', comp: {name: 'acc', loc: 'pune'}} }
+		console.log( name, add, comp, greet);
+		OUT:
+		muf, undefined, {name: "acc", loc: "pune"}, Hello
+		
+			Mapping is done with key in LHS and key in RHS, not with the positions.
+			That is why 'add' remain null bcoz same key does not find at RHS.
+			'add1' remain unassigned to anything bcoz same key does not find at LHS.
+			value of 'greet' is assigned properly even though they have positions mismatch
+
+			Basically from the RHS multiple value return each with a name assosiated with it.
+			At LHS those values assign to matching name.
+
+	Deep Mapping:
+		var {comp: {name, loc}} = getComp();
+		getComp() {return {comp: {name: 'acc', loc: 'pune'}} }
+		name-> 'acc'
+		loc-> 'pune'
+		comp-> undefined
+		
+			For deep mapping yoou have to strcture the correct mapping structure ate LHS and RHS.
+			values at the right will be maped to values at the left, keys will only be used to map them.
+
+			at LHS 'comp:' is key to map, name and loc is actual variable to map at 
+			
+			anothe eg:
+				var {comp: {name: nn, loc: ll}} = getComp();
+				getComp() {return {comp: {name: 'acc', loc: 'pune'}} }
+				name-> undefined
+				loc-> undefined
+				nn-> 'acc'
+				ll-> 'pune'
+				comp-> undefined
+	
+Mapping array:-
+	This is solely done by positioning and it does not support deep de-structuring
+		var [ara, arb, comp] = [1, 2, {name: 'muf', comp: {name: 'acc'}}];
+		console.log(ara, arb, comp);	
+		OUT >> 1 2 {name: "muf", comp: {…}}
+------------------------------
+
+generator function : 
+	this is rarly bieng used, it useful for React-Nativs and Node.js so better go through it little in internet.
+-----------------------------
+
+spread oprator somtime give issue in compiling.
+create .babelrc file and put "plugins": ["transform-object-rest-spread"]   in it
+
+
+
+
+
+	

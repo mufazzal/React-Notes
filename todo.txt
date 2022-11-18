@@ -1,0 +1,136 @@
+Polyfills
+
+Javascript
+	Generaotr function
+	prototypr chaining
+	axios common set up
+	currying
+	lexical scope [not this]
+	higher-order functions
+	event loop
+	storages in JS
+
+HTLM
+	DOCType
+	
+
+CSS
+	em
+	Block level element
+	flex
+	
+ReactJS
+	Hooks [useContext, useMemo, useCallback] - Done
+	react StrictMode 
+	Pure Components
+	story book
+	Custom Hook
+	prop drilling
+	controlled vs uncontrolled/stateless comp
+	Synthetic Event
+	proptype
+	Server Side Rendering
+	why state immutable
+	Hook in clas compoment
+	Comp Composition
+	Virtual DOM and how it work
+	React-router Browser history, push and replace
+	
+Redux
+	Middleware
+	createSlice
+	createAction	
+	context apis VS redux
+
+	
+webpack
+	code split - react/redux
+	build size optimization
+	images used in css, its loader
+	webpack proxy
+	
+
+test
+	Enzyme vs React Testing Library.
+	jest vs mocha
+	jest -> describe and it
+	jest -> hooks beforAll, beforeEach
+	jest - jsdom - testEnvironment 
+	testing-library/react : get* vs find* vs query*
+	snapshot testing
+	function mocking and check if function is called
+	shallow render vs deep render
+	
+	my stack:-
+		jest
+		@types/jest
+		@testing-library/react
+		ts-jest
+		jest-environment-jsdom
+		jest-fetch-mock 
+		react-testing-library
+		@babel/polyfill
+
+git
+	rebase
+	cherrypick
+	
+Caching
+
+npm vs npx
+npm audit --fix
+npm link unlink
+
+typescript
+	what is declaratrive file **.d.ts
+	and @type/react
+	typescript interface and type
+	xxxx and @types/xxxx  -->   import type {Config} from 'xxxx';
+	tslint
+
+
+svg loader
+Code Splitting with SplitChunksPlugin
+chuck vs bundle
+alais in import
+
+localization i18n
+
+
+-----------------
+
+
+Devops:
+	Jenkinfile
+	Dockerfile
+	
+NodeJS
+	child process
+	connection to DB like mongo or posgress
+	security tool like Helmet
+	nodejs worker threads limit
+	nodejs worker threads vs child process
+	nodejs worker threads memory leak
+
+NodeJS Express
+	Middleware function	
+	SSL cer setup
+	body parser
+	helmet
+	
+Rest
+	cors in detail
+	Methode like OPTION and PUT
+	request validation like body and header etc.
+	lazy loading react
+
+JWT token
+	generation
+	passing from UI
+	validating at nodejs
+	detail about content in it
+	payload customization
+	
+
+
+	

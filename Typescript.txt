@@ -1,0 +1,37 @@
+
+
+
+export interface BasicAuthProps {
+    userId?: string  --->  MAke it optionaland default value will be undefined
+    useName: string  ---> make it required
+		
+		below are same
+    mode?: ORDER_FORM_MODE
+    mode: ORDER_FORM_MODE | undefined
+		
+---------------------
+
+
+interface OrderHomeState {
+    showOrderEditor: false
+}
+this.state = {
+} as OrderHomeState						--------------> No error
+
+let vv: OrderHomeState = {}		---------------> error
+let cc: OrderHomeOwnProps;		
+cc = {}												---------------> No Error
+
+interface OrderEditorOwnFormProps {
+  onEditorClose?: ()=>{}
+}
+
+interface OrderEditorOwnFormProps extends BaseProps{
+  onEditorClose?: ()=>void
+}
+
+se of xxx?.yyy?.ddd
+
+Declaration merging typescript
+
+

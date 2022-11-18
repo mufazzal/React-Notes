@@ -1,0 +1,91 @@
+There are multiple libs for this but most widly used is 'react-router'.
+	Its main aim is to switching the proper component depending upor sub param of URL.
+	first you should install it by npm install.
+	nw import as needed
+
+	Router: Use this as main parent in which the component will shuffle.
+	Route:	Each indisusual component.
+		
+		
+	Router should contain all the route, and they all must lie in one child, you can wrap tem in div or switch(more recommended)
+			<Router>
+			<div> OR <switch>
+				<Route .../>
+				<Route .../>
+				<Route .../>
+			</div> OR </switch>
+			</Router>
+	If you are using Link then that also must lie into the Router
+
+		<Router>
+		<div>
+			<ul className="nav navbar-nav">
+				<li><Link to="/">Home</Link></li>
+				<li><Link to="/iList">Item List</Link></li>
+				<li><Link to="/profile">profile</Link></li>
+			</ul>	
+		
+			<Route exact path="/" component={HomPage}/>
+			<Route path="/iList" component={ItemList}/>
+			<Route path="/profile" component={Profile}/>
+		</div>
+		</Router>
+	Consider above code is basis for any routing, with the Link above we can do the switching below.
+	'to' in the 'Link' will map tp 'path' in Route.
+
+	Nesting in Route: Not allowed since v4 of this lib.
+
+	IndexRoute: 
+		Just remember
+			<Route exact path="/" component={Home}/> === <IndexRoute component={Home}/>
+
+	VVIMP: if you redirct to subpages (<domain>/about etc.) via 'Link' or history.push() then only all thing work fine otherwise all will fall apart.
+		Do not do the direct redrection or simplly typing and entering URL in browser.
+	History: 
+		first create and declare to use history in Route like below
+			import createBrowserHistory from 'history/createBrowserHistory'
+			const history = createBrowserHistory()
+	Now in Router:-
+		<Router history={history}>
+			...
+		</Router>
+	this 'history' object now available in all the child route too as a props.
+	use below for navigation :
+			this.props.history.push("/some/Path");
+		
+		
+	in Route you can also pass 'render' function or 'children' function	:-
+		 <Route path={to} {...rest} render={props => (
+			<FadeIn>
+				<Component {...props}/>
+			</FadeIn>
+			)}/>
+
+	also see "#REFCODESPLIT" in this file.
+	
+-------------
+
+Code spliting/Lazy loading of module:-
+
+	Suppose you have a large modular app which has large subapps like about, users, profile, cart etc.
+	They all are independent and free from others. if user is on one supapp then why we need to load others.
+	For this react introduce lazy and suspense feature.
+	It enable you to load only required part of you apps and let the other ignored.
+
+	import { BrowserRouter as Router, Route, Switch } from 'react-router-dom';
+	import React, { Suspense, lazy } from 'react';
+
+	const Home = lazy(() => import('./routes/Home'));
+	const About = lazy(() => import('./routes/About'));
+
+	const App = () => (
+	  <Router>
+		<Suspense fallback={<div>Loading...</div>}>
+		  <Switch>
+			<Route exact path="/" component={Home}/>
+			<Route path="/about" component={About}/>
+		  </Switch>
+		</Suspense>
+	  </Router>
+	);	
+	

@@ -1,0 +1,334 @@
+----------------------------------------------
+Virtual DOM-
+		In actual DOM like [document,getElementBuyId, $()] the operation happen over actual DOM.
+		Issue with this approach is that for a very small change like a text input change, the whole actal DOM has to be flushed, recraed and repainted.
+		So its very performance unfriendly.
+		
+		To solve this react use the virtual DOM. 
+		Here in each render a new virtal DOM is created, creation of this VD is faster because this is just a repersentaion of actal DOM.
+		now that newly created VD is compared with older VD and diff is generated [reconciliation]
+		based on this diff only affected DOM element are recearte in the browser.
+	
+-----------------------------------------------
+Fragments :-
+		Fragments are a pattern used in React which allow a component to return multiple elements, without an encompassing <div> component. 
+		Using <div> elements in certain places may create invalid HTML.
+		EG:-
+			...
+			return  <ul>  <ListItems />  </ul>
+			...
+			ListItem = (p) => {
+				return <div> 
+						<li> item 1 </li>  <li> item 2 </li> <li> item 3 </li>
+						 </div>
+			}
+			This will give the below invalid HTML  
+				<ul> <div> ....  </div> </ul>
+			To avoid this u can use Fragment. Fragment will evaporated in actual DOM and not place itself on UI but render all its chillds
+			Observe the change :-
+				return <React.Fragment> 
+						<li> item 1 </li>  <li> item 2 </li> <li> item 3 </li>
+						 </React.Fragment>
+			The final out:-
+				<ul> <li> ....  </li> </ul>
+
+			In latest react you can also do
+					<> 
+						<li> item 1 </li>  <li> item 2 </li> <li> item 3 </li>
+					</>
+-----------------------------------------------
+Error Boundry:- 
+		error boundry is a typical react component which says. If any error occuer in any of my children component, i will take care of it.
+		A developer can programm me to respond in case some error occure in any of my child.
+		I can catch the error only if:-
+		1.  It happen in my children, not in a component which is passed in my props.
+				 <ErrorBoundry byProp={ByPropComp}>  <JSXChildren /> </ErrorBoundry>
+				In above code all the erro happen in 'JSXChildren' will be handled but not of in 'ByPropComp'
+		2.  Error occuring only in redering cycle. eg. in any lifecycle methode. But will not handle error occure outside redering phase. 
+				EG in click event etc. for handling error in event click and other non rendering phase use try/catch
+		3.  It will not handle any error occure in parent compo or in its own render or lifecycle methode itself
+
+		Step-
+		create a react component and implement one or both of this methode.
+		 getDerivedStateFromError: this is a static methode, which invoke when error is occured. it return the apropiate state object to handle error. 
+		 do not setState({..}) here
+		 componentDidCatch: this is also called when error occure, you can use this too. you can use setState({..}) here.
+		 React doc says first one is recommended to use. but do not prohibit uses of second one.
+		 You can see the render methode below check if error occure, if yes then show the fallback UI otherwise just render its JSX-children
+
+		IMP: this functionality available only after react16.
+
+		class ErrorBoundary extends React.Component {
+			constructor(props) {
+				super(props);
+				this.state = { hasError: false, error: null};
+			}
+
+			static getDerivedStateFromError(error) { return { hasError: true, error: error}; }
+			componentDidCatch(error, info) { console.log(error, info)  }
+
+			
+			render() {
+				
+				if (this.state.hasError) {
+					return <div>
+									<h1>Something went wrsong.</h1>
+									<p>{this.state.error.message}</p>
+								</div>;
+				}
+				return this.props.children; 
+			}
+		}
+
+		Var App = (props) => {
+			return <div>
+					<ErrorBoundary>
+						<MyApplicatopm />
+					</ErrorBoundary>
+					 </div>	
+		}	
+		
+----------------------------
+
+Higher-Order Components:- 
+	Higher order component are built over the top of react component. this wrapper component do the abstraction
+	connect function in redux also return a kind of HOC.
+	though it is rarly use but for more google it.
+	THis is nothing but a function that takke a Component as input and return another component as output.
+	This returned component has all the feture of passed one with additional which is added by thatfunction.
+	EX:-
+		connect function of react-redux
+		styld also use this.
+		many other libs are using it.
+------------------------------
+
+Controlled Component:-
+	An Input element become a controlled component if its value is tide with a state in its parent component. and its onChange is tide to any funtion in parent.
+	Here it give better control over the input element.
+	But it cause rerendering of component on each key press on input box.
+	EG:-
+			const controlledComp = () => { 
+				const [inpVal, setInpVal] = React.useState('')
+				onChange(e) { this.setInpVal(e.target.value) }
+				return <input  
+						value={this.state.inp} 
+						onChange={this.onChange.bind(this)} />;
+			}
+
+
+UnControlled Component:-
+	Here the input elemet is not tide to parents component at all. neither its value nor onChange.
+	- this is highly discouraged as it is uncontrolled and changes should be in synch with state and props.
+	- also you must use this.ref to access the UI element in uncontrolled comp. which is no go.
+	
+------------------------------
+
+Short circuit statement + JSX:-
+		{ true  && <div> MUF </div>}		// first is true with AND so second also has to check. so next will be return. so 'Muf will be printed'
+		{ true  || <div> MUF </div>}		// first is true with OR so second do not need to evaluate. so statement will produce a Boolean true 
+		{ false && <div> MUF </div>}		// first is false with AND so do not need to evaluate. so statement will produce a Boolean false
+		{ false || <div> MUF </div>}		// first is false with OR also has to check. so next will be return. so 'Muf will be printed'
+
+		{ <div>FAT</div> || <div> MUF </div>}				// FAT
+		{ <div>FAT</div> && <div> MUFMUF </div>}		// MUF	
+
+		- Booleans are ignored in JSX UI, so if result is boolean then it actully render nothing on UI. no matter produced result is true or false.
+		
+--------------------------------
+
+render props:-
+		In react the props.children is a JSX element usually.	this children are placed by parent properlly.
+		But you can pass the function as the children and the parent will call this function. this function must generate the JSX.
+		
+		<Parent/> 
+			{(renderPropParam1, renderPropParam2) => <div> {renderPropParam1 + renderPropParam2}} </div> /> }
+		</Patent>
+
+		Patent(props) {
+			<div>  props.children('muf', 'hus') </div>
+		}		
+
+---------------------------------
+
+dangerouslySetInnerHTML: -
+		dangerouslySetInnerHTML is React’s replacement for using innerHTML in the browser DOM.
+		you can set HTML directly from React,just pass an object with a __html key
+			
+				<div dangerouslySetInnerHTML={ {__html: 'First &middot; Second'} } />;
+
+		setting HTML from code is dangerous because it’s easy to inadvertently expose your users to a cross-site scripting (XSS) attack.
+		Userful when you wants to set the html test like   my name is <b>Mufazzal</b> and i live in <u> barnadar</u>
+
+----------------------------------
+
+React.PureComponent - 
+		This is a add on of React.Component, if you extend React.PureComponent instead of React.Component then that component will auto write the 
+		shouldComponentUpdate methode do the shallow equality check on state and props, if one of them is not equal then it will return the 'true' otherwise false.
+		So Developer do not have to write the equality check code. and it also improve the performance becaues may of the unrequireed render is avoided.
+				
+----------------------------------
+
+array and Key:
+	if you are creating list of component to display with an array, then you must specify the kay for each indivisual item and that key must be unique, 
+	If you dont then there will be warning. 
+	Actully React lib use internally this key to identify exach element in it.
+	the key must be given to the lemenet which come at top on itration by array.
+
+	EG:
+		<div>
+			[<div key="1"> 1 </div>, <div key="2"> 2 </div>, <div key="3"> 3 </div>]
+		</div>
+		
+		const listItems = numbers.map((number) =>
+			<Welcome key={number.toString()}>
+				{number}
+			</Welcome>
+			);
+		Below will not need key becauz array in not used
+		<div>
+			{<div> 1 </div>} {<div> 2 </div>} {<div> 3 </div>}
+		</div>		
+
+-------------------------------------
+
+
+Server Side and Client side rendering;-
+
+	Client side rendering:-
+		In CSR the a small HTML like(template.html) + a large js file like (bundle.js) + CSS are sent to the browser from server.
+		Now at browser the js will execute and create the whole html DOM and finally put it on browser.
+		So most of the processing happen on browser for creating HTML.
+		
+		template.html:-
+			<htm>
+				<head> .. </head>
+				<div id="contet"> <div id="app"> </div> </div>
+			</html>
+
+		bundle.js:-
+		.... a large js with react+redux+antd+etc file in MB....
+		
+	
+	Server Side rendering:-
+		In SSR the HTML is generated at server side only not on client.
+		So here the react and js execute at server and generate the HTML, fially this HTML is sent to the browser. here size of HTML is large but js is small.
+		You must need a nodejs server with react installed.
+		USe case:-
+			if internet speed is slow.
+			if security is too high like payment and you do not want to expose the logic of HTML generation in any way to public.
+		
+		content.html:-
+			<htm>
+				<head> .. </head>
+				<div id="contet"> .......... a large HTML............... </div>
+			</html>
+
+		any.js:-
+			.... a small js without react+redux+antd+etc ....
+	
+			SSR implementation in server.js >>
+
+				import React from 'react';
+				import { renderToString } from 'react-dom/server';
+				import App from 'App';
+
+				server.get('/', (req, res) => {
+					...
+					const body = renderToString(<App />);
+					...
+					
+					res.send(
+						<htm>
+							<head> </head>						
+							<script>......
+							<meta>.....
+							<div id="contet">
+								....							
+									<div id="app"> ${body} </div>
+								....
+							</div>
+						</html>
+					);
+				}
+				Now if you load 'localhost:8080/' then the App will load as it load normally. but behind the scene rendering happen at server side.
+				Though this is hardly used. sever side rendering is least common becoz:-
+					It take too much time to render and so engagge the server for longer time.
+					This can be done inNode.js sever and as node server is single thread server and perform badly id computation is high.
+					at inital loading time you can not display the 'Loading...'
+				This is only good if network is slow and you do not want much web service. and to show the static content
+				One other advantage is SEO engine read all the content.
+
+-----------------------------
+
+React Context:-
+		If you need to push some values or funtion in all or most of the clild component then drilling then from each parent to child is exhausting.
+		to simplify it comes the Contest.
+		here you create a Comtext via 'createContext' then wrap the outermost component in provider.
+		The provider must have a object name 'values' which contains all the item you wants to drill down in all the child compoenent.
+		To read in any child 
+		
+		Create Context:-
+			ThemeContext.js
+				export default const ThemeContext = React.createContext();
+		
+		Craete PRovider + wrap it to app:-
+		
+			<ThemeContext.Provider value={ {v1: "asd", v2: "asd", v3: 23} }>
+				<App>
+			</ThemeContext.Provider>
+				
+		Create Consumer in child:-		
+		
+			import ThemeContext from "./ThemeContext";	
+
+			const theme = React.useContext(ThemeContext);
+			console.log(theme.v1);				
+-----------------------------------		
+	component composition:-
+		Component Composition define how the children of the component will be appear in the final render.
+		A Componet do have control on how its children will be shown or even be shown or not.
+		
+		
+		Default Children/s :-
+			By default react always pass the children in props.children. you cannot remove it but you can add more such children
+			This could be a sigle JSX object or Array of JSX elements
+			
+			var testdiv = 
+				<MyContainerComp>
+					 {<div id="1"> yus </div>}
+					 {<div id="2"> moz </div>}
+					 {<div id="3"> azz </div>}
+				 </MyComp>;
+
+			function MyContainerComp(props) {
+				var innerDiv = <div> {innerdiv} </div>
+				return  <div id="myc"> {props.children} {innerdiv}</div>
+			}
+			
+			- If you have multiple first level child then this.props.childern will be an array. 
+			- Never iterate it directly instead use React.children.map			
+
+		Default + custom Children by props:-
+			FOr more better behavior you can pass jsx childs as anothe rprops.
+			EG:-				
+				<MyCom byPr={<div>bypropos</div>}> 
+					<div>{JSX-child}</div> 
+				</MyCom>
+				MyCom {  
+					render() {  
+						<div>{this.props.bypropos}</div>  
+						<div>{this.props.childern}</div>  
+						}  
+					}
+				
+		diffrence between - 
+			bypropos 	:> this come from props and think it as a strcture of MyCom, use this.props.bypropos to itrate its children
+			JSX-child :> this are the child component. think it as JSX-child, use this.props.childern to itrate them				
+
+		You can also traverse on child and read its property:-		
+			const modAnchor = React.Children.map(props.testdiv.props.children, child =>{
+				console.log(child.props.id);
+			});				
+			
+-------------------------------			
+

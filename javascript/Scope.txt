@@ -1,0 +1,191 @@
+Scope is what make JS a very complex to understand so lets dive in a hell:
+
+Be any type of Js (Plain/Node/es6/tyescript..)
+There is two (but we say 3) type of scope only 
+	1. Global scope : scope which are attached to 'window' object
+	2. Local scope : scope which are attached to custom object
+	3. Closure	:	Will look sepratly
+
+To understand the scope we will start with plain Javascript.
+No es5 etc. here.
+
+------------inline js or linked .js-------------
+Now we will first understand the behaviour of js in HTML doc <script> tag and .js file which is directly linked to html doc:
+
+	Variable declaration: 
+		Variable declarion in plain js can be done by 'var' or directly without keyword
+			var byVar = 'mufavar'
+			dir = 'mufdirect'
+
+	Lets assume we have an .html file as ->
+		index.html>>
+			<script> ...JS content... </script>
+			OR
+			<script src="./index.js"> </script>
+			<script src="./index1.js"> </script>
+
+			...JS content... and content inside the index.js, index1.js,  behave in 100% same way.
+
+		Both of the code will have 'this.' === window object.
+		Both of the js above is plain js (no es6 or node can play any role) you can declare variable with two type of scope as you know-
+
+			Global scope: 
+				If you declare a variable outside of any function, at root of .js file or in <script> tag of .html doc. 
+				OR
+				If you declare a variable inside of any function but without the 'var' keyword. 
+		
+				...JS content... >>	
+					<script>
+						var gvInHtml = 'gvInHtmlMuf';
+						gvInHtmlDir = 'gvInHtmlDirMuf';
+						function myFn() {gvVarInHtmlFunDir = 'gvVarInHtmlFunDir'}
+					</script>
+
+				index.js >>
+					var gvInLjs = 'gvInLjsMuf';
+					gvInLjsDir = 'gvInLjsDirMuf';
+					function myFn() {gvVarInLjsFunDir = 'gvVarInLjsFunDir'}	
+	
+
+				All this 6 line will become a global variable so you can use them anywhere you wants, they are in the window object.
+				So in index1.js >>
+					console.log(gvInHtml); 											//gvInHtmlMuf
+					console.log(gvInHtmlDir); 									//gvInHtmlDirMuf
+					console.log(gvInLjs); 											//gvInLjs
+					console.log(gvInLjsDirMuf);									//gvInLjsDirMuf
+					console.log(gvVarInHtmlFunDir);							//gvVarInHtmlFunDir
+					console.log(gvVarInLjsFunDir);							//gvVarInLjsFunDir
+					
+				As this are lying in the 'window' object you can aso do this:
+				index1.js >>
+					console.log(window.gvInHtml); 							//gvInHtmlMuf
+					console.log(window.gvInHtmlDir); 						//gvInHtmlDirMuf
+					console.log(window.gvInLjs); 								//gvInLjs
+					console.log(window.gvInLjsDirMuf);					//gvInLjsDirMuf
+					console.log(window.gvVarInHtmlFunDir);			//gvVarInHtmlFunDir
+					console.log(window.gvVarInLjsFunDir);				//gvVarInLjsFunDir
+	
+				Aslo as you know, Both of the code will have 'this.' === window object. you can aso do this:
+				index1.js >>
+					console.log(this.gvInHtml); 								//gvInHtmlMuf
+					console.log(this.gvInHtmlDir); 							//gvInHtmlDirMuf
+					console.log(this.gvInLjs); 									//gvInLjs
+					console.log(this.gvInLjsDirMuf);						//gvInLjsDirMuf
+					console.log(this.gvVarInHtmlFunDir);				//gvVarInHtmlFunDir
+					console.log(this.gvVarInLjsFunDir);					//gvVarInLjsFunDir
+
+				varaible declared without var will automatically become global, this may cause mane accidental creayion of global variable 
+				So Javascript in later stage (ES5) provided the way to disable this functionality. read 'use stric' in chapter js.txt
+
+	Local scope: 
+		If you declare a varaible inside any function block AND with the 'var' kayword it will be a local one.
+		you can use it only in this block and WITHOUT 'this.' and 'window.'
+		this is very straightforward and we not need to dive here.
+		...JS content... >>	
+			<script>
+				function myFn() {
+					var gvInFn = 'gvInFnMuf';		// This is not a global one. 
+				}
+			</script>
+
+		index.js 
+			function myFn() {
+				var gvInLjs = 'gvInLjsMuf';		// This is not a global one
+			}			
+	
+------------End inline js or linked .js-------------
+
+------------Imported/requieed js-------------
+
+Using Global variable:-
+	All the global variable declare in any location [including included index.js] are available in api.js 
+	so in anywhere in the code
+		import api from 'api.js'
+		..
+		
+	api.js >>
+		console.log(gvInHtml); 										//gvInHtmlMuf
+		console.log(gvInHtmlDir); 								//gvInHtmlDirMuf
+		console.log(gvInLjs); 										//gvInLjs
+		console.log(gvInLjsDirMuf);								//gvInLjsDirMuf
+		console.log(gvVarInHtmlFunDir);						//gvVarInHtmlFunDir
+		console.log(gvVarInLjsFunDir);						//gvVarInLjsFunDir		
+		OR
+		console.log(window.gvInHtml); 						//gvInHtmlMuf
+		console.log(window.gvInHtmlDir); 					//gvInHtmlDirMuf
+		console.log(window.gvInLjs); 							//gvInLjs
+		console.log(window.gvInLjsDirMuf);				//gvInLjsDirMuf
+		console.log(window.gvVarInHtmlFunDir);		//gvVarInHtmlFunDir
+		console.log(window.gvVarInLjsFunDir);			//gvVarInLjsFunDir		
+		
+		
+	That is why you have access of manu utility functions like 'comnsole', 'JSON', 'atob' in imported and included js file both.
+	becoz they all live in window object. 	
+	
+	But in api.js you can not do below, because 'this.' in 'import' or 'require' file not reprsent 'window' object
+		console.log(this.gvInHtml); 							//Error 
+		console.log(this.gvInHtmlDir); 						//Error
+		console.log(this.gvInLjs); 								//Error
+		console.log(this.gvInLjsDirMuf);					//Error
+		console.log(this.gvVarInHtmlFunDir);			//Error
+		console.log(this.gvVarInLjsFunDir);				//Error	
+		
+Declaring global variable in imported file:
+	Today most(~99%) of JS compiler run in 'use strict' mode they DO NOT ALLOW the use of variable without declaration. 
+	So if you use it without var it will throw an error.
+	As you know 'this.' in imported file does not points to 'window', So even if you do below in 'api.js' at root level of file it wont work:
+		api.js	>>
+			this.gvr = 'df'  		// 'this.' is undefined 
+			gvr = 'fgd'					//	you cannot use variable without declaration [true for root level and in function block both]
+			var gvr = 'fgd'			//  No Error But 'gvr' is local variable here and available in file or in the function only.
+			
+	There is one and only one way de declate ablobal variable here: 
+		window.gvr = 'df'		//Correct one and only way [true for root level and in function block both]
+
+
+Now for 'gvrInapi' what does file scope mns :-
+	When you build the bundle lets say 'bundle.js'. In this 'bundle.js' you will see the code of all your imported file including 'api.js' something like below: 
+	....bla bla bla... __webpack_require__(47) {..blabla... [api.js code]....}, 
+	Now scope of 'gvrInapi' lies in following block there   {..blabla... [api.js code]....}
+	
+	We can say that in case on Node.js we have one more kind of scope that is 'file scope',
+		Though technically it is also Local scope but its available in whole file to use so we may say it 'file scope' 
+
+	
+--------END Import/require--------
+
+Now on intresting thing: 
+	At the root of imported file you can use following statment
+	api.js >>
+		var gvrInapi = 'fgd'	
+	In the root of js which is in script tag or in direct link of script tage
+	<script> OR index.js:
+		var gvrInIndex = 'fgd'	
+	Both the syntax is valid but they have very diffrent effect:
+	1: 'gvrInapi' will have scope in the 'api.js' file only 
+	2: 'gvrInIndex' will have a global scope and can be used anywhere (Given it is used properly after the intialization)
+
+------------------------------
+
+Note: 
+	In the .JS file which are linked directly from .html document, 'this.' at the top level of that .js file will reprsent the 'window' object.
+	But if file is called via 'import' of 'required' way, then 'this.' at the top level of that .js will be undefined.
+
+	SO do remember this always: 
+	This is correct
+		<script src="index.js"> </script>
+		index.js>>
+		----
+			import mi from 'myInternalJs'
+			...
+			console.log(this)			----->>  This will print 'window' object
+			...
+		-----	
+		myInternalJs.js>>
+			----
+			import bla bla...
+			...
+			console.log(this)			----->>  This will print 'undefined'
+			...
+		-----
+	

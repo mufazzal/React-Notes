@@ -113,24 +113,24 @@ Though only default export will work in this way always-
 
 inline export-
 var-
-	export var myVar = 5 						No Error
+	export var myVar = 5 									No Error
 	export var myFun = (pr) => {...}			No Error
-	export class MyCls {}						No Error
-																import {myVar/myFun/MyCls} 	from '..'		No Error
-																import  randm  		 		from '..'		randm will be undefined
+	export class MyCls {}									No Error
+				import {myVar/myFun/MyCls} 	from '..'		No Error
+				import  randm  		 					from '..'		randm will be undefined
 																
-	var myVar = 5; export myVar;				Compile Error
+	var myVar = 5; export myVar;						Compile Error
 	var myFun = (pr)=>{}; export myFun;			Compile Error
-	class MyCls {}; export MyCls;				Compile Error
+	class MyCls {}; export MyCls;						Compile Error
 	
-	var myVar = 5; export {myVar};				No Error
+	var myVar = 5; export {myVar};					No Error
 	var myFun = (pr)=>{}; export {myFun};		No Error
-	class MyCls {}; export MyCls;				No Error
-																import {myVar/myFun/MyCls} 	from '..'		No Error
-																import 	randm  		 		from '..'		randm will be undefined	
+	class MyCls {}; export MyCls;						No Error
+					import {myVar/myFun/MyCls} 	from '..'		No Error
+					import 	randm  		 		from '..'					randm will be undefined	
 																
 												----With Default----				
-	export default var myVar = 5;				Compile Error
+	export default var myVar = 5;						Compile Error
 	export default var myFun (pr)=>{};			Compile Error
 	
 	export default class Es6Class {..}			No Error

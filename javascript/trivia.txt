@@ -1,0 +1,10 @@
+
+eval():-
+	This is one of the most controversial function, it evaluate the string as javascript but it is not at all recomendded to use
+	Why 
+	Suppose you have a input box and eval it value like
+		eval($('input')[0].value)
+	Because user now can pass malocious code in it and do hacking.
+	The only place where eval is very useful->
+		creating a javascript online editor like jsfiddle etc.
+	In old days eval was used to convert string to json, but ES6 have its own JSON class.

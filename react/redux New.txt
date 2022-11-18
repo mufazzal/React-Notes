@@ -1,0 +1,130 @@
+Hooks:
+	There is two very imp hook provided by react-redux lib to make better and easy compatibilty with Hook ecosystem with react.
+	It provide two hook which atully replace the connect function of reactredux
+		useDispatch:-
+			basically replace the mapDispatchToProps and give you the dispatch function directly for use
+		useSelector
+			basically replace the mapStateToProps and give you the state directly without connect.
+		
+		So you will not need the 'connect' function att al now.
+		
+		EG:-
+
+			import {useSelector, useDispatch} from 'react-redux'
+			import myUserAction from '../myUserAction'
+			
+			myComp = () => {
+				const counter = useSelector(state => state.counter)							|-------> Repalce the mapstateToProps
+				const currentUser = useSelector(state => state.currentUser)			|-------> Repalce the mapstateToProps
+
+				const dispatch = useDispatch()																	|-------> Repalce the mapDispatchToProps		
+				
+				return 
+					...
+					<h1> hello {currentUser,usernAme} </h1>
+					<button onclick={()=> {dispatch(myUserAction)}} />
+					...
+			}
+			
+
+createSlice:-
+	This is new advance way to create the reducer.
+	In this approch you do not have to worry about diffent reducer and actoion file and also const files.
+	You can create all these in single file and never have to worry about action types
+	
+	In a nuttshell just create a slice of state with createSlice and then get diffrebt actions and a single reducer both from output of createSlice
+	createSlice internally create the desired number of action creator function adn a reducer. also it internally create and map the action type constatnt 
+	to desired action type and the switch case of reducer.
+		
+		const act_var1 = "mmsasd"
+		const myStateSlice = createSlice({
+				name: string, 
+				initialState: {....}, 
+				reducer: {
+					<	>: (state, action) = ()=>{},
+					<action2>: (state, action) = ()=>{}
+					<action3>: (state, action) = ()=>{}
+				}, 
+				extraReducer: {
+					"any/action/a1": 	(state, action) = ()=>{}
+					[act_var1]: 			(state, action) = ()=>{}
+					"user/logout": 		(state, action) = ()=>{}
+				}
+		})
+		...
+		const { action1, action2, action3} = myStateSlice.actions
+		export { action1, action2, action3 }
+		export default myStateSlice.reducer	
+	
+	name:-
+		This will uniquly identify the slice. all the action_type_const internally created by createSlice will be prefixed with this value.
+	initialState: 
+		The initial state of reducer.
+	reducer: 
+		This conatain a function and key mapped with each other and mimic like a switck case of reducer funtion.
+		the internal function will have two param as we have in typical treducer. state and action.
+	extraReducer:
+		createSlice will create the action for each key in 'reducer', and the reducer created intenally will answer to that actions.
+		but what if you wants to listen some other action also. like action from some other reducer.
+		For this comes 'extraReducer'.
+		In extraReducer you can pass the mapping of foreign_action_type and function where foreign_action_type is a actyion type for some other reducer.
+	Output of createSlice:-
+		.actions:-
+			This is a mapped object of all the created action creator. This are the function you can use with dispatch to perform any operation on reducer state.
+			number of entries will be same and simmillar to the numer of entries in 'reducer'
+		.reducer:-
+			this is the reducer function who is suppose to go inside combineReducer funtion of store.
+		.caseReducers:
+			this is casereducer function created internaly. you will not need itr most of the time.
+			
+createAsyncThunk:-
+	All the action_creator in 'myStateSlice.actions' will strically be type simple action creator who redurn a object like {type: .., payload: ..}
+	But is some cases when you need to do the asych operation with Thunk Middleware, you will need a action_creator who return the function not object.
+	
+	For this we use 'createAsyncThunk' + 'createSlice' instead of just createSlice.
+	Here 'createAsyncThunk' will create the necessary actions for you and extraReducer in 'createSlice' will handle that actions.
+	it will take two param:-
+		1. name:-
+				A string that will that will be used as prefix for action type.
+		2. payloadCreator:-
+				A function that return the promise of any kind.
+		Output:-
+			It will retun a sohosticated object that you can use to handle that promoise.
+			this objecy contains the action type string whose action are fired at three instant
+			1. output.pending: 		a action_type string whose action fired when the promise 'payloadCreator' move to pending state
+			2. output.fulfilled: 	a action_type string whose action fired when the promise 'payloadCreator' move to resolved state
+			3. output.rejected: 	a action_type string whose action fired when the promise 'payloadCreator' move to rejected state
+		
+		EG:-
+		
+			const fetchServiceList = createAsyncThunk(
+				'fetchServiceList',
+				async () => {
+					const result = await fetch('https://jsonplaceholder.typicode.com/todos/1')
+					.then(res => res.json())
+				}
+			)		
+			const counterServicesSlice = createSlice({
+				name: 'serviceListState',
+				initialState,
+				reducers: {
+					setServices(state, action: PayloadAction<SetServicesPayload>) {
+						state.services = action.payload.services
+					},
+				},
+				extraReducers: {
+					[fetchServiceList.pending.type]: (state, action) => {
+						state.loading = true
+					},
+					[fetchServiceList.fulfilled.type]: (state, action) => {
+						state.loading = false
+						state.services = action.payload.services
+						state.error = undefined
+					},
+					[fetchServiceList.rejected.type]: (state, action) => {
+						state.loading = false
+						state.error = "someting wrong"
+					},      
+				}  
+			})	
+		

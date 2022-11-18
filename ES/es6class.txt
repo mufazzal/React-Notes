@@ -1,0 +1,311 @@
+Class is the keyword added in ES6, it give very cool and better way for inheritence. Though behind the scene all the thing happen with 'prototype'
+after the 'babel-loaded' complete the tranpiling of Es6 code and generate bundle. in that budle all the thing of the class 
+are changed to simple 'prototype'
+Soo below class :
+
+	class Car {
+
+		constructor(name) { this.carName = name; }			
+		
+		static assemble() { console.log('assemble', this.carName); }
+		
+		accelarator() { console.log(this.carName + '  accelarator'); } 
+		breakFun() { console.log(this.carName + '  breakFun'); this.accelarator(); }
+
+	};
+
+This will transform in : 
+
+	var Car = function() {		//L1
+	
+		fnction Car (name) {		//L2
+			this.name = name;
+		}
+		
+		...
+		...
+		Car.constructor = Car;
+		Car.assemble = assemble;
+		Car.prototype.accelarator = accelarator;
+		Car.prototype.breakFun = breakFun;
+		...
+		...
+		return Car;						//L3
+	}();
+
+	- 'Car' in L1 is diffrent fromm Car 'L2'. In line L3 we return the 'Car' function of line 'L2'.
+	- Return value at L3 is a refrence of the 'Car' function at 'L2' 
+	- The function written at 'L1' will called only at once on compile time. and so the value of variable 'Car' (line 'L1') is set 
+			and it points to the local function 'Car' (at L2)
+	- So all the methode defined inside the class 'Car', will assign to the 'prototype' of 'Car' not in 'Car' itself. And so whenever or wherver you create the 
+			object of 'Car' those methode will be readily available in tha objects '__proto__'.
+
+	At a time of compile this will happen and it will happen only at once: 
+
+		>	Everything you write in the constructor function at 'LC1' will reappear actual constructor function at line 'L2'
+		>	Assigning the constructor to the 'Car.constructor'. 
+		>	Assigning the declared methodes to the 'prototye'. 
+		>	Assigning the declared static methodes to the 'Car.'. 
+		>	None of them either constructor or methodes will be called, they will only be assign to proper refrences only
+		>	No calling of constructor happen at this moment, so no actual object is created. 
+
+	Whenever you call 'new Car(..)' lets say : var cb = new Car('basic');
+		>	The constructor function 'Car' at 'L2' is called.
+		>	As the 'Car.prototype.*' is laready set at a time of page load, we have all the methode in prototye available to use via 'this/obje.methodeName'
+		>	In the constructor function if you do 'this.name = name', 'name' property will be created in the object 'cb' not in its prototype.
+		>	Basically in the constructor you do all the initilization of object.
+		>	If you call some other function inside or outside constructor, and they also have 'this.' then they will also make change in 
+				object 'ob' not the prototype.	
+
+Calling methode/ Accessing properties: 
+	calling the methode declared in prototype can simply be called like 'ob.methodeNmae' in the same class of child class
+	e.g.
+	cb.accelarator();
+		# we have study it in detail in 'prototype.txt'
+		
+Changing methode / changing properties:-		
+	In the function/constructor if you do 'this.myVar = myVar', 'myVar' property will be created in the object 'cb' not in its prototype.
+	In the function/constructor after the page load if you ever wnats to change the value of anything in prototype then only way to do this is :
+			Car.prototype.accelarator = accelarator_1;
+			OR
+			this/obje.__proto__.accelarator = accelarator_1;			:	Override for all the object of 'Car'
+		But by doing this you must be aaware that it will reflect on all the object of 'Car' class.
+	Any change done with 'this.' will reflect in the object, not in prototype.
+	So if you do this : 
+		this/obje.accelarator = accelarator_1;		: Override for the object 'obje' only
+	It will not change the value of 'Car.prototype.accelarator', instead it will create the new key 'accelarator' in 'cb' object 
+
+
+------------------------------------
+
+Inheritence bt extend:-
+	class PetrolCar extends Car {
+		constructor(engine, name) { super(name);	 this.engine = engine; }
+		pertolMech() {console.log('pertolMech');}
+	} 
+	
+	This will transform in : 
+		
+		function PetrolCar(engine, name) {
+			this.engine = engine;
+			return this;
+		}
+		PetrolCar.prototype = Object.create(Car.prototype, { constructor: { value: subClass, ... }});	
+		PetrolCar.prototype.pertolMech = pertolMech;
+	
+	So it is clear that in the prototye of 'PetrolCar' we set prototye of 'Car' and so all the thing in 'Car.prototype' will be avialable to the instances of 'PetrolCar'
+	But the function declared in class 'PetrolCar' will be avilable in 'PetrolCar' only because they lies in 'PetrolCar.prototype'
+	This function will be avialable in the child of 'PetrolCar' too but not in 'Car'.
+
+	##	Rule regarding constructor of child class:
+		1. We must call 'super(..)' in the constructor of child class, other wise there will be error 'Module build failed: missing super() call in constructor'
+		2. Before the calling of 'super(..)', do not use 'this.' other wise there will be an error.
+		
+	E.G. :
+		class PetrolCar extends Car {
+			constructor(engine, name) {
+				console.log(myVar);						// No Error
+				console.log(this.backDikki) 	// Error
+				super(name);					
+				console.log(this.backDikki)		// No Error
+			}
+		} 	
+
+	** if you do not write 'super()' at all, then you cant use 'this.' in that calss.
+
+---------------------------------
+	E.G. : 
+		var cl = new Car('luxury');
+		var pc = new PetrolCar('petro engine', 'luxury');
+
+	So here two diffrent object are created. you know that super constructor in compulsory to call in child., so both of then will have a
+	'name' permamter in its object. and for both then they are sepparate.
+	But 
+	whatever declare in 'Car.prototye' will be same (by refrence) for both and share among them.
+	See the 'class.docx' for more detail.
+
+	So above you have got the way to share the same function of parent claas 'Car' in child by simpaly extending it. 
+	is there any way to sahre the variable ? Yes there is only one way :
+		Car.prototye.certificationAuth = 'GOI'
+
+	you can call the function/variable declared in prototype of 'Car' or 'PetrolCar' with 'obj/this.'
+		'obj/this.accelarator()' will call 'Car.prototype.accelarator'
+		'obj/this.certificationAuth' will call 'Car.prototype.certificationAuth'
+	The rule discussed in section 'Calling methode:' applu here too.
+	any change done with 'this.' will reflect in 'pc' object not in 'Car/PetrolCar.prototype'
+	Still If you wants to change in 'PetrolCar.prototype' that use below: 
+		PetrolCar.prototype.pertolMech = pertolMech_1;
+		OR
+		pc.__proto__.pertolMech = pertolMech_1;
+	For 'Car.prototype'
+		Car.prototype.accelarator = accelarator_1;
+		OR
+		pc.__proto__.__proto__.accelarator = accelarator_1;
+
+---------------------------------------
+
+##	You cant have multiple constructor in the class as like Java. It will give Error
+----------------------------------------
+static:
+	You cannot declare static variable in Es6 (propodsed in Es7) but you can declare static methode.
+
+		class Car {
+			static assemble() {
+				console.log('assemble', this.carName);
+			}
+		}
+	In the static methode u will not have 'this.' point to object of 'Car' class, instead it will point to classs/cosntructor function itself.
+	Also you cant call the static methode from the refrence of object
+		carIndica.assemble()	//Error;
+		
+	Though you can declare the static variable as like normal JS : 
+		Car.statVar = 'statVar';
+	For more detail go to 'js.txt' 
+
+
+	 both of the code is same-
+			class User { static staticMethod() {...} }
+			User.staticMethod(); // true
+		AND
+			function User() { }
+			User.staticMethod = function() {};
+---------------
+
+Look into this intresting methode in 'Car': 
+
+	initPrivats() {
+		this.carPrivateM = function() {
+			console.log('carPrivateM');
+		}
+	}
+	cb.initPrivats();
+	cb.carPrivateM();
+	
+This methode 'initPrivats' does lie in the prototype of 'Car', so child class 'PetrolCar' can all it and so this methode is shared among all the object. 
+But inside this methode lies 'carPrivateM' methode, this one is intiated with 'this.' it means 'carPrivateM' is exclusive for the calling object 'cb' of 'initPrivats'
+Methode 'carPrivateM' is not shared among any object.
+Though way of calling for both is same, one 'initPrivats' lies in prototype of 'Car' and read only throug 'cb.'
+and other  'carPrivateM' lies in object 'cb' and readable/writable both through 'cb.'.
+
+------------
+
+Overriding: 
+You can ovveride the function (those in prototype) of parent class 'Car' by two way:
+	>	in the class itself
+		class PetrolCar {
+			accelarator() { ... }
+		}
+	By this way the function goes into the 'PetrolCar.prototype' not into the 'CAr.proptotype'. so it will be reflected on 
+	all the instance of 'PetrolCar' and its child.
+	>	by 'this./pc.'
+		'this./pc.accelarator = function() {...}'
+	By this way the function goes into the 'this./pc.' object not into the 'PetrolCar.proptotype' or 'CAr.proptotype'. 
+	so it will be reflected on 'pc' object only.
+
+Even after override you can call the parent function with 'super.fnName'
+VVVIMP: 
+	'super' cannot be used if function is called/declared with 'this./pc.'
+So
+	this./cp.breakFun = function() { super.breakFun(); };  SU2
+This will give compillation error. ''super' outside of function or class '
+
+Overriding is done via name of function, formal argument has no effect on it. (unlike Java)
+
+-----------
+
+super in detail: 
+
+	super can be used only in the member function of class, can not be used either out of class or function which are declred with 'this./obj.'
+	if you write 
+		super.breakfun();
+	it will basically deconstructed in the following
+		PetrolCar.prototype.__proto__.breakFun.call(this, fp1, fp2);
+		OR
+		PetrolCar.prototype.__proto__.breakFun.bind(this)(fp1, fp2);
+	and for the construtor: 
+		super() break into:
+		PetrolCar.__proto__()
+		
+	So basically we are getting the function from parents prototype then call it via curent context 
+
+
+------------
+
+When we use the 'extend' keyword we actully do the prototype by below way : 
+	PetrolCar.prototype = Object.create(Car.prototype, ...);
+So we do not extend the object of 'Car', but we extend the 'Car.prototye' object.
+When you do read operation by 'this./obj.', it do itrate in prototype if not found in object itself. 
+But if you do the write operation by 'this./obj.', it will change in the 'this./obj.' object not in the proptotype.
+
+-----------
+
+Quick question: 
+How to add a methode on all the object of 'Car'
+	1. Car.prototype.methode = function() {...} 
+	2. cb.__proto__.methode = function() {...} 
+
+How to add a methode on the object 'cb' only
+	1. cb.methode = function() {...}
+
+
+	
+---------
+
+See the imp thing: 
+approach 1: 
+	function Person(name) { this.name = name; }
+	function Employee(empId) { this.empId = empId; }
+	Employee.prototype = Object.create(Person.prototype);
+		VS	VS	VS
+approach 2: 
+	Employee extend Person {
+		Employee() {
+			super();
+		}
+	}
+	
+approach 1: Here the parent constructor is not called so for instances of 'Employee' objects 'name' will remian undefuned.
+approach 1: Here the parent constructor has to be called with 'super()' so for instances of 'Employee' objects 'name' will have to be intialized bydeveloper.
+---------------
+multiple constructor:	
+	constructor are dfined at 'ClassName.prototype.constructor' and you can attach only one refrence to it so not possible to have multiple constructor
+class in class
+methode ovverideing and parent methode call
+super.methode  --  access var/methode declared with 'this.' and Cls.prototye.
+variable declaration with prototye n=and access in child
+
+-------------------
+
+You can omit super() in your subclass, if you omit the constructor altogether in your subclass. A 'hidden' default constructor will be included automatically in your subclass. 
+However, if you do include the constructor in your subclass, super() must be called in that constructor.
+That is why below is fine 
+
+	class Att 				{ constructor() {} }
+	class Ctt extends Att	{ }
+	
+But this will give error:  'missing super'
+
+	class Att 				{ constructor() {} }
+	class Ctt extends Att	{ constructor() {} }
+	
+----------------------
+
+Declaring class with lembda function:-
+	You should never never do this, becoz it is so wierd.
+	eg:
+	suppose at root leve of api.js
+		var lmdCls = () => {
+			this.lmdClsName = 'lmdClsName';
+		}
+		var lmdObj = new lmdCls();
+			>> though u r calling lembda with 'new' but here too 'this.' will point to 'this' of the parent function, which is undefined here.
+
+	If you have a parent scope:-
+		function lmbClasPr() {
+			var lmdCls = () => {
+				this.lmdClsName = 'lmdClsName';
+			}
+			var lmdObj = new lmdCls();
+		}
+		var lmbClasPrObj = new lmbClasPr();
+		>> 'this.' in the 'lmdCls' will point to parent class not the object created with 'new lmdCls()'	

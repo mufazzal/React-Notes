@@ -1,0 +1,224 @@
+Object class play the most pivotal role in the JS : 
+
+----
+Lets init: 
+
+
+function Person(name) {
+	this.name = name;
+	this.depObj = {nn: 'nn', mm: 'mm'}
+	this.perfun = function() {}
+}
+Person.prototype.isHuman = 'Yes-human';
+
+function Employee(empId) {
+	this.empId = empId;
+}
+Employee.prototype = Object.create(Person.prototype);
+Employee.prototype.isSap = 'yes-isSap';
+
+
+var person = new Person("Default Name");
+Person.prototype.comp = 'Acc'
+Object.defineProperty(person, 'nonEmurableProp',  {value: 'nonEmurableProp', writable: true, configurable: true, enumerable: false  })
+Object.defineProperty(person, 'nonWritable',  	  {value: 'nonWritable', writable: false, configurable: true, enumerable: true  })
+
+----
+
+All the object in JS no matter how they are created are the child of this class. 
+All the protopype chain in UNIVERSE OF JS end over here.
+The 'Prototype' of object class is 'Object.protopype' and its last in the chain.
+																				...__proto__								...__proto__.__proto__
+	|   ob, cb, cp, myf, 'my str', {..}, [..], {'da': 'da'}, f() {..}, xx   |   ----------------->  [ Object.protopype  ]	------------------------> 	null
+
+	
+No single value in the 'Object.protopype' can be changed. though you can add new.
+Just imagine a large cloude of diffrent js objest in your app and the all finally in their prototype chain come down to 'Object.protopype'	
+
+VVIMP :
+In the very end of the prototype chain lies a 'Object.protopype' not the empty instance of 'Object' class.
+Also unless specifed explicitly, prototype chain do not have a empty object of Object class in second last positon, 
+but it do have 'Object,protopype' in the very last position
+
+	Employee extend Person : 
+Employee.protopype --> Person.protopype  --> Object.protopype
+NOT
+Employee.protopype --> Person.protopype  ---> {} --> Object.protopype
+
+By default Object class has only one property and that is : 
+	'protopype' and noothing else
+All the predefined methode in 'Object' class is static and this methode can never be accessed with 'this./obj.' because the neither lie in the 
+object nor declared in any ''prototype' chain
+So 
+Object.assign()  -> Correct
+this/obj.assign() -> Error
+Below is the imp static methode of 'Object'
+
+assign:	
+	it will copy all the enumerable property form source to destination, It does not do the deep copy though
+		target = Object.assign(target, source);
+		console.log(target == source);									//false
+		console.log(target.depObj == source.depObj);		//true
+		console.log(target.depObj === source.depObj);		//true
+
+		primitive is done by copying the value not refrence
+			var o1 = {a: 8};
+			var tg = Object.assign({}, o1)
+			o1.a++;
+			console.log(o1.a, tg.a);	// 9, 8
+
+		Object passed at first argument and the object returned refer to same object
+			var o1 = {a: 1};
+			var tg = {}
+			var tg = Object.assign(tgp, o1)
+			tg.a++;   OR   tg.a++;
+			console.log(tgp.a, tg.a);	// 2, 2
+
+create: 
+	This is used to create an new object with additional params
+		>>	ob = Object.create(p1, p2);
+		P1: prototype for the objevt which will come in 'ob.__proto__'
+		P2: any aditonal property that will appear in 'this.' 
+	
+defineProperty:
+	This is used to define the new property with param, this take three perameter
+		>>	Object.defineProperty(obj, 'propName',  {value: 'sima', writable: true/false, configurable: true/false, enumerable: false/false  })
+		obj: object in which property to add
+		propName: property name	[if this property name already exist then that will be overriden]
+		desriptorObj: descriptor [object of all the params] 
+
+	
+getPrototypeOf: 
+	This one is very useful to detect the type of object we are dealing with. may time we do not able to knoe is it date, array, string or number
+
+	Object.getPrototypeOf(obj) 
+
+	
+Object.keys():
+	This will return keys of all the emurable property in the object only and ignore the __proto__ chain
+		Object.keys(obj).forEach(function(key) {
+			var val = obj[key];
+		});	
+		OR
+		for(let key of Object.keys(obj)) {
+			var val = obj[key];
+		}
+	
+		for..in   VS    Object.keys()
+		first one will itrate to __proto__ chain, second one will not
+			
+	
+Object.values:	
+	This is same as 'Object.Keys' exept it return values instead of keys
+	
+Object.enteries:	
+	This is same as 'Object.Keys' exept it return array of key and value pair 
+	
+Object.prototype.constructor:	
+	This is defined at a time of oject creation. also its nonwriatable, nonemurable, nonconfigurable
+	configurable	:	false
+	enumerable		:	false
+	writable		:	false			
+		
+Below is the imp methode of 'Object.protopype', all those methode has  enumerable: false
+
+	Object.prototype.hasOwnProperty():	return true if property is lie in the object itself, false if it is in __proto__ chain or missing from both.
+	Object.prototype.toString():				convert object into the string generale for noprimitive and nonstring it gives [Object <type>]
+	Object.prototype.toLocaString():		same as 'toString', but its recomendded to ovrride this methode onstead of 'toString'
+		3 class who has override the 'toLocaString' is 
+		Array, Date, Number
+	Object.prototype.valueOf():					it gived the primitive value of object. for normal deep object it print whole object.
+
+
+toString() : -
+var c = 9; 								c.toString()				"9"
+var c = {}; 							c.toString()				"[object Object]"
+var c = {'sad': 'asd'}; 	c.toString()				"[object Object]"
+var c = ['we', 'qww']; 		c.toString()				"we,qww"
+var c = new Date(); 			c.toString()				"Tue Jun 05 2018 14:06:14 GMT+0530 (India Standard Time)"
+var c = 45.65; 						c.toString()				"45.65"
+var c = 45451.65; 				c.toString()				"45451.65"
+var c = function() ..			c.toString()				"function() {console.log('dfdf')}"
+
+valueOf :-
+var c = 9; 								c.valueOf()					9
+var c = {}; 							c.valueOf()					{}__proto__: Object
+var c = {'sad': 'asd'}; 	c.valueOf()					{sad: "asd"}
+var c = ['we', 'qww']; 		c.valueOf()					(2) ["we", "qww"]
+var c = new Date(); 			c.valueOf()					1528188055702
+var c = 45.65; 						c.valueOf()					45.65
+var c = function() ..			c.valueOf()					function() {console.log('dfdf')}
+
+toLocaString :-
+All same as 'toString' except : 
+var c = new Date(); 		c.toLocaleString()			"6/5/2018, 2:18:14 PM"
+
+---
+
+Is there any way to create an object which does not have 'Object.protopype' in the end? 
+Yes! only one way.
+	obj = Object.create(null);
+
+---
+
+Each propery of any object has three params attached to it: 
+	configurable:	
+	enumerable	:	is it emurable (appear in for..in loop if yes)
+	writable	:	is it editable or not
+	
+	If you define the variable in simple manner like: 
+		obj/this.myVar = 'muf'
+	The values of those params will always be: 
+		configurable	:	true
+		enumerable		:	true
+		writable		:	true
+	So by default all the 99.99% variable declared can be emutare and edit
+
+	enumerable: 	
+		if we set 'enumerable' for any property then it will never appear in emuration operation (eg. for..in loop)
+		How to define -
+			Object.defineProperty(person, 'nonEmurableProp',  {value: 'nonEmurableProp', enumerable: false, ...  })
+		This property shown in grey-out color in colsole.log(obj)
+		This property hide from for in loop.
+		Never be confused: enumerable or nonenumerable both property can be accessed with key notation
+			obj.nonEmurableProp		: accesible, No error
+			obj['nonEmurableProp']	: accesible, No error
+		All the predefined methode of 'Object.protopype' has enumerable: false, so they never ever appear in any emuration operation
+		if enumerable:false then it will be ignored by : 
+			for..in
+			Object.Keys()
+			Obkect.enteries()
+		
+			
+	writable:		
+		If you try to change the value then it will give Error: 
+			Object.defineProperty(person, 'nonWritable',  {value: 'nonWritable', writable: false, ... })
+			person.nonWritable = 'rtrt';
+		Error: 	Cannot assign to read only property 'nonWritable' of object '#<Person>'
+		
+		
+	Configurable: 
+		Very wierd.
+
+		
+-------------
+
+In Es6 declaring const: 
+	const = 3.14
+In ES5 declaring const: 
+Object.defineProperty(window, "PI", {
+    value:        3.141593,
+    enumerable:   true,
+    writable:     false,
+    configurable: false
+})
+window.PI = 9;    // It will not give any erro but it will not make any change in value of PI, this line is useless.
+console.log(window.PI)  //Still pring 3.141593
+
+-----------
+
+enumerable		writable	configurable
+
+ Object.defineProperty(...);
+ 
+ Object.create

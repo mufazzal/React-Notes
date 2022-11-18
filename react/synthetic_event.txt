@@ -1,0 +1,72 @@
+React do the wrapping of JS event and create a new synthetic event. 
+	This event in most of the manner same as normal JS event. and have all the property of it.
+
+	- this bubble up like normal JWS event (Of course it will, becoz synthetic is just a wrapper arounr JS envent. inside it is same.)
+	- it has stopPropagation() and preventDefault(), which do the their desired functions.
+	-	This is browser agnostic and behave same across all browser
+	-	All the sythetic event is camecase in name.
+
+	bind and this:-
+		Here come the first diffrence, unlike JS event.
+		In normal js event 'this' will reprsent the element of item clickeed/hover etc. But here it is undefined always.
+		So you have to bind it to somthing if you want  to use 'this'
+			EG:
+			 <div onClick={this.hbClick.bind(this)} > </div>
+			 Or
+			 <div onClick={this.hbClick.bind({name: 'muf'})} > </div>
+
+
+	Accessing the event object: 
+		The first argument of callback function is the synthetic event. you can do all the operation of normal js event here.
+			<div onClick={this.hbClick.bind(this)} >
+			hbClick(p1) {
+				console.log(p1)			// Synthetic event{.....}
+				console.log(this)		// Binded object.
+			}
+			
+
+	Passing the data:-
+		hbClick(p1, p2) { console.log(p1, p2) }
+		render() 		{ return( <div onClick={this.hbClick.bind(this, 'Home-page')} > </div> }
+
+			Here is one catch, the last formal param here is the 'syn event' not the first
+			So 
+			p1: 'Home-Page'
+			p2: syn event
+
+
+	Bubbling UP: 
+		It also bubble up as normal and can be stopped by calling 'stopPropagation'
+		its default behaviour can be stopped via 'e.preventDefault'
+
+
+	return value in callback: 
+		This make no diffrence, whatever return form 'hbClick()', goes in vain.		
+		
+	Event looping: 
+		Here come the big diffrence in JS and synthetic event.
+		In js event or react event, both cases we get an object of event in callback
+			-	In JS event, a new object is created for every other event.
+			-	Here there is one and only one event object exist, which  is used for all the event.
+				this event object is reused for every event. and so give memory saving advantage and performance boost.
+			
+			hbClick(ev) {
+				var myEv = ev;
+				console.log(ev.target.id, myEv.target.id);																	//con1
+				setTimeout(()=>{console.log(ev.target.id, myEv.target.id)}, 3000);					//con2
+			}
+			render(){ <div id='homepage' onClick={this.hbClick.bind(this)} > }
+		
+		In the function 'hbClick' object 'ev' will have alll its content till hbclick end, at the moment 'hbClick' end 'ev' goes null.
+		So 
+		in line 'con1' it will pring 'Homepage HomePage',
+		As the function end 'ev' and 'myEv' goes null, (ev and myEv both refer to same object, and that object will now be used for some other event happening in event)
+		so after 3 second when timer run, the console give error, coz now that object is null.
+
+		Though you can bypass this feature and use the 'ev/myEv' as usual event like JS.
+		for this just call ev/myEv.persist(); in the methode.
+		
+	setState:-
+		One more diffrence and very imp diffrence in syn event and JS event is: 
+			In syn event, setState is run synchronusly 
+			in JS event it run asynchrounsly

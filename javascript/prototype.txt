@@ -112,33 +112,33 @@ See the value of em2 now, Here you can see a new property is added and the one i
 So any change done on prototype properties of any child instance will reflect over that instance only not on their other sibling.
 So After overriding you will see somthing like below :
 
-	1.	em2.name				>> 'Mufa'
-	2.	em2['name']				>> 'Mufa'
+	1.	em2.name							>> 'Mufa'
+	2.	em2['name']						>> 'Mufa'
 	3.	em2.__proto__.name		>> 'No name'
-	1.	em1.name				>> 'No name'
-	2.	em1['name']				>> 'No name'
+	1.	em1.name							>> 'No name'
+	2.	em1['name']						>> 'No name'
 	3.	em1.__proto__.name		>> 'No name'
-	1.	em3.name				>> 'No name'
-	2.	em3['name']				>> 'No name'
+	1.	em3.name							>> 'No name'
+	2.	em3['name']						>> 'No name'
 	3.	em3.__proto__.name		>> 'No name'
-	1.	personObj.name			>> 'No name'
-	2.  personObj['name']		>> 'No name'
+	1.	personObj.name				>> 'No name'
+	2.  personObj['name']			>> 'No name'
 	
 
 Now but do remember one thing if you change the value in 'personObj' itself then this change will reflect at everywhere in __proto__. but not on overrided one
 	personObj.name = "Changed one"
 Then:
-	1.	em2.name				>> 'Mufa'
-	2.	em2['name']				>> 'Mufa'
+	1.	em2.name							>> 'Mufa'
+	2.	em2['name']						>> 'Mufa'
 	3.	em2.__proto__.name		>> 'Changed one'
-	1.	em1.name				>> 'Changed one'
-	2.	em1['name']				>> 'Changed one'
+	1.	em1.name							>> 'Changed one'
+	2.	em1['name']						>> 'Changed one'
 	3.	em1.__proto__.name		>> 'Changed one'
-	1.	em3.name				>> 'Changed one'
-	2.	em3['name']				>> 'Changed one'
+	1.	em3.name							>> 'Changed one'
+	2.	em3['name']						>> 'Changed one'
 	3.	em3.__proto__.name		>> 'Changed one'
-	1.	personObj.name			>> 'Changed one'
-	2.  personObj['name']		>> 'Changed one'
+	1.	personObj.name				>> 'Changed one'
+	2.  personObj['name']			>> 'Changed one'
 	
 Also observe: setName() is function of 'Person', if you call it with 'Employee' instance also it possible but 
 chnges will not reflect actual inherited 'personobj' but it will be overrided on new property on child instance.
@@ -153,10 +153,10 @@ If you call emp1.name or emp2.name etc to READ.
 	if he find any property in emp1.__proto__ with name 'name' then return it
 	If not then it will repeate the same process with   emp1.__proto__.__proto__
 	This process repeate till we reached Object class as __proto__
-	If he finally find it then fine othertwise give error 'undefined'
-	
+	If he finally find it then fine othertwise give error 'undefined'	
 	
 --------
+
 Now remember by default all the object no matter how it created 
 var obj = {} 	OR 		new Object()  	OR   	new Person()
 they all have default prototype as an empty object'{}' and this empty object hase __proto__ as 'Object' instance of object class
@@ -186,33 +186,33 @@ So Remeber:
 So after
 	Employee.prototype.name = 'risky way';
 	
-	1.	em2.name				>> 'Mufa'
-	2.	em2['name']				>> 'Mufa'
+	1.	em2.name							>> 'Mufa'
+	2.	em2['name']						>> 'Mufa'
 	3.	em2.__proto__.name		>> 'risky way'
-	1.	em1.name				>> 'risky way'
-	2.	em1['name']				>> 'risky way'
+	1.	em1.name							>> 'risky way'
+	2.	em1['name']						>> 'risky way'
 	3.	em1.__proto__.name		>> 'risky way'
-	1.	em3.name				>> 'risky way'
-	2.	em3['name']				>> 'risky way'
+	1.	em3.name							>> 'risky way'
+	2.	em3['name']						>> 'risky way'
 	3.	em3.__proto__.name		>> 'risky way'
-	1.	personObj.name			>> 'risky way'
-	2.  personObj['name']		>> 'risky way'
+	1.	personObj.name				>> 'risky way'
+	2.  personObj['name']			>> 'risky way'
 	
 -----------
 
-with the prototype you can add aproperty in in instace and it will be available to others too:
+with the prototype you can add a property in instace and it will be available to others too:
 	Employee.prototype.sapId = 'sap4561285';
 Now:
-	1.	em2.sapId				>> 'sap4561285'
-	2.	em2['sapId']			>> 'sap4561285'
+	1.	em2.sapId							>> 'sap4561285'
+	2.	em2['sapId']					>> 'sap4561285'
 	3.	em2.__proto__.sapId		>> 'sap4561285'
-	1.	em1.sapId				>> 'sap4561285'
-	2.	em1['sapId']			>> 'sap4561285'
+	1.	em1.sapId							>> 'sap4561285'
+	2.	em1['sapId']					>> 'sap4561285'
 	3.	em1.__proto__.sapId		>> 'sap4561285'
-	1.	em3.sapId				>> 'sap4561285'
-	2.	em3['sapId']			>> 'sap4561285'
+	1.	em3.sapId							>> 'sap4561285'
+	2.	em3['sapId']					>> 'sap4561285'
 	3.	em3.__proto__.sapId		>> 'sap4561285'
-	1.	personObj.sapId			>> 'sap4561285'
+	1.	personObj.sapId				>> 'sap4561285'
 	2.  personObj['sapId']		>> 'sap4561285'
 	
 ---------
@@ -230,33 +230,33 @@ As of now person is extending an empty object instance so after this it will add
 									
 Also this propert 'income' now also availble to all its child via __proto__
 
-	1.	em2.income							>> '100'
-	2.	em2['income']						>> '100'
+	1.	em2.income												>> '100'
+	2.	em2['income']											>> '100'
 	3.	em2.__proto__.__proto__.income		>> '100'
-	1.	em1.income							>> '100'
-	2.	em1['income']						>> '100'
+	1.	em1.income												>> '100'
+	2.	em1['income']											>> '100'
 	3.	em1.__proto__.__proto__.income		>> '100'
-	1.	em3.income							>> '100'
-	2.	em3['income']						>> '100'
+	1.	em3.income												>> '100'
+	2.	em3['income']											>> '100'
 	3.	em3.__proto__.__proto__.income		>> '100'
-	1.	personObj.income					>> '100'
-	2.  personObj['income']					>> '100'
+	1.	personObj.income									>> '100'
+	2.  personObj['income']								>> '100'
 
 Now suposse if i change 
 	em2.income	= 900;
 In this case 'em2' will have a new perameter of same name in its object but the one in prototype will remain same.
 
-	1.	em2.income							>> '900'
-	2.	em2['income']						>> '100'
+	1.	em2.income												>> '900'
+	2.	em2['income']											>> '100'
 	3.	em2.__proto__.__proto__.income		>> '100'
-	1.	em1.income							>> '100'
-	2.	em1['income']						>> '100'
+	1.	em1.income												>> '100'
+	2.	em1['income']											>> '100'
 	3.	em1.__proto__.__proto__.income		>> '100'
-	1.	em3.income							>> '100'
-	2.	em3['income']						>> '100'
+	1.	em3.income												>> '100'
+	2.	em3['income']											>> '100'
 	3.	em3.__proto__.__proto__.income		>> '100'
-	1.	personObj.income					>> '100'
-	2.  personObj['income']					>> '100'
+	1.	personObj.income									>> '100'
+	2.  personObj['income']								>> '100'
 	
 ----------
 
@@ -289,17 +289,17 @@ IMP __proto__ point to the pointer so any change here will reflect everywhere (e
 If you change like this
 	em1.__proto__.name = 'dddd'
 
-	1.	em2.name				>> 'Mufa'
-	2.	em2['name']				>> 'Mufa'
+	1.	em2.name							>> 'Mufa'
+	2.	em2['name']						>> 'Mufa'
 	3.	em2.__proto__.name		>> 'dddd'
-	1.	em1.name				>> 'dddd'
-	2.	em1['name']				>> 'dddd'
+	1.	em1.name							>> 'dddd'
+	2.	em1['name']						>> 'dddd'
 	3.	em1.__proto__.name		>> 'dddd'
-	1.	em3.name				>> 'dddd'
-	2.	em3['name']				>> 'dddd'
+	1.	em3.name							>> 'dddd'
+	2.	em3['name']						>> 'dddd'
 	3.	em3.__proto__.name		>> 'dddd'
-	1.	personObj.name			>> 'dddd'
-	2.  personObj['name']		>> 'dddd'
+	1.	personObj.name				>> 'dddd'
+	2.  personObj['name']			>> 'dddd'
 
 	
 So Remeber: 
@@ -315,16 +315,16 @@ If you are inside the constructor of any class, you can also add the prototype t
 Actully this one will have same effect as 
 	em2/em1/em3.__proto__.secrtId = 'sId';
 
-	1.	em2.secrtId					>> 'sId'
-	2.	em2['secrtId']				>> 'sId'
+	1.	em2.secrtId							>> 'sId'
+	2.	em2['secrtId']					>> 'sId'
 	3.	em2.__proto__.secrtId		>> 'sId'
-	1.	em1.secrtId					>> 'sId'
-	2.	em1['secrtId']				>> 'sId'
+	1.	em1.secrtId							>> 'sId'
+	2.	em1['secrtId']					>> 'sId'
 	3.	em1.__proto__.secrtId		>> 'sId'
-	1.	em3.secrtId					>> 'sId'
-	2.	em3['secrtId']				>> 'sId'
+	1.	em3.secrtId							>> 'sId'
+	2.	em3['secrtId']					>> 'sId'
 	3.	em3.__proto__.secrtId		>> 'sId'
-	1.	personObj.secrtId			>> 'sId'
+	1.	personObj.secrtId				>> 'sId'
 	2.  personObj['secrtId']		>> 'sId'
 ---------
 
@@ -355,13 +355,13 @@ Because here 'this.name' is available to all the child but 'this.eid' is not, 't
 
 SO 
 
-	1.	em2.printInfo()					>> empmuf -- Mufa
+	1.	em2.printInfo()							>> empmuf -- Mufa
 	3.	em2.__proto__.printInfo()		>> empmuf -- Mufa
-	1.	em1.printInfo()					>> empmuf -- dddd
+	1.	em1.printInfo()							>> empmuf -- dddd
 	3.	em1.__proto__.printInfo()		>> empmuf -- dddd
-	1.	em3.printInfo()					>> empmuf -- dddd
+	1.	em3.printInfo()							>> empmuf -- dddd
 	3.	em3.__proto__.printInfo()		>> empmuf -- dddd
-	1.	personObj.printInfo()			>> undefined -- dddd
+	1.	personObj.printInfo()				>> undefined -- dddd
 	
 ---------
 Above discussed inheritence is used lesser time, most of the time it is done with 'Object.create'
@@ -404,26 +404,26 @@ For better view see in 'proto.docx' and observe ::
 
 If you change 'incodme by 'Person.prototype.income' or 'person.__proto__.income' the change will apear everyehere.
 	Person.prototype.income = '3454'	OR    person.__proto__.income = '3454'
-	1.	em2.income					>>3454
+	1.	em2.income							>>3454
 	3.	em2.__proto__.income		>>3454
-	1.	em1.income					>>3454
+	1.	em1.income							>>3454
 	3.	em1.__proto__.income		>>3454
-	1.	em3.income					>>3454
+	1.	em3.income							>>3454
 	3.	em3.__proto__.income		>>3454
-	1.	personObj.income			>>3454
+	1.	personObj.income				>>3454
 
 If you change 'income' ny 'Employee.prototype.income' or 'em1/em2/em3.__proto__.income' then a new perameter of same name 'income' will be created in 
 Employee.prototype as 'Employee.prototype.income' OR 'em1/em2/em3.__proto__.income'. 
 But 'Person.prototype.income' OR person.__proto__.income OR em1/em2/em3.__proto__.__proto__.income remain same as '5978'
 	Employee.prototype.income = '85269'	OR    Employee.__proto__.income = '85269'
-	1.	em2.income							>>85269
-	3.	em2.__proto__.income				>>85269
-	3.	em2.__proto__.__proto__.income		>>5978
-	1.	em1.income							>>85269
-	3.	em1.__proto__.income				>>85269
-	1.	em3.income							>>85269
-	3.	em3.__proto__.income				>>85269
-	1.	personObj.income					>>5978
+	1.	em2.income													>>85269
+	3.	em2.__proto__.income								>>85269
+	3.	em2.__proto__.__proto__.income			>>5978
+	1.	em1.income													>>85269
+	3.	em1.__proto__.income								>>85269
+	1.	em3.income													>>85269
+	3.	em3.__proto__.income								>>85269
+	1.	personObj.income										>>5978
 	
 Object.create also accept the second perameter also:
 
@@ -435,16 +435,16 @@ Now pass it in 'Object.create'
 	Employee.prototype = Object.create(Person.prototype, parr);
 
 Now check:
-	1.	em2.pocHr					>> 'sima'
-	2.	em2['pocHr']				>> 'sima'
+	1.	em2.pocHr								>> 'sima'
+	2.	em2['pocHr']						>> 'sima'
 	3.	em2.__proto__.pocHr			>> 'sima'
-	1.	em1.pocHr					>> 'sima'
-	2.	em1['pocHr']				>> 'sima'
+	1.	em1.pocHr								>> 'sima'
+	2.	em1['pocHr']						>> 'sima'
 	3.	em1.__proto__.pocHr			>> 'sima'
-	1.	em3.pocHr					>> 'sima'
-	2.	em3['pocHr']				>> 'sima'
+	1.	em3.pocHr								>> 'sima'
+	2.	em3['pocHr']						>> 'sima'
 	3.	em3.__proto__.pocHr			>> 'sima'
-	1.	personObj.pocHr				>> undefined
+	1.	personObj.pocHr					>> undefined
 	2.  personObj['pocHr']			>> undefined
 	
 All the object of 'Employee' will 
@@ -460,16 +460,16 @@ Then only you can change its value.
 Also if you change the value it will create the new value of same key in the 'Employee' object, It does not change anything in the origanal vaue.
 So after em2.pocHr = 'tina'
 
-	1.	em2.pocHr					>> 'tina'
-	2.	em2['pocHr']				>> 'tina'
+	1.	em2.pocHr								>> 'tina'
+	2.	em2['pocHr']						>> 'tina'
 	3.	em2.__proto__.pocHr			>> 'sima'
-	1.	em1.pocHr					>> 'sima'
-	2.	em1['pocHr']				>> 'sima'
+	1.	em1.pocHr								>> 'sima'
+	2.	em1['pocHr']						>> 'sima'
 	3.	em1.__proto__.pocHr			>> 'sima'
-	1.	em3.pocHr					>> 'sima'
-	2.	em3['pocHr']				>> 'sima'
+	1.	em3.pocHr								>> 'sima'
+	2.	em3['pocHr']						>> 'sima'
 	3.	em3.__proto__.pocHr			>> 'sima'
-	1.	personObj.pocHr				>> undefined
+	1.	personObj.pocHr					>> undefined
 	2.  personObj['pocHr']			>> undefined
 	
 ---------
@@ -490,32 +490,29 @@ Employee.prototype.__proto__ === e1/e2/e3.__proto__.__proto__ === Person.prototy
 If you do 
 	Person.prototype.comp = 'Acc'
 It will do: 
-	p1/p2/p3 >> {name: 'muf/hus/sha'} __proto__ >> 										{comp: Acc}
+	p1/p2/p3 >> {name: 'muf/hus/sha'} __proto__ >> Object {comp: Acc}
 	e1/e2/e3 >> {eId:  '111/222/333'} __proto__ >> ep{pocHr: 'sima'} >> __proto__ >> 	{comp: Acc}
 	
 ::	a single 'Person.prototype' object is '__proto__/prototype' of all the object of 'Person' class.
 ::	a single 'ep' object is '__proto__/prototype' of all the object of 'Employee' class and '__proto__' of 'ep' is 'Person.prototype'
 ::	In both of the line '{comp: Acc}' refer to same object which is shared among them 
 
-
-
 	
 If you do 
 	Employee.prototype.isSap = true; 	OR		e1/e2/e3.__proto__.isSap = true;		OR 		ep.isSap = true;	
 It will do: 
-	p1/p2/p3 >> {name: 'muf/hus/sha'} __proto__ >> Object										  {comp: Acc}
-	e1/e2/e3 >> {eId:  '111/222/333'} __proto__ >> ep{pocHr: 'sima', isSap: true} >> __proto__ >> {comp: Acc} 
+	p1/p2/p3 >> {name: 'muf/hus/sha'} __proto__ >> Object {comp: Acc}
+	e1/e2/e3 >> {eId:  '111/222/333'} __proto__ >> ep {pocHr: 'sima', isSap: true} >> __proto__ >> {comp: Acc} 
 	
 ::	'Employee.prototype' OR 'e1/e2/e3.__proto__' point to '__proto__/prototype' of 'Employee' class not of 'Person' class.
-		So it will change the 'prototype' of 'Employee' not 'Person'
-	
+		So it will change the 'prototype' of 'Employee' not 'Person'	
 	
 	
 If you do 
 	Employee.prototype.isSap = false; 	OR		e1/e2/e3.__proto__.isSap = false;		OR 		ep.isSap = false;	
 It will do: 	
-	p1/p2/p3 >> {name: 'muf/hus/sha'} __proto__ >> Object										   {comp: Acc}
-	e1/e2/e3 >> {eId:  '111/222/333'} __proto__ >> ep{pocHr: 'sima', isSap: false} >> __proto__ >> {comp: Acc} 
+	p1/p2/p3 >> {name: 'muf/hus/sha'} __proto__ >> Object										   											{comp: Acc}
+	e1/e2/e3 >> {eId:  '111/222/333'} __proto__ >> ep{pocHr: 'sima', isSap: false} >> __proto__ >>  {comp: Acc} 
 	
 ::	'Employee.prototype' OR 'e1/e2/e3.__proto__' point to '__proto__/prototype' of 'Employee' class not of 'Person' class.
 		So it will change the 'prototype' of 'Employee' not 'Person'	
@@ -527,9 +524,9 @@ It will do:
 If you do 
 	e1.isSap = yes;
 It will do: 	
-	p1/p2/p3 >> {name: 'muf/hus/sha'}		 		__proto__ >> Object										     {comp: Acc}
-	e1		 >> {eId:  '111/222/333', isSap: yes} 	__proto__ >> ep{pocHr: 'sima', isSap: false} >> __proto__ >> {comp: Acc} 
-	   e2/e3 >> {eId:  '111/222/333'} 				__proto__ >> ep{pocHr: 'sima', isSap: false} >> __proto__ >> {comp: Acc} 
+	p1/p2/p3 	>> {name: 'muf/hus/sha'}		 	__proto__ >> Object {comp: Acc}
+	e1				>> {eId: '111', isSap: yes} 	__proto__ >> ep{pocHr: 'sima', isSap: false} >> __proto__ >> {comp: Acc} 
+	   e2/e3 	>> {eId: '222/333'} 					__proto__ >> ep{pocHr: 'sima', isSap: false} >> __proto__ >> {comp: Acc} 
 
 ::	whenever you do any WRITABLE opertaion on the property which are also prsent in 'prototype' through 'object.' (Not by Employee.prtotype. or obj.__proto__.)	   
 	then it will not change the propery in '__proto__' in tead it will create a new one in the object itself, and keep the one in '__proto__/prototype' intact
@@ -538,10 +535,10 @@ It will do:
 	
 	
 If you do 
-	Person.prototype.comp = 'TCS';	 			OR		p1/p2/p3.__proto__.comp = Tcs;		Or		
-	e1/e2/e3.__proto__.__proto__.comp = Tcs;	Or		Employee.prototype.__proto__.comp = Tcs;
+	Person.prototype.comp 						= 'TCS';	OR		p1/p2/p3.__proto__.comp 					= Tcs;		Or		
+	e1/e2/e3.__proto__.__proto__.comp = 'Tcs';	OR		Employee.prototype.__proto__.comp = Tcs;
 It will do: 	
-	p1/p2/p3 >> {name: 'muf/hus/sha'} __proto__ >> Object										   {comp: Tcs}
+	p1/p2/p3 >> {name: 'muf/hus/sha'} __proto__ >> Object {comp: Tcs}
 	e1/e2/e3 >> {eId:  '111/222/333'} __proto__ >> ep{pocHr: 'sima', isSap: false} >> __proto__ >> {comp: Tcs} 
 
 ::	'Person.prototype' or 'p1/p2/p3.__proto__' or 'e1/e2/e3.__proto__.__proto__.comp'
@@ -552,7 +549,7 @@ It will do:
 If you do 
 	Employee.prototype.comp = 'Infy';	OR		e1/e2/e3.__proto__.comp = Infy;
 It will do: 	
-	p1/p2/p3 >> {name: 'muf/hus/sha'} __proto__ >> Object										   			   {comp: Acc}
+	p1/p2/p3 >> {name: 'muf/hus/sha'} __proto__ >> Object {comp: Acc}
 	e1/e2/e3 >> {eId:  '111/222/333'} __proto__ >> ep{pocHr: 'sima', isSap: false, comp: Infy} >> __proto__ >> {comp: Acc}
 	
 ::	'Employee.prototype' or 'e1/e2/e3.__proto__' will always point to the same object which is prototype of 'Employee' class. so it will change 'Employee.prototype'	
@@ -562,8 +559,8 @@ It will do:
 If you do 
 	person.comp = cogni;
 It will do: 	
-	p1/p2/p3 >> {name: 'muf/hus/sha', comp: cogni} 	__proto__ >> Object										   			     {comp: Acc}
-	e1/e2/e3 >> {eId:  '111/222/333'} 				__proto__ >> ep{pocHr: 'sima', isSap: false, comp: Infy} >> __proto__ >> {comp: Acc}
+	p1/p2/p3 >> {name: 'muf/hus/sha', comp: cogni} 	__proto__ >> Object {comp: Acc}
+	e1/e2/e3 >> {eId:  '111/222/333'} 							__proto__ >> ep{pocHr: 'sima', isSap: false, comp: Infy} >> __proto__ >> {comp: Acc}
 
 ::	read 'POINT123' below
 

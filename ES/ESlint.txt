@@ -1,0 +1,219 @@
+
+As the Js grow and added the new flavoured js too, it is become very difficult to identify the common error or comon unnnecessay code 
+So a new technology evolved to just remove such kind of error and mistakes.
+For the ES falvour the one of most used is ESlint
+Its goal is to find out common error and mistakes in code.
+It is highly confogurable. Ypu can ask the eslint to throw, warn or ignore any kind of such mistakes.
+ESlint first parse the code then evalutaes sentexes to see the error pattern.
+ESLint uses Espree parser for JavaScript parsing.
+
+How it works-
+You have to set uop couple of thing to work it properly
+You must and must need a eslint installed on your node module, this is the platform for doing all the linting test.
+	npm install eslint --save-dev
+Now your platform is ready to use.
+Here you have a eslint reday for you, but now you have to instruct and guid it for what to do and how.
+Now to instruct it properly create a .eslintrc  near package.json
+Giving the instruction is bit od complex lets dive in it-
+For this you have to set the rule object in that file, which will have a long list of rule to instruct the eslint for how to behave if that 
+rule is violated.
+EG:
+	"rules": {
+        "semi": ["error", "always"],
+        "quotes": ["error", "double"]
+    }
+You can provide the long list of such rule in the file adn if set properly then it will make your code very uniformed.
+The first value in array could ne 'off'/0, 'warn'/1, 'error'/3.
+This will decide that vioation of this rule should nbe taken as one of three.
+semi:> it instruct that there should be a semicolon at the end of each statement, otherwise lint will throw error.
+As you know there could be may such syntexual scenarion could come, for each such senarion you ca set the bahvior rule for lint
+For complete liast go to - https://eslint.org/docs/rules/
+
+Now problem is:
+You have lot of such rule and it is stupidity to set all of them every time for each project in the universe.
+So ESlint collect them all and provide a complete set of that rule in 'eslint:recommended'
+To use collection of that rulesyou should use extends tag in eslintrc file
+So we will remove above two rule and add extends.
+	{
+		extends: 'eslint:recommended',
+		rules: {}
+	}
+This will enable all the rule that are listed with right-sign icon on left on https://eslint.org/docs/rules/
+If you wants additonal rule then add them also 
+EG: 'indent' rule on ' https://eslint.org/docs/rules/' is not included on 'eslint:recommended' so add it as-
+	{
+		extends: 'eslint:recommended',
+		rules: {
+		 "indent": ["error", 4],
+		}
+	}
+Now you have installed the eslint and set it up with instruction.
+lets play them all together-
+careate one file somwhere in your project and put the code in it
+	eslinttester.js>>
+	var t = 0
+Now test it with eslint-
+	node .\node_modules\eslint\bin\eslint .\src\modules\mod1\eslinttester.js
+You will see the result-
+	-->>   1:5  error  't' is assigned a value but never used  no-unused-vars
+This is because 'eslint:recommended' add this rule. see the list on  https://eslint.org/docs/rules/.
+semicolon rule is not by default added in eslint:recommended so lets add it by ourself
+	{
+		extends: 'eslint:recommended',
+		rules: {
+		 "indent": ["error", 4],  "semi": ["error", "always"], 
+		}
+	}
+Now if you run the lint, then you will get two error-
+	1:5   error  't' is assigned a value but never used  no-unused-vars
+	1:10  error  Missing semicolon                       semi
+You can modify existint rule also
+	{
+		extends: 'eslint:recommended',
+		rules: {
+		 "indent": ["error", 4],  "semi": ["error", "always"], "no-unused-vars": ["warn"]
+		}
+	}
+Now output be-
+  1:5   warning  't' is assigned a value but never used  no-unused-vars
+  1:10  error    Missing semicolon                       semi
+
+console if by default give error in lint if 'eslint:recommended' is used, so at development time add this in rule-
+	no-console: ["off"]
+  
+>> To run on complete directory us-
+	node .\node_modules\eslint\bin\eslint .\src\modules\mod1\**.js
+  
+Eslint and global variable:-
+You know that js now work on lot of things like you can run it on browser, node, backend, shelljs, nashorn. jest, ES6, JQuery etc.
+Now they all have some of the global variable on it
+EG: browser has window, document, console.
+JQuery have $
+node has process.
+But ESlint by himself not aware of this. So you have to tell him about the enviorment in .eslintrc by-
+  "env": { "browser": true, "node": true },
+If you do not do it then ypu will get error on uses of any such global variable
+EG: 
+ console.log()-->
+ 2:3   error  'console' is not defined                      no-undef
+  
+ESLint + ES6:-
+  ES6 now contains many new syntexes which are not supported by Espree parser of ESlint. So we need to use the 
+  advance parser for this that is 'babel-eslint'. this parser support all the ES6 syntex that babel also support.
+  This parser is widely use for lintung ES6 code. 
+  First install it
+	npm i --save-Dev babel-eslint;
+  If you are using the ES6 in your code then you have mention it in .eslintrc as following
+  {
+	"parser": "babel-eslint",
+    "parserOptions": {"ecmaVersion": 6, "sourceType": "module",},		>> to enable export/import + ES6 feature
+    "env": {"es6": true, "browser": true, "node":    true,},   			>> to set enviorment of ES6
+    "extends": ["eslint:recommended", ],    
+    "rules": {....}
+ }
+For detail abouth each one go to 'http://www.zsoltnagy.eu/use-eslint-like-a-pro-with-es6-and-react/'
+If you do not set the above one properly for ES6 then you will get error on-
+	var fun = () => {};
+
+ESLint + ES6 + React:-
+For this you have to use eslint-plugin-react.
+first install it 	npm install eslint-plugin-react	
+now set couple of thing in .eslintrc
+{
+	"parser": "babel-eslint",				--> So that we can parse the advance ES6 syntaxes
+    "plugins": ["react"],					--> tell ESlint about this plugin, You can remove the prefix 'eslint-plugin-*'
+    "parserOptions": {
+        "ecmaVersion": 6,
+        "sourceType": "module",
+        "ecmaFeatures": { "jsx": true }		--> becoz react use the JSX
+    },
+    "env": {
+        "es6":     true,
+        "browser": true,
+        "node":    true,
+		"jquery": true,
+    },   
+    "extends": [
+        "eslint:recommended", 
+        "plugin:react/recommended"			--> This will lot of rule related to react and JSX
+    ],    
+    "rules": {
+    }
+}
+
+ESlint in projevt:-
+best way to run the selint in project is to define the script in package.json:
+	scripts: {
+		lint: "ESlint src/**/*.js src/**/*.jsx"
+		lintFix: "ESlint src/**/*.js src/**/*.jsx --fix"
+		build: "npm run lint && npm run webpack"
+	}
+
+Lint and fix :>
+Above we see how the ESlint examine the code then find violation and finally report those violation.
+But it is more smart than you think, It can even fix those violation in the source codeIt will actully change the source code that developer write 
+and fix some of such violation.
+But do remember that it can not fix all the violation, only some of very easy and basic things it can take care of.
+EG:
+	it can fix unexpected indent, missing semicolon, unwanted spaces and tabs.
+	But it wont fix uses of console, unused variable etc.
+To enable auto fix you have to pass --fix in command line.
+So if you run this command-
+	node .\node_modules\eslint\bin\eslint .\src\modules\mod1\eslinttester.js --fix
+It will change source code of developer, and remove possible violation. (not all)	
+
+VVVIMP:>
+babel VS ESLint-
+babel transpile and generate a complete new code for building
+ESLint examine the code of developer, find violation, do possibe fixes it in the same code, finally give report about violation But unlike
+		babel it do not generate new source code.
+		
+ 
+Enable/Disable ESLint: 
+You can enable or disable the ESlint on a specific part of code simpaly by adding a appropiate comment-
+	/* eslint-disable */
+	debugger;
+	/* eslint-enable */
+After this ESLint will not give any error for vioalation of rule.
+You can even specify the specific rule to be violated-
+	/* eslint-disable no-debugger */
+	debugger;
+	/* eslint-enable no-debugger */
+ 
+
+Customized global variable:-
+Many time through build process in webpack you add the enviorment specific variable, which will be converted to string after webpack processing
+[see webpack.DefinePlugin(...)]
+But ESlint do not understand it. becoz ESlint has to run before the babel to get the violation in development code.
+So Eslint will ive error-
+	
+	in webpack.config.js-
+		new webpack.DefinePlugin({'env': 'DEV'}); 
+	in source js-
+		if(env === 'DEV') ....
+This will give error by ESlint-
+	error    'env' is not defined             no-undef
+You can simpaly ignore the ESlint by- 	  
+	/* eslint-disable */
+	if(env === 'DEV') ....
+	/* eslint-enable */	
+Remeber after the babel it will be converted to 	if('DEV' === 'DEV') ....
+You can intimate the ESlint about the global varibale prsent in the code by simpally adding this line in the code-
+	/* global env, reg */
+Generally the global are never change, and if you wants ESLint to observe such violation you can pass boolean to allow/disallow changes in global
+	/* global env: false, reg: true */
+
+You can also specify it in .eslintrc
+	"globals": {
+        "env": true,
+        "reg": false
+    }
+	
+-------
+Webpact + Eslint
+You can run the lint directly through the command 'eslint' or you can run it in webpack phase.
+For this use 'ESlint-loader' 
+just apply it before any transpiler like 'babel-loader'/'typescript-loader'
+Do remember to apply it before babel, not after because you need to analyze orignal code for violation not the generated one.
+For more detail-
+	https://github.com/webpack-contrib/eslint-loader

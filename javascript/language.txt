@@ -1,0 +1,225 @@
+Variable Hoisting: 
+	All the variable declare with 'var' at any line in function block, it will inherentaly be defined at the top:
+	Whenever or wherever the variable declare with 'var' in the function, it will automatically defined at the top of function.
+	This is true for even ifvaraible is declared in the loop or if block.
+	
+		fun() {
+			console.log(x)	undefined
+			var x = 5;
+			console.log(x)	5
+		}	
+		
+		fun() {
+			console.log(x)							// undefined, no error
+			if(false) { var x = 5; }
+		}
+		
+	
+	Hoisting in ES6 let/const:-
+		let and const also follow the Hoist guidline, but they are hoisted at block level not function level.
+			function fun() {
+				console.log(ll);					-----------> undefined
+				let ll = 7;
+				console.log(ll);					-------------> 4 7
+			}
+			
+			function fun() {
+				console.log(ll, vv);						-----------> Red Error, undefined
+				if/else/for() {
+					console.log(ll, vv);					-----------> undefined undefined
+					let ll = 7;		
+					var vv = 8;
+				}
+			}		
+			
+		--
+		For for loop index param, Scope of var leak outside for loop bt for let it does not.																		
+																						var					let
+			console.log(x)											undefined			Error
+			for(var/let x = 1-9; ...) {			
+				console.log(x)										1,2...				1,2,...
+				setTimeout(()=>c.l(x), 1000)			9,9,9...			1,2,...
+			}			
+			console.log(x)											9							Error
+			
+----------------------------------
+
+Use variable without declaring:-
+	For imported js:	
+		It will gives an error in 'red' color in console.
+			fun() {
+				console.log(x)			// It will also gives an error in 'red' color in console.
+				x = 5;		
+			}
+		But It will Not gives an error in 'red' color in console.
+			fun() {
+				console.log(x)			// It will not gives an error in 'red' color in console.
+				x = 5;
+				var x;							// if u declare it after use that is hoisting simply! dont confuse much
+			}
+	For included js:	
+		With 'use strict':
+			It will throw red error in console
+		Without 'use strict':
+			that variable will become an global variable [part od window object]	
+-------------------------------------------------
+
+use strict:
+		This is used to restrict some very irratinal and possibly-buggy behaviour JS
+		>	'use strict' should always come at top of function or file
+		>	It most importantly prevent the accidental declaration of global variable
+		>	Today most of the JS work in 'use strict' mode.
+		>	If you put 'use strict' at the top of js then all the js will become 'use strict'
+		>	It was supported from ES5
+		>	Es6 and ES5 has all the code in 'use strict' mode.		
+		> It doesn't apply to block statements enclosed in {} braces; attempting to apply it to such contexts does nothing
+		
+		It give you immunity against:-
+			1. Preventng accidental global variable	
+						If js is in 'use strict' then any such below code will throw error. 
+							fm = 'muf';			
+							function() { fv = 'hus';		}					
+						without 'use strict', if this file is at root of html then fm and fv will become a global variable.
+			2. Common param not allowed   	fn(p1, p1) {...}
+			3. Common key not allowed 			{	k1: '', k1: ''}
+			4. Leading 0 not allowed				var kk = 09; 
+			
+	use script + Hoisting:
+		use strict is not impacted by hoisting at all, below code will behave same due to hoisting no matter its in 'use script' or not.
+			fm = 'muf';			No error, because varaiable declared at later stage
+			function() {
+				fv = 'hus';		No error, because varaiable declared at later stage
+				var fv;
+			}
+			var fm;			
+				
+---------------------------------------------------
+
+typeOf operator: 
+	it return the string value of what kind of primitive that variable is; it could only return the one of below 6 value.
+		var vv =  val
+		console.log(typeOf vv)
+		
+			val				Return
+		<------------------------------->
+			true						"boolean"
+			"er"						"String"
+			3								"Number"
+			{..}						"Object"
+			[..]						"Object"
+			undefined				"undefined"
+			null						"Object"
+			$('header1')		"Object"
+			()=>{}					"function"
+
+---------------------------------		
+instanceof:
+	this is used to find if the object created with any specific constructor, it return true/false
+	if you have a object as-
+		var per = new Person(..)
+		then you can do-
+		per instanceof Person			-> true
+		per instanceof Car				-> false
+		per instanceof Object	  	-> true
+	It basically go down to __proto__ chain of object and see the per.__proto__.constructor/per.constructor has the exact same value or not.
+	Also it may be possible that in __proto__ chain multiple constructor may exist.
+	None of the primitive have any constructor attached to it so for all possible below cases ->
+		"muf"/5/null/undefined/3.4   instanceof  Object/Number/Array/Person/String  
+	The return value will be false for sure.
+	For String	
+		var ll = "muf"								ll instanceof String -> false
+		var kk = new String("hus")		kk instanceof String -> true	
+	Becoz the first one is simplay a primitive string, the next one is a String object and so has kk.__proto__.constructor in its proto chain.
+	Interstingly in __proto__ chain of kk, you will also found __proto__.__proto__.__proto__.constructor = Object
+	So below one will also give true
+		kk instanceof Object -> true	
+	But ll still give false 
+		ll instanceof Object -> false
+		{} instanceof Object -> true
+	Array-
+		[].instanceof Array -> true
+		[].instanceof Object -> true
+		
+	properly test the string->
+		typeof str === 'string' || str instanceof String
+		
+	
+	function Person() {}
+	var pp = new Person()
+	Employe.prototype = Object.create(Person.prototype)
+	emp = new Employe()
+	
+	pp instanceof Person			true
+	pp instanceof Object			true
+	pp instanceof Array				false
+	emp instanceof Employe		true
+	emp instanceof Person			true
+	pp instanceof Employe			false
+
+------------------------------------------------					
+
+Higher Order Funtion:-
+	This is the function which return another function with some mutation:-
+	
+			const getPrefixdCurr = (val, carr) => {
+				return val + carr
+			}
+			const getSpecificCurConv = (converterFunction, carr) => {		---> This is Higher Order function
+				return (val) => {
+					converterFunction(val, carr)
+				}
+			}	
+			const myIndCurrConv = getSpecificCurConv(getPrefixdCurr, "R")
+			myIndCurrConv(23)  -> 23R
+			
+--------------------------------------------------
+
+Special for loop:-
+	for..in : 
+		This will loop all the emurable property in the object itself and also in its __proto__ chian.
+			for (var k in emp) {
+				console.log(emp[k]);
+			}	
+		This will ptint all the emurable property in 'emp' as well as all the emurable property into the __proto__ chain of 'emp'
+		if proprty is a function that will also get looped in it.
+
+	for..of:
+		This loop is useful iterable type of object like Array, map, set.
+		e.g.:
+			var arr = [123, 5, 7895]
+			for(let vv of arr) {...vv...}  //123, 5, 7895
+
+	for..of VS for..in:
+		for..of is used for iterable item like Array, Map, Set.
+			for(let v of arr/Object.keys(obj)/set.values()/map.enteries()) {....}
+		for..in used for object not for iterable
+			for(let v in obj) {...}
+		
+		for..of with object: 
+			for(let v of obj) {...} // will give error 'obj[Symbol.iterator] is not a function'
+		for..in with iterable-array
+			for(let v in arr) {...}	// here v will be 0 1 2 3.. so the indexes of array
+
+---------------------------------------------------
+function variable (1) VS fnction expression (2): 
+
+	var fnVar = function() {...}
+	function fnExp() {...}
+	
+	fnVar will be avialble only after the exection is passed through this line.
+	fnExp will be avialble in the complete parant block, either declare before or after use.
+
+			function officer () {
+				console.log( fnExp(), fnVar() );								fnExp undefined
+				
+				var fnVar = function () { return "fnVar"; };		
+				function fnExp() { return "fnExp"; }						
+				
+				console.log( fnExp(), fnVar() );								fnExp fnVar			
+			}
+-----------------------------------------------------
+
+Immediately Invoked Function Expression  (IIFE)
+	(() => console.log('IIFE'))();
+	(function ffff() {console.log('IIFE ffff')})()
+The complete function defenation must be proparly wraped inside brackaet, otherwise no call take place			

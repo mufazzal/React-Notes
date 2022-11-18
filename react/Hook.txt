@@ -1,0 +1,300 @@
+React.useEffect(() =>  { console.log('in the effect') }, [])				===		componentDidMount			===		call after first render only
+React.useEffect(() =>  { console.log('in the effect') })						===		componentDidUpdate		===		call after every render
+React.useEffect(() =>  { console.log('in the effect') }, [x, y])		===		componentDidUpdate ?	===		call after render if value of x or y has neen change
+React.useEffect(() =>  { console.log('in the effect') 
+															return () => {}												===		componentWillUnmount 	===		call once component is destroyed
+											 }, [x, y])		
+
+	- if any props or state is chaged then. render is called first and then the effect is called.
+	- in depedency arrauythe comparision happen between values in earlier call of effect with current values in array. 
+			not with values in earlier call of effect with values in lasr render.
+
+
+Clean Up function:-
+	In the return of useEffect fucntion you can return another funtion which is work as cleaner for that effect.
+	The clean up function is called after the render but before the effect.
+	Once render is finished, All the clean up function call one by one and then all the effects will be called.
+	
+	Ex:-
+		React.useEffect(() => {
+			console.log('just for fun -')
+			return () => {
+				console.log('CLEAN UP just for fun -')
+			}
+		})
+	
+	Clean up is called in two scenario:-
+		1. Whenever effect is schedule to call either due to dependency array changes or if no dependency at all.
+		2. After the final render when component is unmounting.
+		
+	Use case of clean up:-
+		1. If you have subscribe to any API or process or started any process in the effect then you can undo it in clean up
+		
+					React.useEffect(() => {
+						const subId = API.subscribeForNews()
+						return () => {
+							API.unSubscribeForNews(subId)
+						}
+					})		
+		
+		2. If you have subscribe to any API or process or started any process based of any values in dependency array 
+				then you can undo that too. and later in effect it will be redo again based on new values.
+				
+					React.useEffect(() => {
+						const subId = API.subscribeForNews(st, props.pr)
+						return () => {
+							API.unSubscribeForNews(subId)
+						}
+					}, [st, props.pr])		
+				
+	calling state setter in clean up:-
+		You should avoid doint this because clean up also get called after final render when component has been unmounted.
+		So it will give memoryLeak error.
+
+------------------
+		
+Cycle of render, Effect and Clean up:-
+
+	At first render:-
+		First render[with inital values] ---> All the effect
+	If dependency array of any effect changed
+		render[with new values] --> Clean ups	of impacted effects in sequence of their registration --> Impacted effect in sequence of their registration
+	Component unmounting:-
+		Final render[with current values] -> All the clean ups
+	
+	
+Multiple use effect and order of thier call:-
+
+    1. React.useEffect(() => {	print('1')		}		return ()=>{ print('c1') }							)
+    2. React.useEffect(() => {	print('2')		}, 	return ()=>{ print('c2') }		[ ]				)
+    3. React.useEffect(() => {	print('3')		},	return ()=>{ print('c3') }		[mySt]		)
+    4. React.useEffect(() => {	print('4')		},	return ()=>{ print('c4') }		['C']			)
+		
+		in the begining order will be 
+		R -> c1 -> c2 -> c3 -> c4 -> 1 -> 2 -> 3 -> 4
+		
+		if you do the setMySt(mySt+1)
+		R -> c1 -> c3 -> 1 -> 3
+		
+		if you update any state or props which not in depependency array EG. setMyRandomVar(4) or parent change any non dependency props
+		R -> c1 -> 1
+		
+		If component is unmounted
+		R -> c1 -> c2 -> c3 -> c4
+		
+		-> the use effect callbacks are always called in order the were registered.
+		-> all the Hook, who are registered WITHOUT ANY 		depependency array will be called after EVERY render												
+						Mimic:  componentDidUpdate
+		-> all the Hook, who are registered WITH EMPTY  		depependency array will be called after FIRST render only										
+						Mimic:	componentDidMount
+		-> all the Hook, who are registered WITH NON-EMPTY  depependency array will be called after render if dependency array cahnges.	
+						Mimic: componentDidUpdate[prevDArray != newDArray]
+		
+		-> all the Hook clean up, who are registered WITHOUT ANY 	depependency array will be called after EVERY render
+						Mimic:  componentDidUpdate
+		-> all the Hook clean up, who are registered WITH EMPTY  	depependency array will be called after LAST render before component unmount only.
+						Mimic:  componentDidUnMount
+		-> all the Hook, who are registered WITH NON-EMPTY  			depependency array will be called 
+																																- after render if dependency array changed
+																																			Mimic: componentDidUpdate[prevDArray != newDArray]
+																																- after LAST render before component unmount.
+																																			Mimic:  componentDidUnMount
+		
+		
+		The functuion passed in useEffect is called after the render finish:-
+			myCom = () => {
+				console.log('11111111111111111111')    
+						React.useEffet(()=> {
+								console.log('iiiiiiiiinnnnnnnnn')
+						}, [a, b, c])
+				console.log('2222222222222222222')    			
+			}
+			
+			output:-
+				11111111111111111111
+				2222222222222222222		
+				iiiiiiiiinnnnnnnnn			[assume that dependency array is chnaged]
+		
+------------
+
+useEffect andInfinite calling:-
+
+	SC1:
+				const [myVar, setMyVar] = React.useState({})
+				useEffect(()=> { .. setMyVar() .. }) 
+					this cloud generate infinite render and useEffect call because the effect is called after eack render and it will call the setMyVar 
+					which in turn do the render again and then useEffecct is called again and it keep going on.
+					So take care and have proper 'if' condition wrapped around 'setMyVar()'  
+			
+				
+	SC2:
+			const [myVar, setMyVar] = React.useState({})
+			useEffect(()=> { .. setMyVar() .. }, [myVar])
+				this cloud generate infinite render and useEffect call because in each useEffect 'setMyVar' is called to change the 'myVar' 
+				which in turn do the render again and then useEffecct is called again.
+				So take care and have proper 'if' condition wrapped around 'setMyVar()'  
+	
+	SC3:	
+			useEffect(()=> { .. dispatch({actType: 'setCount', {payload}}) .. }, [props.count]) 
+			This could leads to infinit or mutiple call because the affaect is called if there is change in props.count.
+			now this effect will call the action that will chage reducer of count so in turn to do a fresh render and call the effect again.
+			and it keep going on.
+			So take care and have proper 'if' condition wrapped around 'setMyVar()'  
+			
+	SC4:
+				useEffect(()=> { .. setMyVar() .. }, []) 
+					this will work fine. and will not generate the infinite call. because effect is called once only and in it the sate is set.
+					Though it will call a render again {only once} for setMyVar only.				
+	SC5		useEffect(()=> { .. setMyVar() .. }, [otherVar])				
+					This will also work fine because the effect will be called only for 'otherVar' changes. and once its called it will change the myVar to.
+					Now it will call the render again {only once} for 'setMyVar' but after this render the effect is not been called as otherVar will remain same.
+		
+-------------		
+
+useCallBack and useMemo :-
+	see below function component
+	
+		const MyComp = () => {
+			
+			const myExpensiveVar = getMyExpensiveVar()
+			const myfun = () => { ... }
+			
+			return <> ... <>
+		}
+	Now whenever the component is re-rendered, it will always call 'getMyExpensiveVar' and re-create(not call) the function 'myfun'
+	Now issue here is that this will be happening in allthe render even if it is not necessary.
+	To avoid this comes a useMemo and usCallback.
+	useMemo is used for memorizing the variable and useCallBack is to memorizinf the function.
+	
+	useMemo:
+		const myExpensiveVar = useMemo( () => {getMyExpensiveVar()}, [props.mm, tt])
+		
+		it take the two argument 
+			function: 				this is the fucntion that will be called to get the value of varaile in question(myExpensiveVar)
+			dependency array: this is the list of variable whose value can impact the result of 'getMyExpensiveVar'
+		useMemo make sure that function (getMyExpensiveVar) will only be called if any item in its dependecy array changes.
+		the return value could be from memorized cache(if dep array remain same) or newly avaluated value from passed function (if dep array changed)
+		It run the inner function(if required) asynchronously in same event loop.
+		
+			myCom = () => {
+				console.log('11111111111111111111')    
+						const expensiveValue = React.useMemo(()=> {
+								console.log('iiiiiiiiinnnnnnnnn')
+								return a * b * c
+						}, [a, b, c])
+				console.log('2222222222222222222')    			
+			}
+			
+			output:-
+				11111111111111111111
+				iiiiiiiiinnnnnnnnn			[assume that dependency array is chnaged]
+				2222222222222222222
+				
+		IMP:
+			You should never do the asynch operation in the useMemo function. because this function do execute[if depedency changes] 
+			in the render lifecycle itself, So it can cause UI to hang and long delay in render.
+			Also unlike useEffect it return the value immediatly.
+				
+		useEffect VS useMemo:-
+			useMemo in some sense like a useEffect, this is called in the render but unlike useEffect it return some value immediatly.
+			but useMemo run the passed funtion in asychronously in the same event loop, wherhes useeffect run the function asynchronously after event loop finish.
+			
+	
+		useCallback:-
+			This is almost same as useMemo, but instead of returning the value it return the refrence of function.
+			y this you can avoid to reacreation of function every time the component is rendered. The function will be created only 
+			if any element dependency array changes.
+			EG:-
+			
+			myComp = () => {
+				...
+				const myfun = useCallback(() => {
+					setNumber(number + 1)
+				}, [number])			
+				...
+			}
+			here 'myfun' is not s value but a refrence to inner fincion. 
+				
+
+-------------
+useContext:-
+	This is used to implement the context api in the app.
+	This make use very simple as you will not need to deal with render props.
+	
+	Creating context:-
+			import React from 'react';
+			const authContext = React.createContext({status:null,login:()=>{}});
+			export default AuthContext;	
+	Injecting on top:-
+			import AuthContext from "./auth-context";
+      <AuthContext.Provider value={{ status: authstatus, login: login }}>
+        <App />
+      </AuthContext.Provider>			
+	Using it:-
+			import React, { useContext } from "react";
+			import AuthContext from "./auth-context";	
+			...
+			const auth = useContext(AuthContext);
+			console.log(auth.status);			
+		
+			
+-------------
+
+useState:-
+	const [id, setId] = React.useState<number>(0)
+	Create a localized state varibale and make sure that render is called after each calling of 'setOrderDetail'
+	
+	Immutability in useState:-
+		if your state is an object like below then you must make sure that in setter finction of state you pass the new object of state
+		const [orderDetail, setOrderDetail] = React.useState<Object>({})
+		in set order detail you can do:-
+		setOrderDetail({...orderDetail, newItem: mm})
+	
+	Updating state based on previous state:-
+		There is two way
+		1. Use the currebt state directly to drive the new state and then set it 
+				const [callCounter, setCallCounter] = React.useState<number>(0)
+				setCallCounter(callCounter+ 1)
+			Issue here is that the value of callCounter could not be the latest one and you end up using the older value of callCouner instead of current one.
+			So this could lead to wrong value of new callCounter.
+		2. Use the function	in setter of state:
+				setCallCounter((prevCounter: number) => { return prevCounter + 1})
+				also
+				setOrderDetail(prevOrderDetail => {
+					...prevOrderDetail,
+					new: updated,
+				})
+			here the value of prevCounter will surely be the current one.
+			
+	
+useReducer:-
+	This is alterbnative to useState, but comples and work like redux reducer. you have pass the reducer function and intialstate.
+	also instated of setter it gives you dispatch
+	Here the state is indeed local but its manuplation seems like a redux.
+	
+		function reducer(state, action) {
+			console.log(action.payload)
+			switch (action.type) {
+				case 'increment': return {count: state.count + 1};
+				case 'decrement': return {count: state.count - 1};
+			}
+		}		
+		const [state, dispatch] = useReducer(reducer, {count: 0});
+
+		return ...<button onClick={() => dispatch({type: 'decrement' OR 'increment', payload: "__payload__" })} ...
+		
+
+
+
+
+
+
+
+	
+		
+
+
+
+---------
+useEffect -> This run asynchronussly and so do not block the UI
+useLayoutEffect -> This run synchronussly and so do block the UI

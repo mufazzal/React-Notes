@@ -1,0 +1,144 @@
+Hoisting:
+	var, let, const declaration are hoisted to top of function. even they are u=in any conditional block too.
+	'use strict' do not chnage any behaviour of hoisting.	
+
+variable used without declaration:
+		in imported js root level:  		red error
+		in imported js function level:  red error
+		in included js root level:  		goes in global, window [if 'use strinct' is not used otherwise red error]
+		in included js function level:  considerd as undefined. but no red error [if 'use strinct' is not used otherwise red error]
+		
+	x=5	
+		in imported js root level:  		red error
+		in imported js function level:  red error
+		in included js root level:  		goes in global, window [if 'use strinct' is not used otherwise red error]
+		in included js function level:  initialized in global, window context [if 'use strinct' is not used otherwise red error]
+		
+	in included.js
+		ff() {
+				xxxxx=9;						----> goes in global, window [if 'use strinct' is not used otherwise red error]
+				var yyyyyy=10				----> goes in function clousure
+		}
+	in included.js
+		ff() {
+				xxxxx=9;						----> red error
+				var yyyyyy=10				----> goes in function clousure
+		}			
+	
+Scope
+		index.html>>
+			<script> ...JS content... </script>
+			<script src="./index.js"> </script>
+				...JS content... >>	
+						var gvInHtml = 'gvInHtmlMuf';				---------|
+						gvInHtmlDir = 'gvInHtmlDirMuf';			---------|
+						fn() { vv = "vv"}										---------|	
+																												 |
+				index.js >>																			 |---------> all are global 
+																												 |
+					var gvInLjs = 'gvInLjsMuf';						---------|
+					gvInLjsDir = 'gvInLjsDirMuf'; 				---------|
+					fn() { vv = "vv"}											---------|
+instanceOf: 
+	look for all the constructor in prototype chain. return true or false, 
+	instanceOf do not work on primitive
+		muf instaceOf Employee 		-> true
+		muf instaceOf Person 			-> true
+		muf instaceOf Object 			-> true
+		muf instaceOf Array 			-> false
+		""/5/true instaceOf <any>	-> alway false 
+		
+typeof: simply a type of the element. not detail about the specifi to the constructor level.
+		typeOf muf				--> Object
+		typeOf []					--> Object
+		typeOf ""/5/true	--> string, number, boolean
+		
+		
+for of VS for in vs forEach
+		of: used for iterable like array, map
+		in: used for object like muf, emp etc. iterate all key in self and in protp chain.
+		Object.keys(muf).forEach():	use for iterating key only direct child of muf object not in its proto chain
+		
+== 	-> both are converted to number and then compared
+===	-> both are compared as it is	
+
+'hus' && 'muf'	 -> muf
+'hus' || 'muf'	 -> hus
+
+
+({className, children}: {className: string, children: any}) => {}		--> Correct
+({className: any, children: any}) => {}															--> In Correct
+
+
+Varoable declaration
+IN JS >>  without keyword, var
+IN Es6 >>  let, const, var, [not possible without keyword]
+
+
+
+function onlyFunction(color) { console.log(this); }
+	Now what 'this' will give in console?
+
+	it depends on the way it called
+
+	onlyFunction('red')  																			//	undefined
+	var ff = new onlyFunction('red')  												//	newly created Object of 'onlyFunction' class
+	vat fBinded = onlyFunction.bind({a:'a'});  fBinded(); 		//	{a: 'a'}, because now it will represent the binded object
+
+
+-----------------
+
+babel:-
+	add polyfill
+	es6 to es5
+	support many plugin for transformation
+	with webpack use babel-loaded
+	specify browser list to make suur to polyfill for older browser. 
+		IMP: bundle size vary significaltlly if you include lot of old browser.
+	
+ES6 
+	let const
+	lexical this and lambda
+	set and map
+	spread operator
+	string interpolation
+	
+
+Class vs function+Hook:-
+	In calss you have more tooling in term of flow, due to diffrent lifecycle methode but this is more complex and you have to take care of many thing
+	like	
+		- biding the functions for 'this'
+		- take care of the state as whole immutable object
+	In Hook	
+		- no worry about bind
+		- immutability is less compllest as you can have mutile state object instated only one.
+		- code can be reused by custom hook
+	Generally we start with dunb fuctional component and later if it more functional then we have convert it to class
+	but with hook its no longet needed.
+
+
+----
+
+spread :-
+	The most basic thing it do is to create a SHALLOW copy.
+	but with some smart trick you can do many operations on Array and Object like
+	1. concat muntipele array
+	2. add new item in array
+	3. create new array with some items removed.
+	4. add new key or update a key in object
+
+
+----------
+Reducing bundle size:-
+	code spliting
+	set proper browser list for babel with 'browserslist'
+	run webpack in production
+	use plugins like cssMin**, TesterPlugin.
+	use   import {ff} from '..'   intead of   impot ddd from '..'
+	use tree shaking and import from independed component [for antd us 'antd/es/button' no 'antd']
+	use plugin like contextReplaceMentPlugin to remove some specific module from node_modules
+	
+	
+
+		
+		

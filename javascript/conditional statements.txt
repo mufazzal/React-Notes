@@ -1,0 +1,125 @@
+
+Conversion of object/primitive to Number:-
+
+	lets see how all the things are converted to number in JS:
+	conversion of somethng to a number:
+		true   	>> 1
+		false  	>> 0
+		'muff'	>> 2343533
+		'true'	>> 45345
+		'false'	>> 32354
+		'1'			>> 1
+		'343'		>> 343
+		''			>> 0
+		{..}		>> 8409324649
+		
+Equality check: 
+	Both side are same type:-
+		If both side are of same type then == or === do not make any deiffrence.
+		
+			{name: 'muf'}			==/===  	{name: 'muf'}			false/false		-> becoz an object is always checked via refrence
+			'muf'  						==/===  	'muf'							true/true			-> becoz primitive always compared via content
+			'muf'  						==/===  	'hus'							false/false		-> becoz primitive always compared via content
+			 2 								==/===  	 2								true/true			-> becoz primitive always compared via content
+			'2'								==/===  	'2'								true/true			-> becoz primitive always compared via content
+			 2 + ''						==/===  	'2'								true/true			-> becoz primitive always compared via content
+	
+	
+	loose check: ==
+		In loose check both the oprand will be converted to same type, it doesnt matter who is in LHS and who is in RHS:
+		after convesion it do the === check on converted value.	
+		String VS Number:	
+			String will be converted to number		
+													:		'2'			== 	2				-->>	2 		=== 2		true	
+													:		'' 			== 	0				-->>	0 		=== 0		true	
+													:		'sf' 		== 	23			-->>	4542 	=== 23	false	
+		String VS Boolean:	
+			Both will be converted to number		
+													:		'true' 	== 	true		-->>	85481 === 1		false					
+													:		'false' == 	false		-->>	85483 === 0		false
+													:		'1' 		== 	true		-->>		1 	=== 1		true
+													:		'0' 		== 	false		-->>		0 	=== 0		true
+													:		'' 			== 	false		-->>		0 	=== 0		true
+													:		'45' 		== 	true		-->>		45 	=== 1		false
+		Number VS Boolean:	
+			Boolean will be converted to number		
+													:		1 	== true 				-->>	1 	=== 1			true
+													:		12 	== true 				-->>	12 	=== 1			false
+													:		0		== false 				-->>	0 	=== 0			true
+													:		12 	== false 				-->>	12	=== 0			false
+													
+													:		null 				== '0'/0/1/'12'/''/true/false 	-->		false
+													:		undefined 	== '0'/0/1/'12'/''/true/false 	-->		false
+													:		null 				==  undefined										--> 	true
+													:		null 				=== undefined										--> 	false
+		Object VS Anything 
+			for == and === it will check the refrence not a coontent if refrence is same then only it will gice true. otherwise false always.		
+		
+	strong check:-
+		if you do the === then conversion will not occure and things are check as it is
+		
+			''			=== false 	false
+			'zz' 		=== true 		false
+			'true' 	=== true		false			
+			
+
+	primitive comparision:-
+		Comparison of two primitive always happen on content basis:
+			var a = 'muf'/3/true; 
+			var b = 'muf'/3/true; 
+			a == 	b  -> true
+			a === b  -> true
+			
+		But for primitive Object its by refrence not content.
+			new String('3') 	==/==			'3'								false/false
+			new String('3')		==/==			new String('3')		false/false		-> becoz an object is always checked via refrence			
+			
+-----------
+
+if expression: 
+	if(expression) { 'suc' } else { 'unsuc' }
+	Or
+	expression ? 'suc' : 'unsuc'
+	
+		in 'if(expression)' expression is converted to the boolean if the derived value is 'false' then 'unsuc' otherwise 'suc'
+		see the conversion table above for conversion of anything to the boolean
+			
+			true   			>> true			>>	suc
+			false				>> false		>>	unsuc
+			'muff'			>> true			>>	suc
+			'true'			>> true			>>	suc
+			'false'			>> true			>>	suc
+			'1'					>> true			>>	suc
+			'0'					>> true			>>	suc
+			'343'				>> true			>>	suc
+			''					>> false		>>	unsuc
+			{..}				>> true			>>	suc
+			0						>> false		>>	unsuc
+			1						>> true			>>	suc
+			456					>> true			>>	suc
+			-458				>> true			>>	suc
+			-1					>> true			>>	suc
+			null				>> false		>>	unsuc
+			undefined		>> false		>>	unsuc
+			'mu'.indexOf('hus') => -1			>> true			>>	suc
+			
+		if('0') alert('sf')	// this will do give alert	
+		if( 0 ) alert('sf')	// this will not give alert	
+--------------------
+
+#REFSHORTCUR
+Short cuircuit statement :-
+	This are the series of true and false. once at any point series got the confidence of either true or false, that value will be return.
+			   
+			   1st	  2nd
+	var mv = true  && 'muf'		
+			-> it will give 'muf' becoz first is true the AND so next has also need to check for result. and so whatever come in secone, that will be result
+	var mv = false && 'muf'		
+			-> give false, becoz if first is false with AND then result of AND is 100% false. so need to go to second one and just return the value of first one
+	var mv = true  || 'muf'		
+			-> it will give true becoz if first ir true with OR then result will surely be true. so need to go to second one and just return the value of first one
+	var mv = 'hus' || 'muf'		
+			-> it will give 'hus' 
+	var mv = 'hus' && 'muf'		
+			-> it will give 'muf' 
+-----------

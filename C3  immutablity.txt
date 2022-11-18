@@ -27,9 +27,9 @@ we will try to do al the thing with ES6 spread operator, but if it is not possib
 Note:
 spread operator and key as variable
 	var varName = 'myKey';
-	{...ar, myKey: 'mufa'} 					// will add the key 'myKey'
-	{...ar, 'myKey': 'mufa'} 				// will add the key 'myKey'
-	{...ar, varName: 'mufa'} 				// will add the key 'varName'
+	{...ar, myKey: 'mufa'} 						// will add the key 'myKey'
+	{...ar, 'myKey': 'mufa'} 					// will add the key 'myKey'
+	{...ar, varName: 'mufa'} 					// will add the key 'varName'
 	{...ar, [varName]: 'mufa'} 				// will add the key 'myKey'
 		
 #s1	
@@ -78,10 +78,10 @@ Object- {}----------------------------------------------------------------------
 		
 	add:				{ ...obj, 'comp': 'Acc', [bikeKey]: 'hondas', id: 30}
 	
-	remove:				var {place, 				...objc} = obj;		OR 		-removed item obj.place will be assign in variable name place.
-						var {place: 	 redundant,	...objc} = obj;		OR		-removed item obj.place will be assign in variable name redundant.
-						var {'place': 	 redundant,	...objc} = obj;		OR		-removed item obj.place will be assign in variable name redundant.
-						var {[myplacek]: redundant, ...objc} = obj;				-removed item obj.place will be assign in variable name redundant.
+	remove:		var {place, 									...objc} = obj;		OR 		-removed item obj.place will be assign in variable name place.
+						var {place: 	 	 redundant,		...objc} = obj;		OR		-removed item obj.place will be assign in variable name redundant.
+						var {'place': 	 redundant,		...objc} = obj;		OR		-removed item obj.place will be assign in variable name redundant.
+						var {[myplacek]: redundant, 	...objc} = obj;					-removed item obj.place will be assign in variable name redundant.
 	
 	change:				{ ...obj, place: 'Pune'}
 	

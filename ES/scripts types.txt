@@ -1,0 +1,88 @@
+Story of Javascript:-
+Java script is the languane that is evelving each moment, its expansion and usbility have imcrease multifold.
+Now we have more than 20+ browser on mobile nand PC both.
+The pace of enhancement in JS is so fast that no single browser able to match with pace of JS.
+
+This create two major problem:-
+
+1.	Now javascript itself is evelving as a core, like today javascript have advance feature like Promise, fetch, canvas and many thing.
+	The browse may or may not support those advance feature. so there are uncertainity for those feature in diffrent browser.
+
+2.	Now we have many flavoured javascript in the market like:-
+		ES6
+		JSX
+		Typescript
+		Coffescript
+	The problem is each of this flavour contain enhanced syntaxes.
+	The browse may or may not support those advance syntexes. The uncertainty is so high that it may be possible the a one broswer may supoort 
+	some syntex of those script and not other of that same script.
+	
+This two problem increase so much that finally JS community have to sit and decide how to handle this mess.
+
+They come up with graet solution-
+for 1:	For this the solution is that, we will create a lib that will give backward compatibility for all the enhanced features for all the prowser
+		This approch is called polyfill.
+		with polyfill we do not have to worry about the that what advance feature like Promise/fetch etc. will support which browser.
+		polyfil will take care of all of those gaps.
+		Here is the lib:-<script src="https://cdn.polyfill.io/v2/polyfill.min.js"></script>
+		
+for 2:	There may  be many flavour of javascript in future which make the syntaxes more easy, agile and advance.
+		No matter what flavour it is, how the new syntext look like, In the end we will compile that in PLAIN JavaScript code. 
+		We will remove all this advance shit and compile the code to normap plain JS.
+
+		
+ECMAScript:-
+One of the most used flavour of javascript is 'ECMAScript'
+Timeline of ES-
+	ES1 to ES4					-		1997 to 2009
+	ES5							-		-		2009					strict mode, string.trim() etc.
+	ES 2015 / ES6				-		2015					let, const etc. 
+	ES 2016 / ES7				-		2016
+	ES 2017 / ES8				-		2017
+
+***Perhaps the cause for all of your confusion begins here. You see, ES6 and ES2015 are the same thing.***	
+	
+TypeScript:-
+	This is also very much in use.
+	
+shimming->
+   shim is a abstrsact term, it is a technology to add new or missing behavior to old or legacy technology.
+   Polyfill is also a one kind of shim, it is specifically designed shim to add new js feature in old web browser.
+
+Polyfier:
+	there are many polyfill libs prsent to add the missing feature and api of advance JS in older browser.
+
+	
+ 
+-------------------------------------------------------------------------------------------------------------
+Javascript: 
+
+Coffescript:
+
+BabalScript:
+
+
+
+
+Es6:
+
+BabalScript
+
+
+MAin advatage of ES6 is that it add the class syntax
+
+
+
+Diffrent flavour of the javascript may or may not be supported by diffrent browser, even some browser can support some feature of some flavour of those scripts.
+So to write a code that run on all browser is hell of the task. 
+EG:-
+IE not at all support any ES6 synyex.
+But Chrome support fat arow '=>' But do not support 'class'
+
+To handle all of this shit, is to best thing to convert all the code in the simple javascript.
+But who will do thisWelcome BABEL.
+
+Babel-
+Babel is a JavaScript transpiler that converts edge JavaScript into plain old ES5 JavaScript that can run in any browser (even the old ones).
+It makes available all the syntactical sugar that was added to JavaScript with the new ES6 specification, including classes, fat arrows and multiline strings.
+

@@ -1,5 +1,5 @@
 One of the most prominent feature added in advance javascript is Promise.
-This change the wy of coding in Js dramitaically
+This change the way of coding in Js dramitaically
 Though it is very aadvance and many js browse and enviormrnt yet to adpt this feature but this can be used any browser or enviorment
 with properly setup polyfill. Polyfill is not in scope of out study, we will focus on Promise.
 
@@ -8,28 +8,28 @@ Technically it is simple jsvascript object.
 Its behavior make him distiguish.
 
 Why it comes in picture - 
-This come as strong alternative of callback feature, that make nesting function nightmare.
-Ease of executing the asynch task(s) ->
-1.	If you have many asynch task(eg web service, timeout) to run one after another and they all should be run in exact sequence after pass/fail of its predecessor
-	then callback pattern become very confusing as lot of braces will come there.
-	but running in series becom easy and intutive with Promise 
-2.	If you need to run many asynchtask together(but not necessrily in certain sequence) and then need to do processing of all the result together
-	In this case managing typical callback pattern is hell.
-	but running in paraller becom easy and intutive with Promise
-Ease of handling the asynch task(s) result ->
-3.	in callback you attach a callback handler function to each asynch task, but with promise you have a option to attach the diffrent handler to 
-	each of asynch task or a single handler to for the group of asynch task, though it is possible with callback too, but its hell difficult.
-4.	No matter you executed 1 or more than one asynch task either in parraler or in series, the way to handle the result will always be simillar
-	(if not same), In callback each way need special care.
-5.	You can attach a single result-handler to group of asynch task(running in series or in paraller)  	 
-6.	You can attach the diffrent result-handler to each asynch task(running in series or in paraller) 	
-Ease of handling the asynch task(s) exception ->
-7.	No matter you executed 1 or more than one asynch task either in parraler or in series, the way to handle the exception will always be simillar
-	(if not same), In callback each way need special care.
-8.	You can attach a single exception-handler to group of asynch task(running in series or in paraller)  	 
-9.	You can attach the diffrent exception-handler to each asynch task(running in series or in paraller) 	
-Ease of handlinf synch\asynch task-
-10.	If you have a task that could be conditinally synch or asynch then managing callback for both cases ver very tricky. but with promise its too easy.
+	This come as strong alternative of callback feature, that make nesting function nightmare.
+		Ease of executing the asynch task(s) ->
+			1.	If you have many asynch task(eg web service, timeout) to run one after another and they all should be run in exact sequence 
+					after pass/fail of its 	predecessor then callback pattern become very confusing as lot of braces will come there.
+					but running in series becom easy and intutive with Promise 
+			2.	If you need to run many asynchtask together(but not necessrily in certain sequence) and then need to do processing of all the result together
+					In this case managing typical callback pattern is hell.
+					but running in paraller becom easy and intutive with Promise
+		Ease of handling the asynch task(s) result ->
+			3.	in callback you attach a callback handler function to each asynch task, but with promise you have a option to attach the diffrent handler to 
+					each of asynch task or a single handler to for the group of asynch task, though it is possible with callback too, but its hell difficult.
+			4.	No matter you executed 1 or more than one asynch task either in parraler or in series, the way to handle the result will always be simillar
+					(if not same), In callback each way need special care.
+			5.	You can attach a single result-handler to group of asynch task(running in series or in paraller)  	 
+			6.	You can attach the diffrent result-handler to each asynch task(running in series or in paraller) 	
+		Ease of handling the asynch task(s) exception ->
+			7.	No matter you executed 1 or more than one asynch task either in parraler or in series, the way to handle the exception will always be simillar
+					(if not same), In callback each way need special care.
+			8.	You can attach a single exception-handler to group of asynch task(running in series or in paraller)  	 
+			9.	You can attach the diffrent exception-handler to each asynch task(running in series or in paraller) 	
+		Ease of handlinf synch\asynch task-
+			10.	If you have a task that could be conditinally synch or asynch then managing callback for both cases ver very tricky. but with promise its too easy.
 
 To solve all this ise JS introduces Promise.
 Promise is a object that run an executor in it, and later point of time produce the either one of two result.
@@ -60,10 +60,11 @@ This code open lot of mistry upon Promise-
 	finally 'Point B' will be printed
 	So you see here all thing run in synchronus way, executor itsef is in synch. 
 	So Promise in itself is completely synch, if you want to have a asynch behavior then you must add code for that. 
+	
 Also if you print the prm with  console.log(prm) after libe LINEP2 then you will get below-
-
 	[[PromiseStatus]]: "pending"
 	[[PromiseValue]]: undefined
+
 This will tell you that, the promise in in pending state and so promisevalue remain undefined.
 
 	
@@ -100,15 +101,12 @@ In that case only the first one who is executed will be conside rest of them, ev
 
 
 When is the body of a Promise executed? 
-
-  
-
-Immediately, yes, by specification.
-From the official MDN:
-The executor function is executed immediately by the Promise implementation, passing resolve and reject functions (the executor is called before the Promise constructor even returns the created object).
-Promise functionality is written isn such a way that, when you create a Promise instance and pass the executor in it, that executor
-will run immediatly. All the code of of Executor will be ran, along with calling of resolve() and reject() in it.
-Now when you call the resole()/reject() in executor function body, the promise changes its state form pending to resolve/reject.
+	Immediately, yes, by specification.
+	From the official MDN:
+	The executor function is executed immediately by the Promise implementation, passing resolve and reject functions (the executor is called before the Promise constructor even returns the created object).
+	Promise functionality is written isn such a way that, when you create a Promise instance and pass the executor in it, that executor
+	will run immediatly. All the code of of Executor will be ran, along with calling of resolve() and reject() in it.
+	Now when you call the resole()/reject() in executor function body, the promise changes its state form pending to resolve/reject.
 
   var myPrm = new Promise( (resolve, reject) => {resolve('res msg') / reject('rej msg')  });
 
@@ -533,13 +531,13 @@ Once all of then have called their resove or reject function and so set their st
 fucntion will be executed.
 Now how this block will be executed, this depends on what all the promises executed produced as a result
 1.	If all of the promises are resolved then, the resolve-handler of .then() block will be called.
-	Also the value injected in that resolve-handler will be an array of resolve messages which are passed in resolve methode of respective promise.
-	the size and order of array is same as size and order of promises passed in .all() function
+		Also the value injected in that resolve-handler will be an array of resolve messages which are passed in resolve methode of respective promise.
+		the size and order of array is same as size and order of promises passed in .all() function
 2.	If any single of them is rejected then, the reject-handler will be called. 
-	Also the value injected in that reject-handler will be an a rejection message passed in reject fuction of failed promise.
-	When any single of promise is rejected then, the .all() will be considered as rejected immediatly and .then() block will be executed with reject-hadler.
-	but it does not mean that it will not execute other promises, it will execute all the promises till the end but there result will not be considred 
-	in the reject-hadler callback of .then() block for .all().
+		Also the value injected in that reject-handler will be an a rejection message passed in reject fuction of failed promise.
+		When any single of promise is rejected then, the .all() will be considered as rejected immediatly and .then() block will be executed with reject-hadler.
+		but it does not mean that it will not execute other promises, it will execute all the promises till the end but there result will not be considred 
+		in the reject-hadler callback of .then() block for .all().
 	
 	Actully Promis.all([...]) says->
 	If all the promises ar resolved then i am resolved and provide you sucess message for each one.
@@ -627,7 +625,6 @@ Output-
 	Forth Promise begin-
 	Fifth Promise begin-
 	Point B
-	<evnt-loop finish;3 sec wait>
 	resolves >>  (3) ["First Promise", "Second Promise", "Fifth Promise Resolved"]
 	<evnt-loop finish>
 	Forth Promise finished
@@ -842,7 +839,7 @@ Promise.resolve('I am resolver Promise')                                        
              >> in reject - I am Promise
 
 #REFSNI
-Promise.reject('I am Promise')
+Promise.resolve('I am Promise')						//DIRECT_RE
 .then(res=>console.log('in resolve T1 - ' + res), rej=>console.log('in reject T1- ' + rej))
 .then(res=>console.log('in resolve - ' + res), rej=>console.log('in reject - ' + rej));
 
@@ -850,10 +847,10 @@ Promise.reject('I am Promise')
     Here the promise is resolved, the immediate .then() will handle if its resolve-handler, As resolve-handler is returning nothing so resolve-handler will return a resolver promise again.
       output >> in resolve T1 - I am Promise
                 in resolve - undefined
-2.  Change EMPTYTHENLINE1 to Promise.reject('I am Promise')
+2.  Change DIRECT_RE to Promise.reject('I am Promise')
     Here the promise is rejected, the immediate .then() will handle it in its rejet-handler, As rejet-handler is returning nothing so rejet-handler will return a resolver promise again.
              >>  in reject T1 - I am Promise
-                 in resolve - undefib=ned
+                 in resolve - undefined
 
 Promise.reject/resolve('I am Promise')
 .then(()=>{}, ()=>{})

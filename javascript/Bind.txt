@@ -1,14 +1,12 @@
 To understan the bind first lets remember some JS notes: 
 
 1.	any js which is in the script tag or linked directly in html doc, by default has a this. === window
-	meaning everything declared at root level is actully a global variabale and lie in window object.
-	and all the call happen at root level actully happen inside window context.
-
+			meaning everything declared at root level is actully a global variabale and lie in window object.
+			and all the call happen at root level actully happen inside window context.
 2.	In any imported file, at root level there is no context so 'this.' will alwqays be undefined there.
-
 3.	By default 'this.' reprsent the context from which the function is called.
-
-4.	homeObjLitr.printName   VS    homeObjLitr.printName()  :  The first one is refrence of methode 'printName' later one is actual call of this methode
+4.	homeObjLitr.printName   VS    homeObjLitr.printName()  :  
+			The first one is refrence of methode 'printName' later one is actual call of this methode
 
 -------
 
@@ -59,7 +57,7 @@ In this calling 'this.' will refer to 'homeObjLitr' not 'homeObj'.
 	var homeObj = new Home('muf');			
 	homeObj.printName();				// Muf [this >> homeObj]
 	var bindedMethoed = homeObj.printName.bind(homeObjLitr);
-	bindedMethoed();					// Sha [this >> homeObjLitr]
+	bindedMethoed();						// Sha [this >> homeObjLitr]
 
 When you call 
 	homeObj.printName();
@@ -80,7 +78,7 @@ api.js>>
 	}
 	methodeRfHolder()  			// this will give Error - 'this' is undefined 
 	var methodebinded = methodeRfHolder.bind(homeObjLitr);			
-	methodebinded();			// sha
+	methodebinded();				// sha
 
 ----------
 api.js >>
@@ -90,11 +88,11 @@ the call of 'fnm()' happen without any context. because in imported file 'this.'
 So if you have used 'this.' inside 'fnm' then it will throw error surely. otherwise it will work fine.
 
 	function fnm() {console.log(this.name)}
-	fnm();		// Throw error
+	fnm();									// Throw error
 	But
 	var obj = {name: 'mufa'}
 	function fnm() {console.log(this.name)}
-	fnm.bind(obj)();		// will work fine
+	fnm.bind(obj)();				// will work fine
 	
 --------
 
@@ -119,7 +117,7 @@ In the second one 'decMember' is member function of 'muf'.
 But in first one 'decBinded' is not a member methode of 'muf'.
 But both  of them will run in the context of muf.
 way of calling will be diffrent -	
-	decBinded()   //From decBinded >> Mufazzal
+	decBinded()   		//From decBinded >> Mufazzal
 	muf.decMember()   //From decMember >> Mufazzal
 If you try something like below, it will give error: 
 	muf.decBinded()  //  muf.decBinded is not a function
@@ -151,7 +149,7 @@ E.g. :
 			this.inVHomeByThis = 'inVHomeByThis' 
 		}
 		var vHomeBind = vHome.bind(this);
-		vHome();								//	This will give error when called 'this.' is undefined
+		vHome();									//	This will give error when called 'this.' is undefined
 		vHomeBind();							//	This will work fine
 	}
 Simillarly bind will change the behaviour of vRoom, vMemberIntHome. There also u will be able to declare variable with 'this.' and call/access
@@ -162,7 +160,7 @@ and
 	this.invMemberIntHomeByThis = 'invMemberIntHomeByThis';
 in respective function.
 
-bind also change the behaviour of methoder declare with 'this.'
+bind also change the behaviour of methode declare with 'this.'
 eg: 
 	City() {
 		this.name = 'bar'
@@ -193,13 +191,13 @@ see the example with 'this.' first:
 	}
 	
 	var bar = new Home(100, 'bar');					bar- {loc: 'bar'}	closure_bar- [pop: 100]
-	bar.printLoc();									//print loc from 'bar' and pop fron 'closure_bar'.	| 	bar, 100, MP
+	bar.printLoc();													//print loc from 'bar' and pop fron 'closure_bar'.	| 	bar, 100, MP
 	
 	var bad = new Home(10, 'bad');					bad- {loc: 'bad'}	closure_bad- [pop: 10]
-	bad.printLoc();									//print loc from 'bad' and pop fronm 'closure_bad'.	| 	bad, 10, MP
+	bad.printLoc();													//print loc from 'bad' and pop fronm 'closure_bad'.	| 	bad, 10, MP
 
-	var bindSwap = bar.printLoc.bind(bad);			//A paraller function (in imagination) with 100% same code as 'printLoc' is created like this
-														bindSwap = function() {  var st = 'MP'; console.log(this.loc, pop, st)};
+	var bindSwap = bar.printLoc.bind(bad);	//A paraller function (in imagination) with 100% same code as 'printLoc' is created like this
+																							bindSwap = function() {  var st = 'MP'; console.log(this.loc, pop, st)};
 													Now it is paraller to the the 'printLoc' of 'bar' so it will have the closure of 'bar' too
 	bindSwap();
 	

@@ -51,10 +51,10 @@ Changing state in 'componentWillMount' :-
 	constructor(props) {... console.log('Home const ', this.state.welcomeTextHome);}
 	componentWillMount () {
 	   this.setState({welcomeTextHome: 'changed in componentWillMount'});
-	   console.log('Home WillM', this.state.welcomeTextHome);									//L1
+	   console.log('Home WillM', this.state.welcomeTextHome);																//L1
     }	
 	componentDidMount()	 	{ console.log('Home DidMt ', this.state.welcomeTextHome); }   		//L2
-    render() 				{ console.log('Home render', this.state.welcomeTextHome); ...}		//L3
+    render() 				{ console.log('Home render', this.state.welcomeTextHome); ...}				//L3
 	
 As you know 'setState' is syncronusly change state, so change value may or may not reflect in the line 'L1'
 But 
@@ -85,16 +85,16 @@ Changing state in 'componentDidMount' :-
 	No matter how much time you call 'setState' in it, the render will be called only once.
 	But if you have not callled 'setState' in this function even at once then it will not re-invoke render function.
 	Also before and after the scheduled render call, it will call two hooh componentWillUpdate and componentDidUpdate
-	Here willU would have a older value of state, but didU has ythe updated value of state.
+	Here willU would have a older value of state, but didU has the updated value of state.
 	
 		constructor(props) {... console.log('Home const ', this.state.welcomeTextHome);}
 		componentWillMount () 	{ console.log('Home WillM', this.state.welcomeTextHome); }					//L4
-		componentDidMount()	 	{ console.log('Home DidMt ', this.state.welcomeTextHome); 					//L5	
+		componentDidMount()	 	{ console.log('Home DidMt ', this.state.welcomeTextHome); 						//L5	
 									this.setState({welcomeTextHome: 'changed in componentDidMount'});
 									this.setState({welcomeTextHome: 'changed in componentDidMount 1'});
 									this.setState({welcomeTextHome: 'changed in componentDidMount 2'});									
 								}   		
-		render() 				{ console.log('Home render', this.state.welcomeTextHome); ...}				//L6
+		render() 				{ console.log('Home render', this.state.welcomeTextHome); ...}							//L6
 		
 So the output will be like this:
 		>>
@@ -105,15 +105,14 @@ So the output will be like this:
 		
 		Home WillU Welcom-Home 
 		Home render changed in componentDidMount 2
-		Home WillU changed in componentDidMount 2
+		Home didU changed in componentDidMount 2
 		
-So you see that willU, render, idiU is called one more time after 'componentDidMount'
+So you see that willU, render, didU is called one more time after 'componentDidMount'
 
 Changing state in 'click'
 It will simply call the willU, render and didU so result is:
 		Home WillU Welcom-Home 
-		Home render changed in componentDidMount 2
-		Home WillU changed in componentDidMount 2
+		Home didU changed in componentDidMount 2
 
 
 document.ready:-
@@ -237,7 +236,7 @@ updating state of parent in 'didMt' of parent :
 		Home WillU Welcom-Home 
 		Home render changed in componentDidMount 2			//L8
 		Hall WillU Sit-in-Hall
-		Hall render Sit-in-Hall 							//L9
+		Hall render Sit-in-Hall 												//L9
 		
 		Hall didU Sit-in-Hall 
 		Home DidUp changed in componentDidMount 2
@@ -477,18 +476,18 @@ This will not call the additional render methode instead it will remain in same 
 -------
 
 calling setState in 
-	constructor						:	Impossible
-	componentWillMount				:	No additional render but will reflect in same event loop
-	render							:	Exteremly risky may cause infinite rendering
-	componentDidMount				:	another re-render happen [willU->render->didU]
-	document.ready
-	
-	shouldComponentUpdate			:	
+	constructor									:	Impossible
+	componentWillMount					:	No additional render but will reflect in same event loop
+	render											:	Exteremly risky may cause infinite rendering
+	componentDidMount						:	another re-render happen [willU->render->didU]
+	document.ready	
+		
+	shouldComponentUpdate				:	
 	
 	componentWillReceiveProps		:	No additional render but will reflect in same event loop
-	componentWillUpdate				:	It will call the new re-render but it may also cause the infint rendering if not propery done
-	render							:	Exteremly risky may cause infinite rendering
-	componentDidUpdate				:	It will call the new re-render but it may also cause the infint rendering if not propery done
+	componentWillUpdate					:	It will call the new re-render but it may also cause the infint rendering if not propery done
+	render											:	Exteremly risky may cause infinite rendering
+	componentDidUpdate					:	It will call the new re-render but it may also cause the infint rendering if not propery done
 	
 	
 	
@@ -1157,15 +1156,15 @@ Sam: Same
 
 #			|			this.props.updateState()		|		this.setState()			|			this.ref.*.setState()
 ------------------------------------------------------------------------------------------------------------------------------------------------
-const		|			New - NW								HR  - W2							Impossibe
-wilMt		|			New	- NW								Sam - NW							Impossibe
-rendr		|			New	- W1 - IL							New	- W1 - IL 						Impossibe	
-didMt		|			New - NW 								New	- NW							New - NW
+const		|			New - NW												HR  - W2										Impossibe
+wilMt		|			New	- NW												Sam - NW										Impossibe
+rendr		|			New	- W1 - IL										New	- W1 - IL 							Impossibe	
+didMt		|			New - NW 												New	- NW										New - NW
 			|
-wilRc		|			New - NW - IL							Sam - NW							Sam - NW
-wilUp		|			New	- NW - IL							New	- NW - IL						Sam - NW
-rendr		|			New	- W1 - IL							New	- W1 - IL						Sam - W1
-didup		|			New	- NW - IL							New	- NW - IL						New - NW - IL
+wilRc		|			New - NW - IL										Sam - NW										Sam - NW
+wilUp		|			New	- NW - IL										New	- NW - IL								Sam - NW
+rendr		|			New	- W1 - IL										New	- W1 - IL								Sam - W1
+didup		|			New	- NW - IL										New	- NW - IL								New - NW - IL
 ------------------------------------------------------------------------------------------------------------------------------------------------
 #REFtable-cyclemap 
 

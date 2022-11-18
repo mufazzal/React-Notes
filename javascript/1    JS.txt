@@ -1,0 +1,309 @@
+Declaring object:
+
+Declaring static object:
+This are the object which are declared once at all and very useful for singleton pattern
+
+1. By litral way: 
+	var mangoll = {
+		color: "yellow",
+		​howSweetAmI: function () { console.log("Hmm Hmm Good"); }
+	}
+2. By Constructor way:
+	var mangocc =  new Object ();
+	mangocc.color = "yellow";
+	mangocc.howSweetAmI = function () { console.log("Hmm Hmm Good"); }
+	
+In both way you can observe that you do not have any way to have template to generate more uch object.
+You have to create complte new object for 'apple' again
+Though you can do this too
+
+mangoll.myFun = function() {...}
+
+Above two is not very useful if you wants to use OOPS features in JS. 
+As you can see we create the object but there is no any way to create another one with same template (apple). 
+
+To solve this we use two approach: 
+1.	Declaring by Constructor (function)
+	function fruite(color, test) {
+		this.color = color;
+		this.test = test;
+		
+		this.amIYummy = function() {....}
+	}
+	var appleFruit = new Fruit ("red", "apple");
+
+	
+What if you try 'this' in a letral way of declaration
+	var mangoll = {
+		color: "yellow",
+		​howSweetAmI: function () { console.log("Hmm Hmm Good"); }
+		this.myFun = function() {...} 	// THis will give compilation error
+	}
+Though it will work fine as expected-
+	var mangoll = {
+		color: "yellow",
+		howSweetAmI: function () { 
+			this.mm = 9;
+			console.log("Hmm Hmm Good", this.mm, this.color); 
+		}
+	}
+	mangoll.howSweetAmI();
+It will print -> "Hmm Hmm Good", 9, yellow
+
+	
+But it will work if created by object-
+	var mangocc =  new Object ();
+	mangocc.color = "yellow";
+	mangocc.howSweetAmI = function () { this.nn = 4; console.log("Hmm Hmm Good", this); } // this here will denote the mangocc
+	mangocc.howSweetAmI();
+	console.log(mangocc.nn)	//It will work and print 4
+----------------
+Now lets analyze a normal methode call behaviour (No object created):
+
+	function onlyFunction(color, test) {
+		return 'mufazzal'
+	}	
+Now if we use 'onlyFunction' as a typical function like
+var tfc = onlyFunction("yellow", "mango");
+Here tfc will be 'mufazzal'. It is as simple as clean water.
+
+But whenever a function call is happen a closure is created which will have last state of the variables inside this function, this closure later 
+will be used by inner functions of 'onlyFunction'. Wee will read about this in detail into 'scope' chapter
+------------
+
+Now lets analyze constructor call behaviour (Object created):
+
+	function onlyFunction(color, test) {
+		return 'mufazzal'
+	}	
+	var objj = new onlyFunction("red", "apple");
+
+When you apply 'new' keyword on methode, its behaviour will be changed dramatically.
+First of all 'return' statment here will becoome redundant and not make any diffrence here.
+so value of 'objj' will not be 'mufazzal'
+
+Second whenever you call it as constructor with 'new' 2 thing created : 
+1.	A new object of class 'onlyFunction'
+2.	A closure of function 'onlyFunction' in which all the variable declared with 'var' lies. We will study closure in 'scope' chapter
+
+So what is the value of 'objj'?
+It will be an newly created object(with class name 'onlyFunction') with nothing in it. 
+
+console.log(objj); >> 	'>onlyFunction {}'
+
+Now empty object for us is of no use. We ca set some values/methode it it also either after the creation or at a time of creation 
+After creation:
+objj.myname = 'mufazzal';
+Time of creation (in constructor):
+This is vwry useful if you wants to use the oops concept. Now always remeber 
+-> If you call the function with 'new' keword (as constructor) then 'this.' iside the function will point to the objet we are creating 
+-> Every time we call 'new' keyword with methode name, a new object with classname as methode name will be created 
+	and 'this.' inside methode name will point to that object
+So if you wants to set a varibale name 'myname' for the currently in creation object then do this ->
+function onlyFunction(color, test) {
+	this.myname = 'mufazzal'
+	return 'mufazzal'
+}	
+
+Now after the creation you can use this like below ->
+ console.log(objj.myname)  >> 'mufazzal'.
+ 
+All the thing we assign with 'this.' statement will be attached to the object and that could be used by outside the class (cusntructor methode 'onlyFunction')
+
+	function onlyFunction(color, test) {
+		this.myname = 'mufazzal'			// DEFINED Here
+		this.myfun = function() {...}
+	}
+	objj = new onlyFunction(..)
+	c.l(objj.myname);						// BUT ACCESSIBLE here
+	this.myfun();
+
+They both will be accesible here so we can say that they are accesible to outside of 'onlyFunction' and so 
+Anything declare inside constructor with 'this.' will be public not private member.
+
+Now how to declare private variable: 
+if you declare variable without 'this.' then it will only be accesible at inside not outside:
+	function onlyFunction(color, test) {
+		this.myname = 'mufazzal'			
+		var salary = '10';
+	}
+	objj = new onlyFunction(..)
+	c.l(objj.myname);						
+	c.l(this.salary);			// Undefined error will come
+
+All the variable declare with var/let/const in the constructor function will be private only.
+
+---------------------------------------------------
+
+So intresting question here is cant we use 'this.' if we call the methode normally (without 'new') 
+	function onlyFunction(color, test) {
+		this.color = color;
+		return 'mufazzal'
+	}
+	var tfc = onlyFunction("yellow", "mango");
+
+So you call onlyFunction as a normal methode not with 'new' so new object wont be created so 'this.' will pont to nothing and will be undefined.
+And it will give a runtime error.
+
+Now if you have not used 'new' to create a new object its fine, you have not created a new object.
+But BUT BUT can we pass an already existing object in this methode. 
+suppose you have a already build up objet   var myAobj = {..}    and i wants to use this as pointed to 'this.'
+
+Yesssss
+you can 
+you can pass it by 'bind' methode. 
+So if you have use 'this.' in the methode and use the 'bind' all will work fine 
+
+
+SO SO SO 
+
+If a methode have a 'this.' used in it - 
+You can use it for creating 'new' object as    new onlyFunction("yellow", "mango");
+Or you can call it in context of existing object, if the methode is a member function like: 'myObj.myFun()'
+Or you can call it as a normal methode with existing object with 'bind'
+Otherwise it will give error 'this' not definned
+
+Hiw to use bind?
+Will look later
+----------
+
+Behavour of returm statment 
+with 'new' keyword: 
+	function onlyFunction(color, test) {  return 'mufazzal' }
+	var tfc = new onlyFunction("yellow", "mango");
+It will have none effect an will be igneored. 'tfc' will point to newly created object
+
+If you call it as normal methode (with bind also if you need):
+	var tfc = onlyFunction("yellow", "mango");
+then tfc will be 'mufazzal'
+
+-----------
+
+
+In the methode(constructor) defination if you have not used 'this.'
+Then 
+either call it with 'new'		>> empty object return
+Or with 'bind'					>> 'this.' is not used so binded object goes useless
+Or
+Call it as typical call 		>>simplest way
+
+----------
+
+'this' and function:
+By default function does not have any 'this' attach to it. It will be attached at a time of calling not defining
+if you call it with 'new' as constructor then 'this' will reprsent the object in making.
+But if you call it simplay like   var ffc = onlyFunction("yellow", "mango");   then 'this' will not be reprsent anything here, it will be undefined.
+And if you call in context of any objevt like   obj.onlyFunction("yellow", "mango")   then 'this' will reprsent 'obj' here,
+So only when you use 'new' keyword then function will behave like a constructor and 'this.' will be reprsenting the object we are creating.
+
+-------
+What does 'this' reprsent in HTML root doc {not inside any methode or class}
+e.g.  <script> console.log(this)</script>
+Here 'this' will reprsent the window object
+
+What does 'this' reprsent in any included .js file {not inside any methode or class}
+EG: index.js
+Ans: window
+
+What does 'this' reprsent in any imported .js file {not inside any methode or class}
+e.g.  
+ff.js>>
+import ..
+console.log(this)
+..
+Here 'this' will reprsent nothing and it will be undefuned.
+By default at file level (not inside methode or class)'this' is not attached to anything in any js file 
+--------
+
+To access the public property there is two way:
+ob.propName
+ob['propName']
+
+incorrrect way-> ob[propName]
+
+
+----------------------------
+
+Use of 'this.' if object (not class) is declared by litral way: 
+Yes you can use it like below - 
+	var mangoll = {
+		color: "yellow",
+		​howSweetAmI: function () { console.log(this.color); }
+	}
+This aproch is useful if you need some kind of global variable and functions.
+
+---------------------------------
+
+---------------------------
+
+	
+		
+			
+		
+------------------
+------------------------	
+
+Static variable: 
+	You can also declare the static variable of constructor function like this: 
+		function City() {...}
+		City.country = 'india';
+	This also work with construction function as a expression:
+		var City = function () {...}
+		City.country = 'india';
+	Accessibility of static function:
+		1.	with the class name : City.country	:	Yes
+		2.	with the instance of that class : cityObj.country	:	No
+		3.	inside the class (with or without 'this.')	:	No
+		4.	inside the class with 'City.'	:	YES
+		
+	Static function: 
+		City.staFunction = function() {
+			console.log('staFunction', this, this.cityname);
+		}
+	You can also defined static function like above, but 'this.' in the static function not point to any object of 'City' 
+	rather some refrence to 'City' class itself, So out pot will be
+		staFunction, {..wierd object..}, undefined.
+	You can declare static function for function variable too :
+		var CityFF = function() {...}
+		CityFF.staFunction = function() {
+			console.log('staFunction', this, this.cityname);
+		}
+
+
+-------------------
+
+
+--------------------
+
+]
+------------------
+
+#REFREST_PARAM
+Rest params
+	Rest parameters are similar to variable arguments in Java. 
+	Rest parameters doesn’t restrict the number of values that you can pass to a function. 
+	Type of the parameters sent also not restricted
+	this arg always come to the last of the arguments in the function, and only one for each function
+
+		function fun1(name, ...params) {  ...  }  
+		fun1('muf');   fun1('muf', 5);  fun1('muf', 5, 'wwe', ['asd', 'we']); 
+	
+--------------
+
+Object destrucuring :
+	var emp = { name: 'John', Id: 3 } 
+	var {name, Id} = emp 
+This is very very useful to read the webservice response in one line
+
+Revesrse:
+	name = 'John';  Id = 3;  deep = {work: 'shop', hobb: 'de'};	
+	var emp = {name, Id, deep}
+----------
+
+
+
+
+
+---------------
+
+	

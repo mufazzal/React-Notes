@@ -120,90 +120,95 @@ its look like :
   "license": "ISC"
 }
 
-description/version etc. -> all are static and
-name: name must be unique if you wants to upload your package on npm repository and it is used ti identify your module for import.
-main: This is the entry point for your module(mufaModule), if someone import it by require('mufaModule') or import obj from 'mufaModule' it retun the exported item of respective js file
-scripts: This accept a key-value pair of shell commands. 
-This key value pair of commands are the commands which can be executed with npm for current projet.
+description/version etc: 
+		all are static and
+name: 
+		name must be unique if you wants to upload your package on npm repository and it is used ti identify your module for import.
+main: 
+		This is the entry point for your module(mufaModule), if someone import it by require('mufaModule') or import obj from 'mufaModule' 
+		it retun the exported item of respective js file
+scripts: 
+		This accept a key-value pair of shell commands. 
+		This key value pair of commands are the commands which can be executed with npm for current projet.
 
-Lets suppose you open your project directory in command prompt(directory of package.json file)
-Now at here you can execute all the commands which are prsent in script object of package.jsson file.
-for this you have to use following syntax
-npm run <key of command>
-  scripts: { "commandMuf": "echo this is mufazzal && exit 1"  },
-  >> npm run commandMuf
-  --this is mufazzal
-when you run 'npm run <key of command>', it has following path in it PATH variable: ./node_modules/.bin/ (This is relative to the file package.json)
-So here you can also put .cmd file, who has shell script in it and then execute it with 'npm run' 
+		Lets suppose you open your project directory in command prompt(directory of package.json file)
+		Now at here you can execute all the commands which are prsent in script object of package.jsson file.
+		for this you have to use following syntax
+		npm run <key of command>
+			scripts: { "commandMuf": "echo this is mufazzal && exit 1"  },
+			>> npm run commandMuf
+			--this is mufazzal
+		when you run 'npm run <key of command>', it has following path in it PATH variable: ./node_modules/.bin/ (This is relative to the file package.json)
+		So here you can also put .cmd file, who has shell script in it and then execute it with 'npm run' 
 
-E.G. 
-if you have mufShellFile.cmd in this folder, and you wants to run this file with npm run
-mufShellFile.cmd-
-echo "Hello from shell file"
-package.json-
-scripts: { "commandFileMuf": "mufShellFile"  },
+		E.G. 
+		if you have mufShellFile.cmd in this folder, and you wants to run this file with npm run
+		mufShellFile.cmd-
+		echo "Hello from shell file"
+		package.json-
+		scripts: { "commandFileMuf": "mufShellFile"  },
 
-	>>npm run commandFileMuf
-	--Hello from shell file
-You can put multiple pair of command here like: 
+			>>npm run commandFileMuf
+			--Hello from shell file
+		You can put multiple pair of command here like: 
 
-scripts : 
-{
-	"commandFileMuf": "mufShellFile",
-	"commandFilehus": "husShellFile",
-	"justprint": "echo here is justprint",
-}
-and then run them by  nom run <Key>
+		scripts : 
+		{
+			"commandFileMuf": "mufShellFile",
+			"commandFilehus": "husShellFile",
+			"justprint": "echo here is justprint",
+		}
+		and then run them by  nom run <Key>
 
-What if you try to run no exeisting key --
-Error :  missing script 
+		What if you try to run no exeisting key --
+		Error :  missing script 
 
-But npm also provide shortcut for 3 specific key as command that are start, stop, test
-'npm run start' is 100% same as 'npm start' ans this is also applicable for remaining two
+		But npm also provide shortcut for 3 specific key as command that are start, stop, test
+		'npm run start' is 100% same as 'npm start' ans this is also applicable for remaining two
 
-scripts : 
-{
-	"start": "mystartfile",
-	"test": "echo this is tes",
-}
-'npm run start' or 'npm start' will produce same thing
+		scripts : 
+		{
+			"start": "mystartfile",
+			"test": "echo this is tes",
+		}
+		'npm run start' or 'npm start' will produce same thing
 
-Bin of node module-
-#`
-intresting 
-script: { start: "webpack-dev-server"} 
->>npm start
-This will run the file ./node_module/.bin/webpack-dev-server.cmd
+		Bin of node module-
+		#`
+		intresting 
+		script: { start: "webpack-dev-server"} 
+		>>npm start
+		This will run the file ./node_module/.bin/webpack-dev-server.cmd
 
 
-If You install the webpack, eslint, jest etc kind of libs that do the build task on the code. then you will see that 
-in the folder '/node_module/.bin' you will executable file will appear for each of this lib 
-now supose you do this in package.json:-
-	build: "npm run eslint && npm run jest && npm run webpack"	
-Now it will go in the .bin directory of node module and run the respective binary file
-for npm run eslint it run the 'node_module/.bin/eslint.cmd'
-for npm run jest it run the 'node_module/.bin/jest.cmd'
-for npm run webpack it run the 'node_module/.bin/webpack.cmd'
-eg-
-	script: { build: "webpack"} 
+		If You install the webpack, eslint, jest etc kind of libs that do the build task on the code. then you will see that 
+		in the folder '/node_module/.bin' you will executable file will appear for each of this lib 
+		now supose you do this in package.json:-
+			build: "npm run eslint && npm run jest && npm run webpack"	
+		Now it will go in the .bin directory of node module and run the respective binary file
+		for npm run eslint it run the 'node_module/.bin/eslint.cmd'
+		for npm run jest it run the 'node_module/.bin/jest.cmd'
+		for npm run webpack it run the 'node_module/.bin/webpack.cmd'
+		eg-
+			script: { build: "webpack"} 
 
-Now go in that directory and lets open webpack.cmd:
-You will see this code->
-This code will execute the node js executable file for the webpack, that is prsent in webpack lib. here you wil see how the webpack actuly run with node
+		Now go in that directory and lets open webpack.cmd:
+		You will see this code->
+		This code will execute the node js executable file for the webpack, that is prsent in webpack lib. here you wil see how the webpack actuly run with node
 
-	@IF EXIST "%~dp0\node.exe" (
-	  "%~dp0\node.exe"  "%~dp0\..\webpack\bin\webpack.js" %*		--> If node is installed in local project directory then do this
-	) ELSE (
-	  node  "%~dp0\..\webpack\bin\webpack.js" %*					--> If node is installed globally then do this
-	) 
+			@IF EXIST "%~dp0\node.exe" (
+				"%~dp0\node.exe"  "%~dp0\..\webpack\bin\webpack.js" %*		--> If node is installed in local project directory then do this
+			) ELSE (
+				node  "%~dp0\..\webpack\bin\webpack.js" %*					--> If node is installed globally then do this
+			) 
 
 dependencies and devDependencies : 
-this shows us which libraries of NPM is used in the current project.
-dependencies- lib used in prod and dev enviormrnt both
-devDependencies- lib used in dev enviormrnt only
-You should not edit this manually instead you must always use 'npm install' command for this.
-syntax
-dependencies/devDependencies {'<packegaeName>' : '<version>'}
+	this shows us which libraries of NPM is used in the current project.
+	dependencies- lib used in prod and dev enviormrnt both
+	devDependencies- lib used in dev enviormrnt only
+	You should not edit this manually instead you must always use 'npm install' command for this.
+	syntax
+	dependencies/devDependencies {'<packegaeName>' : '<version>'}
 
 
 -----------

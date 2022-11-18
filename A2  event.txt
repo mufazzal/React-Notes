@@ -27,7 +27,7 @@ Many time we send this two variable in the function itself:
 	
 'this.' vs 'event.target' :
 There is bif adiffrence between this two. 
-this.: 			it will by default (if not binded) reprsent the HTMLElement on which click is registered.
+this.: 				it will by default (if not binded) reprsent the HTMLElement on which click is registered.
 event.target:	it will always be the most bottom HTML element on which the clicked is performed, not neccesarily the same as the one
 				on which u add the click register.
 
@@ -39,10 +39,10 @@ event.target:	it will always be the most bottom HTML element on which the clicke
 		</div>
 
 Here if you click on 'Area 1'
-	this: 			parent div
+	this: 				parent div
 	event.target:	parent div
 Here if you click on 'Area 2'
-	this: 			parent div
+	this: 				parent div
 	event.target:	child div
 -----
 #REFONCLICRET
@@ -107,7 +107,7 @@ Attaching event by simple JS:
 	You cann attach the event on single element with js, it cannot be applied on collection altogether
 	so 
 		document.getElementsByClassName('itm').onclick = f		// Will not work because 'getElementsByClassName' return collection
-		document.getElementById('apple').onclick = f			// Will work as expected
+		document.getElementById('apple').onclick = f					// Will work as expected
 
 The function will have two  predefinned param int:
 	1.	e: event as the first formal param

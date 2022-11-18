@@ -1,0 +1,145 @@
+This is widely used tool for the javscript building process, it do the main two thing of this JS ecosystem
+			1.	Convert ECMAScript 2015 and higher version of ES** code into a backwards compatible version of JavaScript.
+			2.	Polyfill the missing feature in browser through @babel/polyfill.
+	Core Concept-
+	Babel is the the js compiler which convert all the flavoured JS code to plain JS also add the missing features for targeted browser.
+
+	If you write this code-
+		()=> {...}, 
+		Now if you do not use babel and bundle the same code for distribution, then final code will have exact same code to run on all the browser.
+		This will work fine for the Chrome, but will fail on IE. becoz as usual chrome rapidaly adopt the changes and add the support for such syntax.
+		nd IE is still sleeping in 2009.
+		For this we need babel to bring down al the advance syntext too plain JS or ES5
+		Also
+		In the code if you have used the function like 'fetch' or Promise, then also IE and even some old chrome version will fail on this. As this 
+		is complete new feature of JS, this is not a syntax suger that we just need to transform, this is a complete new functionality of Js that need
+		the browser support. to fill the gap of this missing functionality in browser we need the polyfill.
+		
+		Lukily babel do both the thing together for us.
+
+	Basic configuration of babel:-
+	suppose you have a code arch like below:
+		projectFolder
+			-	src
+			-	package.json
+			-	dist
+	you wants to process code in src and deliver it to dist.
+	1.	npm install --save-dev @babel/core			
+			This will install the core lib of babel, this core lib is a platform for transformation, this is must have lib
+			All the plugin and preset use this lib for transformation.
+	2.	Create either .babelrc(for static json cofig) or babel.config.js(for dynamic js config) file and place all params in it.
+			This file will tell the babel, its plugin, its preset to how to transform the code. like sequence of plugins, presets, minimum browser required
+			and many other thing, it even have field to pass the param to specific pugin or preset.
+			for more go to google.
+			in this config, you have to install at least one plugin or preset for babel o do some task.
+			Suppose you wants to apply '@babel/preset-env' preset:
+			Then first install it 
+				npm install @babel/preset-env
+			in config-	
+				const presets = [
+					[
+					"@babel/preset-env", { targets: {edge: "17", firefox: "60", chrome: "67"},
+					],
+				];
+	3.	finally run this ommand, either from package.json or directly
+			from package.json:
+				script: { 'transform': './node_modules/.bin/babel src --out-dir dist'}
+
+		
+	babel plugin:-
+		Babel contains large amount of plugins, which transform a specific syntax of specific flavour.
+		basically if you write a code with any falvoured JS, then you should configure the babel to run certain plugins of babel in certain order
+		to transform and polyfil your code to plain js.
+		So babel is highly cofigurable, you can change the sequrnce or add/remove the plugin from it.
+		Most of the official plugin are available on npm repository and most of them lies in @babel scopr of thar repository.
+		So you can install those plugin by:-
+			npm install @bable/plug_name;
+		Although it is very rare that u have to do it manually as most of the time you use preset that have all the information in it.
+
+
+	babel Preset: 
+		you know that some of the flavour of JS is very famous and usually they required the same sequence of plugin flow to compile the code.
+		For this babel provide the special feature. PRESET, it is basically a predifine set of plugin in proper sequence which can be used to compile the 
+		specific type/falvour of js
+		To use them first you need to install them as like plugin
+				npm install --save-dev @babel/preset-env
+		Useful prests:-
+			1.	@babel/preset-es2015			>>	for compiling Javascript ES6 code down to ES5 (please note that babel-preset-es2015 is now to @babel/preset-env)
+			2.	@babel/preset-env 				>> 	advance version on preset-es2015 [it contains very long list of plugin]
+			3.	@babel/preset-react 			>> 	This will transform the jsx [this contain 3 plugins for transformation]
+			4.	@babel/preset-typescript	>>	Use it for typescript 
+			
+	Almost in all the js code you use preset-env of preset-2015, becoz this will convert the ES6+ to ES5.
+	Along with it you may use other presets dependig on js flavours.		
+
+#REFWEBPCKBABEL
+Babel + webpack :-
+1.	almost all of the time you need to set up the babel with webpack (you may ise gulp/grunt also but it is rarre, go google it)
+		First install babel core, A prerequisite to run all the babel plugin, preset.
+		npm insatll @babel/core
+2.	Now install 'babel-loader':, which is a loader of webpack, which process each js file and apply the babel transformation on it.
+	This actully connect the babel library with webpack.
+		npm install --save-dev babel-loader
+3.	Now connect babel-loader and webpack, so when webck do the compiling of code it passes the code through babel too.
+	webpack.config.js>>
+		module: { rules:[
+			{ test: /\.(js)$/, use: { loader: "babel-loader" } }
+		]}
+
+4.	Till now you have set up the babel platform and its connection with webpack. now ask the babel what to do and how to do.
+	You may have use any of flavoured javascript in your code. so you need to add the appropiate plugin/presets to instruct babel for proper transormation.	
+	Now do it via config file
+	to configure Babel! Create a new file named .babelrc inside the project folder:
+		{ "presets": ["@babel/preset-env"]}	
+			
+Babel + webpack + REACT:
+	Here you will need one more preset that is '@babel/preset-react'. so in step 3 and 4 do this small changes
+	You need to take care od jsx file too so
+		{ test: /\.(js|jsx)$/, use: { loader: "babel-loader" } }
+	ask babel to transform with preset-react also so
+		  "presets": ["@babel/preset-env", "@babel/preset-react"]
+	Now babel will forst apply preset-react then preset-env.
+	
+Babel + webpack + Typescript:
+	almost same just use 'preset-typescript' before the 'preset-react'
+		
+A additonal feature of webpack : No need of .babelrc :
+	in above case you have to create a .babelrc file and pass confige in it, but if you are running babel on top of webpack then you can pass this
+	config in webpack.config.js >> babel_loader like below-
+	module: { rules:[{
+			test: /\.(js)$/, 
+			use: { loader: "babel-loader", options: { presets: ['@babel/preset-env', "@babel/preset-react"] }}
+	}}];
+
+Note: Though webpack passes throug entry tag and then passes to internal dependency. lets sat you use react and have 'import react from react' in your code.
+		Now webpack and babel-loader will apply the transformation to react library too. 
+		This is completely useless and time comsuming decoz precompiled libs are alreday in optimized form and no need for re-transformation
+		So lets exclude them all from passing in babel-loader
+		
+	module: { rules:[{ 	
+			test: /\.(js)$/, 
+			exclude: /node_modules/,
+			use: { loader: "babel-loader", options: { presets: ['@babel/preset-env', "@babel/preset-react"] }}
+	}}];		
+		
+		
+In below-
+var funm = () => {						---> This will be processed by @babel/preset-env as arrow function is the ES6 feature
+	return <div> ... </div>			---> This will be processed by @babel/preset-react as it is jsx
+}		
+		
+		
+babel config file:-
+	.babelrc ->   {...}
+	babel.config.js	->	module.export = {...}
+	
+	
+------------
+JSX:-
+
+	You do not have to use specific file extension for using above any script, loader automatically detect it and parse it.
+
+	Fortunately the Babel loader supports transforming both ES2015 and JSX which means we can get away with using a single loader 
+	instead of requiring both the babel-loader and the jsx-loader.
+
+	

@@ -1,0 +1,61 @@
+React lifecyle is feature of class component.
+There is three cycle of component
+
+1. Mounting:-
+		constructor -> deriveStatFromProps -> unsafe_componentWillMount -> render -> componentDidMount
+	
+2. Update:-
+		deriveStatFromProps	-> shouldComponentUpdate -> unsafe_componentWillReceivProps -> unsafe_componentWillUpdate -> render -> componentDidUpdate
+
+3. Unmounting:-
+		unsafe_componentWillUnmount -> render -> componentDidUnMount
+
+4. For ErroBoundry component:-
+		getDerivedStateFormError -> componentDidCatch
+
+constructor:-
+	state can only be initilized in constructor and then later can be modified in further flow. like this this.state = {...}
+	you must call super() in cnstructor
+	you cannot call this.setState in constructor
+	
+deriveStatFromProps:
+	This is static function it take the props as input and return state for those set of props
+	this is static function. so you cannotuse 'this.' in it, the props comes in form of function argument.
+	Though react do suggest to avoid its use as much as possible. https://reactjs.org/blog/2018/06/07/you-probably-dont-need-derived-state.html
+	This is called in Mounting and Update phase both.
+	
+unsafe_componentWillMount:-
+	This is legacy. avoind using it.
+	calling setState here will not cause new update lifecycle, rather incoroparate it in same lifecycle.
+	
+render:-
+	NEVER call setState in here.
+	
+componentDidMount:-
+	calling setState here will cause new update cycle. because render has already been called.
+	
+	
+shouldComponentUpdate:
+	This function help to minimize the number of re-renders.
+	it take input and nextProps and nextState. you can check delta between current props anmd state and then decide weather to 
+	re-render the component or not.
+	if this function return true then cycle will contune and all the next function(render, componentDidUpdate) will called. 
+	if this function return false then cycle will break and all the next function(render, componentDidUpdate) will called. 
+	
+	
+unsafe_componentWillReceivProps:-
+	This is legacy and should be avoided.
+	here you get prev and next props to take any action based on it.
+
+unsafe_componentWillUpdate:-
+	This is legacy and should be avoided.
+		
+componentDidUpdate:-
+	This is called after render finish.
+	any state change in it will cause a new update cycle again.
+	
+unsafe_componentWillUnmount:-
+	This is legacy and should be avoided.
+	
+componentDidUnMount:-
+	Tis is called after component is removed from screen.
