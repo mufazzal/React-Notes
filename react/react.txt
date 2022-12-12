@@ -165,6 +165,7 @@ React.PureComponent -
 		This is a add on of React.Component, if you extend React.PureComponent instead of React.Component then that component will auto write the 
 		shouldComponentUpdate methode do the shallow equality check on state and props, if one of them is not equal then it will return the 'true' otherwise false.
 		So Developer do not have to write the equality check code. and it also improve the performance becaues may of the unrequireed render is avoided.
+		Functional comp cannot be user as pure component
 				
 ----------------------------------
 
@@ -257,6 +258,7 @@ Server Side and Client side rendering;-
 					at inital loading time you can not display the 'Loading...'
 				This is only good if network is slow and you do not want much web service. and to show the static content
 				One other advantage is SEO engine read all the content.
+				Also can be user to create pdf at server side
 
 -----------------------------
 
@@ -284,51 +286,112 @@ React Context:-
 			const theme = React.useContext(ThemeContext);
 			console.log(theme.v1);				
 -----------------------------------		
-	component composition:-
-		Component Composition define how the children of the component will be appear in the final render.
-		A Componet do have control on how its children will be shown or even be shown or not.
+component composition:-
+	Component Composition define how the children of the component will be appear in the final render.
+	A Componet do have control on how its children will be shown or even be shown or not.
+	
+	
+	Default Children/s :-
+		By default react always pass the children in props.children. you cannot remove it but you can add more such children
+		This could be a sigle JSX object or Array of JSX elements
 		
-		
-		Default Children/s :-
-			By default react always pass the children in props.children. you cannot remove it but you can add more such children
-			This could be a sigle JSX object or Array of JSX elements
-			
-			var testdiv = 
-				<MyContainerComp>
-					 {<div id="1"> yus </div>}
-					 {<div id="2"> moz </div>}
-					 {<div id="3"> azz </div>}
-				 </MyComp>;
+		var testdiv = 
+			<MyContainerComp>
+				 {<div id="1"> yus </div>}
+				 {<div id="2"> moz </div>}
+				 {<div id="3"> azz </div>}
+			 </MyComp>;
 
-			function MyContainerComp(props) {
-				var innerDiv = <div> {innerdiv} </div>
-				return  <div id="myc"> {props.children} {innerdiv}</div>
+		function MyContainerComp(props) {
+			var innerDiv = <div> {innerdiv} </div>
+			return  <div id="myc"> {props.children} {innerdiv}</div>
+		}
+		
+		- If you have multiple first level child then this.props.childern will be an array. 
+		- Never iterate it directly instead use React.children.map			
+
+	Default + custom Children by props:-
+		FOr more better behavior you can pass jsx childs as anothe rprops.
+		EG:-				
+			<MyCom byPr={<div>bypropos</div>}> 
+				<div>{JSX-child}</div> 
+			</MyCom>
+			MyCom {  
+				render() {  
+					<div>{this.props.bypropos}</div>  
+					<div>{this.props.childern}</div>  
+					}  
+				}
+			
+	diffrence between - 
+		bypropos 	:> this come from props and think it as a strcture of MyCom, use this.props.bypropos to itrate its children
+		JSX-child :> this are the child component. think it as JSX-child, use this.props.childern to itrate them				
+
+	You can also traverse on child and read its property:-		
+		const modAnchor = React.Children.map(props.testdiv.props.children, child =>{
+			console.log(child.props.id);
+		});				
+			
+---------------------------------
+
+React Component, React Component Instance, React Element:-
+	React Component:-
+		It a defnation of of component. weather by class based or fucntion based.
+		This contains all the behavoiral logic of component related to state, props, diffrent user event etc.
+	React Component Instance:-
+		This is actual implemtation of React Component.
+		Instance is created when user actully use the component in some JSX syntax.
+		one React component can have mane instance. then have one to many relation.
+	React Element:-
+		Element is js object which reprsent the component instance in virtual DOM.
+		React lib use this object for reconsiliation.
+		The element is
+			- in case of functional comp, whar  return from the function itself.
+			- in case of class comp, what return from render function is
+		This object has below keys
+			name: 	name of class or function
+			props:	props passed to it
+			refs:		
+-----------------------------------
+
+refs:-
+	Ref is used to  
+		- perform any action on DOM-element like (<input>, <p>, <h>) 
+		- get any dom property like {class, x, y, margin, value etc.} from any DOM element
+		- react-element [not react Component] directly.
+		- if rarely wants to call the fnction of any child component.
+
+	
+	The ref shoud be used only in below cases
+	1. Managing focus, text selection, or media playback.
+	2. Integrating with third-party DOM libraries.
+	3. animation
+	
+	by ref you actlly escape the react props or state or lifecycle.
+	You should avoid its use as much as possible
+	
+		EG:-
+						
+				constructor(props) {
+					super(props);
+					this.myRef = React.createRef();
+				}
+				fn() {
+					this.myRef.focus();
+				}
+				render() {
+					return <input ref={this.myRef} />;
+				}	
+	
+		For functional comp you shoul use 'useRef' not 'createRef'
+		EG:-
+			const textInput = useRef(null);
+			function handleClick() {
+				textInput.current.focus();
 			}
+			return  <input type="text" ref={textInput} />
 			
-			- If you have multiple first level child then this.props.childern will be an array. 
-			- Never iterate it directly instead use React.children.map			
-
-		Default + custom Children by props:-
-			FOr more better behavior you can pass jsx childs as anothe rprops.
-			EG:-				
-				<MyCom byPr={<div>bypropos</div>}> 
-					<div>{JSX-child}</div> 
-				</MyCom>
-				MyCom {  
-					render() {  
-						<div>{this.props.bypropos}</div>  
-						<div>{this.props.childern}</div>  
-						}  
-					}
-				
-		diffrence between - 
-			bypropos 	:> this come from props and think it as a strcture of MyCom, use this.props.bypropos to itrate its children
-			JSX-child :> this are the child component. think it as JSX-child, use this.props.childern to itrate them				
-
-		You can also traverse on child and read its property:-		
-			const modAnchor = React.Children.map(props.testdiv.props.children, child =>{
-				console.log(child.props.id);
-			});				
-			
--------------------------------			
-
+		
+		forwardRef: 
+			?????????????????
+---------------------------------------------		

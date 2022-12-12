@@ -1,0 +1,170 @@
+CSS prepossessor -
+
+writing css may be very tedious if you do it in plane manner.
+But some of the preprocesser make it a candy. here you can write the css in very simple and understandable way.
+But in the end you need to convert it to .css file so that browser can understand.
+
+This is like ES6 or typesriipt of JS. we write the code in it but in the end convert it to plain js so that browser can understand it.
+
+Two most common css preprocesser are 
+1.	LESS
+2.	SAAS
+
+LESS:-
+	Features:-
+		Variable:-
+			@link-color: #428bca; 
+			@images: "../public/images";
+			.link { 
+				color: @link-color, 
+				background: url("@{images}/white-sand.png");
+			}
+			
+		Variable Interpolation:-
+			@link-selector: '.link'; 
+			.@{my-selector} 			{ color: @link-color }			
+			.@{my-selector}-read 	{ color: @link-color1 }			
+			.@{my-selector}:hover	{ color: @link-color2 }			
+			
+			
+		varaibales variable:-		
+			@primary:  green;
+			@secondary: blue;
+			.section {
+				@color: primary;
+				.element { color: @@color; }
+			}		
+			
+		Parent Selectors:-
+			'&' reprsent the parent selector and provide way to add more to it.
+			a {
+				color: blue;
+				&:hover { color: green; }
+			}			
+			out-
+				a { color: blue; }					
+				a:hover { color: green; }
+			---
+			.button {
+				&-ok 			{ ..1.. }
+				&-cancel 	{ ..2.. }
+			}			
+			out-
+			.button-ok {..1..}
+			.button-cancel {..2..}
+				
+		
+	Set up:-
+	
+		We will see how in the end we will convert it to '*.css' from '.less'
+			> npm install less.
+			> cd path/to/node_module/less/bin
+			> node lessc path/to/file.less output.css
+
+		after running  this commande the less code will be converted to css.
+
+
+----------------------------------------------
+
+positions attribute:-
+	static: 
+		element are placed as per flow, relative to its parent only.
+		but left, right, top, bottom are ignored
+	relative:-
+		element are placed as per flow, relative to its parent only.
+		but left, right, top, bottom are considered
+	absolute:-
+		element are placed reltive to document not the parent.
+		but left, right, top, bottom are considered
+		
+	
+flex box:-
+	It work as a module.  it consider the properties of parent and child both to determine the layout
+	this is 1 dimentional. you can choose the direction as vertical, horizental, vertical-reverse, horizental-reverse
+	forst on parent set the 
+	display: flex
+	Now set 
+		flex-direction: set how the flow will be.
+		flex-wrap: set it elemnet should be wrap in case of space finishes.
+		more property like justify-contect, spacing etc youcan set.
+
+	
+grid box:-
+	grid box is 2 dimentional way to placement of children.
+	here you can define number of row and colum, then childre are placed in eacg cell one by one.
+	
+display:-
+	block:-
+		element is placed in new line and take whole width
+	inline:-
+		element is placed in same line and take only reqired width. height and width properties are ignored
+	inline-block-
+		element is placed in same line. but you can apply height and width values.
+	none: 
+		not show
+	
+
+Pseudo class:-
+	A pseudo-class is used to define a special state of an element like
+		- Style an element when a user mouses over it
+		- Style visited and unvisited links differently
+		- Style an element when it gets focus	
+		EG:-
+			a:hover{..}
+			a:visited {..}
+	
+Peudo Element:-
+	This is used to alter certain behaviour/looks of selected element.
+	Ex:
+		p::first-line { ... }	
+		p::first-letter { ... }	
+		h1::before { ... }
+		h1::before { content: (smily.gif) }  // to sho a icon
+		
+		
+CSS Box modal:-
+	Each element in html have below real estate on its name
+	1. content: area where its actual content live. 
+	2. padding: area betwen border and content
+	3. border: area occupied by border
+	4. margin: area at outer side of border, restricted for other elemet to surpass
+	
+Way to ad CSS:-
+	1. External link <style link="ada.css"/>
+	2. Embedded in html file under <style> </ style>
+	3. inline css in element itself  <div style={{"color":"red"}}>
+	
+size units in css:-
+	Absolute sizing:-
+		px:- 
+			In term of actual pixel
+		pt:-
+			In term of point 1 point= 1/72 pixel
+		in:-
+			in term of inch
+	Relative:-
+		em:-
+			relative to the parent
+		%:-
+			
+	
+-------------------
+
+Semantic Elements:-
+	A semantic element clearly describes its meaning to both the browser and the developer.
+	EX: <form>, <table>, <article>, <nav>, <sction>
+	- browser can treat them in diffrent manner.
+	- SEO engine read then in certain context
+		
+SVG vs Canvas:-
+	SVG is made of an statement descibed in XML formate.
+	Canvas is made of pixel which are drawn via js function line drawCircle, dratLine etc.
+	
+	SVG can scale up and down without distotion.
+	Canvas can scale better way.
+	
+	XML pattern of SVG can be seen in debbuger
+	Canvas just apear as a single element in dubugger.
+	
+		
+	

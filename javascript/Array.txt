@@ -81,13 +81,13 @@ Array.prototype have following IMP functions:
 
 4.	some other imp function are: 
 		reduce/reduceRight:	process the complete array from left to right(/right to left) and produce one result.
-			var res = arr.reduce( (accumelator, currValue) => {
-				return f(accumelator, currValue)
+			var res = arr.reduce( (accumelator, element) => {
+				return f(accumelator, currValuem, index, array)
 			}, initalValue)
 		
 		initalValue: intial value for accumelator
 		accumelator: a transient value is result of all previous processed array element 
-		currValue: the curreny array element for processing.
+		element: the current array element for processing.
 		
 		- return vlaue of callback function is passed as accumelator.
 						

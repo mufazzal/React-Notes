@@ -1,0 +1,40 @@
+There is 3 kind of storage:-
+
+1. Local storage:-
+		can be operated with global window object 'localstorage'
+		methodes are
+			localstorage.setItem(key, value)
+			localstorage.getItem(key)
+			localstorage.removeItem(key)
+			localstorage.clear()
+		
+		- it survive without any expiry. but you can remove it by js or by clearing browser cache
+		- it survive browser close, tab close too
+		- its shared among other tab with same domain name 
+		- This is very insecure and should be avoided for saving sensitive info
+		- max data size for a domain is 5 MB	
+		- It implemented over web storage API
+			
+
+2. Session Storage
+		This is almost same as localstorage except
+		Its handle by global window object 'sessionStorage'
+		
+		- it does not expire automatically, but expired if browser or tab is closed.
+		- it do not survive browser close, tab close too
+		- its not shared among other tab with same domain name 
+		- max data size for a domain is 5 MB	
+		- It implemented over web storage API
+			
+3. Cookie storage:-
+		Cookies are handled by server via proper HTTP Headers.
+		- its size limited to 4KB per domain
+		- 
+		This is of two type:-
+		1. persistent cookies:-
+				- It survive browser or tab closing.
+				- It must have an expiration date which could be in years
+				EG: gmail login
+		2. session cookies
+				- it do not survive tab or browser closing
+				EG: bank logins

@@ -123,3 +123,48 @@ Short cuircuit statement :-
 	var mv = 'hus' && 'muf'		
 			-> it will give 'muf' 
 -----------
+
+Nullish coalescing operator:-
+	This operatore return right side operand in left operand in null or undefined.
+
+		const foo = lop ?? 'i am right'
+		lop => null	 				: 'i am right'
+		lop => undefined	 	: 'i am right'
+		lop => 'sd'	 				: 'sd'
+		lop => 'sd'	 				: ''
+		lop => true	 				: true
+		lop => false	 			: false
+		lop => 2	 					: 2
+		
+		Its a shorthand of
+		const foo = lop === undefiened || lop === null ? lop :  'i am right'
+		
+		IMP: 
+			this do not do anu chaining for deep object:
+				const rr = {dd: {sdf: "asd"}}
+				const foo = rr.dd.sdf ?? 'default string';			will give 'asd'
+				const foo = rr.kk.sdf ?? 'default string';			will give Error Cannot read properties of undefined (reading 'sdf')
+
+-----------
+Optional Chaining-
+	relatively new feature of ES6, which help you to read the variable in deep object witht any error.
+	if any key in the cahin do not exist then it will return the undefine instead of throwing the error.
+	EG:-
+		const user = { dog: { name: "Alex", bark: ()=>{}} };
+
+		console.log(user.dog?.name); //Alex
+		console.log(user.cat?.name); //undefined
+		console.log(user.cat.name);	 //Error: Cannot read properties of undefined (reading 'name')
+
+		console.log(user.dog?.bark?.());
+		console.log(user.dog?.speak?.()); // No error
+		console.log(user.dog.speak()); 		// Error: 'speak' not a function
+
+------------
+Nullish + Optional Chaining:-
+	Combination of this two provide a solid logic for safe access of any deep object
+	
+		const foo = { someFooProp: "hi" };
+
+		console.log(foo.someFooProp?.toUpperCase() ?? "not available"); // "HI"
+		console.log(foo.someBarProp?.toUpperCase() ?? "not available"); // "not available"	

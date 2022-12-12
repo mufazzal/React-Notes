@@ -1,5 +1,37 @@
+Compiling:-
+	You can compile typescript to js by 'tsc' command.
+	This will generate the js file for each ts file.
+	
+	--declaration:-
+		if this flag is set then it will also generate the respective .d.ts file for type cheking.
+		this is useful for building the libs.
+		.d.ts only has interface and type nit function or class
 
 
+declarion file **.d.ts:-
+	This file are generated for strict typing of modules.
+	
+	Global type files:-
+		This are the type files whoch are available withou any inmport. 
+		this are default included in typescript.
+		EG:-
+			Type file for Promise
+			Type file for function like setTimeOut etc.
+	
+	External type file:-
+		This files are installed from external sources.
+		1. Bundled type:-
+				This type file comes along with bundle. packaged with it only.
+				EG: in axios types like 'AxiosResponse' is budled with axios lob only
+				import axios, {AxiosResponse} from 'axios'
+		2. DefinitelyTyped:-
+				it a community driven type file which are available under '@type'.
+				for module x you can get it from '@type/x'
+				EG:-
+					npm i @type/ts-node
+					npm i @type/react
+				
+		
 
 export interface BasicAuthProps {
     userId?: string  --->  MAke it optionaland default value will be undefined

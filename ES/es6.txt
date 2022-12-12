@@ -82,38 +82,23 @@ lambda fnction:
 			}
 			var home = new Home();
 	
-	Secret detail of lexical this:-
-		if you open the bundle.js and look for lembda function you will see all of them are converted to normal function and 'this.' used in those function 
-		has also been changed to '_thisX.'  [where X = 0 1 2 3 4....infinity], 
-		the value of '_thisX' is assign at the top of the immediat parent function of those lembda function
-			function Home() { 
-				...
-				var inffEs6 = 		() => { console.log('inffEs6', this.name); }
-				....
-			}
-		will be converted to:-
-			function Home() { 
-				_this1 = this;
-				...
-				var inffEs6 = function inffEs6() { console.log('inffEs6', _this1.name); };
-				....
-			}
---
 	
-
-if you are declaring lembda function in es6 class, then you will either declare it in 'constructor' or in 'member' function.
-in both of the cases conversion happen in same way
-
-	class Compcls {
-		constructor () 	{ (()=>{console.log('constructor lembda', this)})() }
-		mfLembd () 			{ (()=>{console.log('mfLembd lembda', this)})() }
-	}
-after conversion:-
-	class Compcls {
-		constructor ()  {  _this8 = this; (()=>{console.log('constructor lembda', _this8)})() }
-		mfLembd () 			{  _this9 = this; (()=>{console.log('mfLembd lembda',     _this9)})() }
-	}
 	
+	lambda function can not be used as
+		1. member function of an object:-
+				You cannot use it as menber of a object, this in that case will reprsent the parent context not the object itself.
+				the parent contxt coult be anything else, it could be window or undefined.
+				const obj = {
+					x: 'df',
+					k: function () 		{ console.log(this) },
+					f: 					() => { console.log(this) }
+				}
+				obj.f1 = () => { console.log(this) }
+				
+				obj.f()		--> this will be undefined
+				obj.k()		--> this will the obj.
+				obj.f1()	--> this will be undefined
+		
 ---------------------------------------
 
 Map and Set:-
@@ -185,7 +170,25 @@ varax/spreead operator: ...
 			
 	also see "#REFREST_PARAM" in js.txt
 --------------------
+Destructuring:-
+	Object:-
+		
+	Array:-
+		const myarray = [1, 2, 3, 4, 5];
+		const [y, z] = myarray;						y=1, z=2
+		const [y, z, ...r] = myarray;			y=1, z=2, r = [3, 4, 5]
+	Object:-
+		For object de-structuring you must know the key name.
+		const obj = { a: 1, b: 2, c: 3, d: 4};				
+		const { a, b } = obj;							a=1, b=2
+		const { a, b, ...r} = obj;				a=1, b=2, r={c: 3, d: 4}
+		
+		Changing key name:-
+				const { a: a1, b: b1, ...r} = obj;											a1=1, b1=2, r={c: 3, d: 4}
+		setting dfault value
+				const { a: a1 = defa, b: b1 = defb, ...r} = obj;				a1=1, b1=2, r={c: 3, d: 4}
 
+--------------------
 String template/interpolation:
 	Another beautiful feature is string interpolation.
 	in es5: 

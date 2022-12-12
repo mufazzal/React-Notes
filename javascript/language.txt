@@ -64,6 +64,36 @@ Use variable without declaring:-
 			that variable will become an global variable [part od window object]	
 -------------------------------------------------
 
+Temporal Dead Zone:-
+	As in JS variable are Hoisted on the top of block[for let] or function[for var].
+	if you declare the variable in between of { and }, the space above the line whare variable is delcared is called TDZ.
+	
+	in TDZ:-
+		variable declared with var will remain undefined but do not give any compilation error.
+		variable declared with let will give a compilation error. 'cannot used xxx before delaration'
+		
+	
+	myFun() {
+		
+		console.log(myVar)				-> undefined
+		console.log(myLet)				-> Error: can use myLet before decalaration
+		
+		var myVar = 5
+		let myLet = 8
+		
+		if(true) {
+
+			console.log(_myVar)			-> undefined
+			console.log(_myLet)   	-> Error: can use _myLet before decalaration
+
+			var _myVar = 15
+			let _myLet = 18
+		}
+	
+	}
+
+-------------------------------------------------
+
 use strict:
 		This is used to restrict some very irratinal and possibly-buggy behaviour JS
 		>	'use strict' should always come at top of function or file
@@ -156,10 +186,20 @@ instanceof:
 	emp instanceof Person			true
 	pp instanceof Employe			false
 
-------------------------------------------------					
+-------------------------------------------------
+
+null VS undefined:-
+	they both reprsent the nothingness but in their own way.
+	null is the object that repsent this nothingness 
+	undefined means there is nothinf in that refrence
+	typeOf null -> object
+	typeOf undefined -> undefined
+	
+-------------------------------------------------
 
 Higher Order Funtion:-
-	This is the function which return another function with some mutation:-
+	This is the function which return another function with some mutation.
+	This new function will accomodate the funtionality of passed function + additional processing of output of passed funtion
 	
 			const getPrefixdCurr = (val, carr) => {
 				return val + carr
@@ -217,6 +257,55 @@ function variable (1) VS fnction expression (2):
 				
 				console.log( fnExp(), fnVar() );								fnExp fnVar			
 			}
+-----------------------------------------------------
+
+delete operator:-
+	this is used to delete a property of object.
+	BUT it cannot delete the variable or function
+	
+	it return true:
+		- if property exist and deleted
+		- property do not exist and so no deletion done.
+	it return false:
+		- if you try to delete a variable or function.
+	
+	EG:-
+	anyFnction() {
+
+   let emp = { 
+        firstName: "Raj", myFun: ()=>{}
+    } 
+		let anotherFun = ()=>{}
+		let anotherVar = 'w'
+		function thefun() {}		
+  
+    console.log(delete emp.firstName);			-> true, deleted the property
+    console.log(delete emp.myFun);					-> true, deleted the property [doesnt matter property is function or object or primitive]
+    console.log(delete emp);								-> false, because emp is the variable not property
+    console.log(delete anotherFun);					-> false, because anotherFun is the variable
+    console.log(delete anotherVar);					-> false, because emp is the variable 
+    console.log(delete thefun);							-> false, because emp is the function 
+		
+    console.log(emp);												-> {}
+	}
+	
+	delete do not delete the refrences of value and so do not impact other variable refrncing same value
+	EG:-
+		var ff = {name: "mufazzal"}
+		let hold = ff.name
+		delete ff.name
+		
+		console.log(ff.name, hold) -> undefined, "mufazzal"
+	
+	Excecption:-
+		Global object can be deleted, because they are in window 
+
+		<script>
+				toDelete = 5;
+				console.log(delete toDelete);			-> true
+				console.log(toDelete);						-> undefined
+		</script>		
+	
 -----------------------------------------------------
 
 Immediately Invoked Function Expression  (IIFE)

@@ -1,0 +1,13 @@
+Large file upload from UI
+
+pause and intimate user before large form close
+
+api call at interval VS websocket debouncing
+
+hindind any key
+		function = f() {
+			this.cc = "ee"
+		}
+		k = new f()
+		k.cc --> should not be accessible
+

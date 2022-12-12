@@ -1,29 +1,33 @@
 Polyfills
 
-Javascript
-	Generaotr function
-	prototypr chaining
-	axios common set up
-	currying
-	lexical scope [not this]
-	higher-order functions
-	event loop
-	storages in JS
+rule to create hook | 3 + '3' + 'hi' - 'sd' | 
 
+Javascript
+	Generaotr function	- DONE
+	prototypr chaining	- DONE
+	axios common set up	- DONE
+	currying	- DONE
+	lexical scope [not this]	- DONE
+	higher-order functions	- DONE
+	event loop	- TODO
+	storages in JS	- TODO	
+	temporal dead zone
+	delete key
+	Array : splice and pop function
+	
 HTLM
 	DOCType
-	
+	Symentic element
 
 CSS
-	em
-	Block level element
+	position
+	display
 	flex
 	
 ReactJS
 	Hooks [useContext, useMemo, useCallback] - Done
 	react StrictMode 
 	Pure Components
-	story book
 	Custom Hook
 	prop drilling
 	controlled vs uncontrolled/stateless comp
@@ -35,6 +39,14 @@ ReactJS
 	Comp Composition
 	Virtual DOM and how it work
 	React-router Browser history, push and replace
+		nested rout
+		React roouter auth based ruting
+		going via direct url like /support, /service
+		<RedirectTo >
+		try reacing non existing page
+	component vs element
+	React interceptor
+	React fiber
 	
 Redux
 	Middleware
@@ -117,12 +129,21 @@ NodeJS Express
 	SSL cer setup
 	body parser
 	helmet
+	cache-control in header
 	
 Rest
 	cors in detail
 	Methode like OPTION and PUT
 	request validation like body and header etc.
 	lazy loading react
+
+HTTP
+	Methotds
+	Keep Alive
+	HTTP long ppolling
+	
+WebSocket
+	debouncing
 
 JWT token
 	generation

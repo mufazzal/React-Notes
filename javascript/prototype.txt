@@ -1,31 +1,30 @@
-As you already know we can create the object by multiple way
-E.G.
-var obj = {} 	OR 		new Object()  	OR   	new Person()
-with all this way you create objevt you can do one common thing , You can call those function 
-obj.toString()
-obj.hasOwnProperty()
-obj.valueOf()
-etc...
+Prototype is used for inheritence in js. it is an object from which other objects inherit properties
+any methode or property declared with 'prototype' of that class then it will be avialable to all the object of that class.
+And this object is shared among all child Objects in READ ONLY way
 
-So how does it possible, If we have never define this methode in the object then how this are available here?
-Answer is 'Inheritance' OR 'Prototype'.
+EX:-
 
-A prototype is an object from which other objects inherit properties
-
-
-But do not confuse with the JAVA here. Javascript the the inheritence in slightly diffrent way. 
-It do the inheritance on OBJECT level not on CLASS level.
-And this object is shared among all its child Objects in READ ONLY way
-
-Suppose you have two methode(constructor) and wanys relation in them
 	function Person(name) {
 		this.name = name;
-		this.setName(name) {this.name = name}
+		this.depObj = {nn: 'nn', mm: 'mm'}
+		this.perfun = function() {}
 	}
+	Person.prototype.isHuman = 'Yes-human';
+	Person.prototype.getHuman = () -> {}
+
+	var person = new Person("Default Name");
+
+	Now 'getHuman' and 'isHuman' is available for all the object of 'Person'
 	
-	function Employee(empId) {
-		this.empId = empId;
-	}
+	
+	person [name, depObj, perfun]
+		__proto__ [isHuman, getHuman]
+				__proto__ [Object.prototype]
+
+prototype chain:-
+	you can have a chains of prototype one after anothe which all untimatly end on Oject.prototype
+
+-------------------------------------------------------
 	
 
 What you inherit is an instance of class not a class itself and the those who are inheriting is also a instances of class not a class.

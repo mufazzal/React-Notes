@@ -70,9 +70,9 @@ for of VS for in vs forEach
 ({className: any, children: any}) => {}															--> In Correct
 
 
-Varoable declaration
-IN JS >>  without keyword, var
-IN Es6 >>  let, const, var, [not possible without keyword]
+Variable declaration
+	IN JS >>  without keyword, var
+	IN Es6 >>  let, const, var, [not possible without keyword]
 
 
 
@@ -102,6 +102,7 @@ ES6
 	set and map
 	spread operator
 	string interpolation
+	CLASS
 	
 
 Class vs function+Hook:-
@@ -115,7 +116,7 @@ Class vs function+Hook:-
 		- code can be reused by custom hook
 	Generally we start with dunb fuctional component and later if it more functional then we have convert it to class
 	but with hook its no longet needed.
-
+	lot many lifecycle methore are now deprecated
 
 ----
 
@@ -131,7 +132,7 @@ spread :-
 ----------
 Reducing bundle size:-
 	code spliting
-	set proper browser list for babel with 'browserslist'
+	set proper browser list for babel with 'browserslist' for reducing polyfill adds
 	run webpack in production
 	use plugins like cssMin**, TesterPlugin.
 	use   import {ff} from '..'   intead of   impot ddd from '..'
@@ -139,6 +140,13 @@ Reducing bundle size:-
 	use plugin like contextReplaceMentPlugin to remove some specific module from node_modules
 	
 	
+--------------
 
+arrow function:-
+	lexical this
+	limits:-
+		cannot use with call, apply, bind
+		not used as constructor 
+		can not user super
 		
 		
