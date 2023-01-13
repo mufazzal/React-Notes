@@ -54,7 +54,7 @@ lambda fnction:
 				var lftyp = name => { ... return <...> };			
 		3.	lemda function single line body 
 				var lftyp = (name, city) =>  name + ' -- ' + city;				// return the formatted string.					
-				var lftyp = (name, city) =>  c.l(name + ' -- ' + city);		// return undefined
+				var lftyp = (name, city) =>  c.l(name + ' -- ' + city);			// return undefined
 		4.	lemda function single line body  + 	only one param
 				var lftyp = name =>  'name : ' + name;
 		5.	lemda function with no param
@@ -90,14 +90,19 @@ lambda fnction:
 				the parent contxt coult be anything else, it could be window or undefined.
 				const obj = {
 					x: 'df',
-					k: function () 		{ console.log(this) },
-					f: 					() => { console.log(this) }
+					normalFun: function () 		{ console.log(this) },
+					lambdaFun: 					() => { console.log(this) }
 				}
-				obj.f1 = () => { console.log(this) }
+				obj.outLambdFun = () => { console.log(this) }
 				
-				obj.f()		--> this will be undefined
-				obj.k()		--> this will the obj.
-				obj.f1()	--> this will be undefined
+				obj.lambdaFun()		--> this will be undefined
+				obj.normalFun()		--> this will the obj.
+				obj.outLambdFun()	--> this will be undefined
+			
+			Even bind will not work here for lambda function
+			const bindedLambdFun = obj.lambdaFun.bind(this)
+			bindedLambdFun() 	--> this will be undefined, because lambda cannot be binded
+			
 		
 ---------------------------------------
 

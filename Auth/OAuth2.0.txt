@@ -1,0 +1,369 @@
+### View this file in Tab 4###
+
+The OAuth 2.0 is the way to do the Authentication between parties.
+
+There is four party here
+
+1. Resource Owner : User 	:-  The one who know the username and password
+2. Client App(+Middleware) 	:-  The one who need to have access on some protected resource Or himself is the protected resource.
+3. Authentication Server  	:-  The one who has directory of authenticated owners(users) and owen the logic of authentication
+4. Resource Server       	:-  The one who has the protected resources.
+
+IMP: Resource Server may or may not come ino picture for Authentication flow.
+	The client App is a kind of Front end and Resource server is a kind of back end which is own by the same organization-of-client.
+	Authentication Server, is the Oauth provider like gmail, faceboon, Auth0 etc, which authenticate user for the organization-of-client.
+	
+	
+Resource Owner: 
+  This is the end user. who know the username and password or social login detail or any personal info that need for authorization
+  It could be
+    h.mufazzal@gmail.com
+    Fatema
+    7387486776
+    etc.
+
+Client: 
+  Client could be of two type
+  Non trusted with 'Middleware Server' :-
+    Such Client is just an intemediatory between 'Resource Owner' and 'Resource Server'. 
+		who do nothing but call the APIs of Middleware server(non authenticated) of 'Middleware Server' and assume that Middleware server will check if user is authorized or not.
+    Think of client as 'front end + Middleware server as back end' with session detail + accesa token from 'Authentication Server' of each session 
+		
+  Trusted with or without 'Middleware Server':-
+    When you are sure that your client is trusted and the communication between the Client and Middleware Server is secured.
+    You place all responsibility of authentication to Client and Middleware server does not come in picture.
+
+  EG:  Any web app or mobile, this is for the developer of that app to decide that does he trust the app fully or not.
+
+Authentication Server: 
+  This is where all the user credention info or social info or any othe rinfo lie which can be used to verify user identity.
+  This also own the logic of identification. It own the Login UI page also whhere user fill its login detail.
+
+Resource Server:
+  This is where the protected resources lie.
+  EG. the server who hist the APIs. 
+
+-------------
+
+Auth 2.0 can do 
+1. Only identify:-
+	Authentication Server only identify that the user is valid and provide some basic info in id_token.
+
+2. identify + Authorize	
+	Autherization server identify that the user is valid as and provide some basic info in id_token as well as give access token too
+	The access token has info related to 
+	- scope to define the accesibilty of diffrent resource on Resource Server.
+
+-------------
+
+When resource server is protected resource not client->
+The 'Client' Wants 'Authentication Server' to verify the 'Resource Owner' authenticity and give client the TOKEN so that client can let user
+access the protected resources at 'Resource Server'
+
+OR
+
+When client is protected resource->
+The 'Client' Wants 'Autherization Server' to verify the 'Resource Owner' authenticity and give client the TOKEN so that he can let user use
+the client.
+---
+
+
+Client and Authentication Server initial set up:-
+  Authentication server guarantee the user identity and The client need this guarantee 
+  so they both need to first make some contract between them, this is one time activity where the Client need to register himself at 'Autherization Server'
+  How this contract look like
+  At AS the client need to provide below info
+  1. Name
+  2. Callback url : This is the url where user will be redirected to onece user complete the authorizaion successfully/unsuccessfully 
+    This two are mosy imp info client need to provide, AS may ask for some more detail.
+  In return the AS give 2 things to Client to note down
+  1. Client ID: a unique id of client among all other client registerd at AS
+  2. Client Secret (Opional) : AS will provide the client secret if you wants. which the client should not share with any one.
+      Client Secret must be placed at trusted location. if you trust client then place it there otherwise are RS.
+    
+So what AS has:-
+  - This list of user credential, the logic of user identity verification, the list of registerd clint with there name, clent id and secret.
+  - The Login page where user put the creds
+	- The Token API which is used to generate the Token (will see later)
+	
+	View of AS, Client, RS if we trust the Client
+																			<----------------------Client--------------------->
+	                                                                          
+																			  front end like web		Back end like apache
+																			  or mobile app					or nodejs server
+																			<------------------->		<------------------->
+																					  
+                                                                                  APP1                   APP1-Middleware server					  Resource server
+                                                                            ---------------------       ---------------------			| A |		 -----------------			
+																			|           		|       | 			        |  		    | C |  		| POST /user	|  
+                                                                            |      clientId     |       |   client_Secret   |           | C |       | GET /user		|  
+                                   AS                                       |      xgsuhw13     |       |     asassqsws     |           | E |       | PUT /user     |  
+      -------------------------------------------------------------         |                   |       |                   |           | S |       |               |  
+      |                         User Creds                        |			---------------------       ---------------------   	    | S |       -------------------  
+      |     --------------------------------------------------    |			         	                                                          
+      |     | ID | TYPE |  USERNAME   |  PASSWORD   |  scID  |    |                                                                               
+      |     | ## | FB   |  mufa_FB    |             |  6486  |    |               APP1                    APP2-Middleware server        | T |       Resource server     
+      |     | ## | RGTR |  h_mufazz   |  t!fs$fsd   |        |    |         ---------------------       ---------------------           | O |      ---------------------	
+      |     | ## | RGTR |  fatem_23   |  2334SDew   |        |    |         |           		|       |      			 	|           |   |      | POST /item		|   
+      |     | ## | GOGL |  murtuzaa   |             |  32232 |    |         |      clientId     |       |   client_Secret   |           |   |      | GET /items	 	| 
+      |     | ## | SAML |  sd@amd.c   |             |  457u8 |    |         |      asds23sd     |       |     45wfytgb      |	        |   |      | GET /offer     |   
+      |     --------------------------------------------------    |         |                   |       |                   |	        | K |      |                |   
+      |                                                           |         ---------------------       ---------------------	        | E |      --------------------- 
+      |                                                           |                                                                     | N |        
+      |                        Clients Table                      |                                                                    	         
+      |     --------------------------------------------------    |               usrPO                                                         
+      |     | NAME  |   C_ID   |  C_SECRET   |  CLBK_URL     |    |         ---------------------            							| A |       Resource server     
+      |     | APP1  | xgsuhw13 |  asassqsws  | www.app1.com  |    |         |         		    |                                       | C |      ---------------------
+      |     | APP2  | asds23sd |  45wfytgb   | www.app2.com  |    |			|      clientId     | 		                                | C |      | POST /item		|
+      |     | usrPO | iwndo24l |             | urPo.abc.com  |    |			|      iwndo24l     | 		                                | E |      | GET /items	 	|
+      |     | admPo | eicne35e |  43dfy6vd   | adPo.abc.com  |    |			|                   | 		                                | S |      | GET /offer    	|
+      |     | conAp | efdfhdi2 |             | google.com    |    |         ---------------------                                       | S |      |                |
+      |     --------------------------------------------------    |                                                                     | T |      ---------------------
+      |                                                           |                                                                         
+      |                                                           |                admPo                                                	        
+	  |						[Login Page]  						  |			---------------------     									| O	|         Resource server     
+      |           {Token API}                                     |         | 				    |                                       | C |      ---------------------
+      |                                                           |         |      clientId     |                                       | K |      | POST /item		|
+	  -------------------------------------------------------------         |      eicne35e     | 	                                    | E |      | GET /items	 	|
+                                                                            |                   | 	                                    | N |      | GET /offer     |
+                                                                            |   client_Secret   | 	                                    |   |      |                |
+                                                                            |      43dfy6vd     | 	                                    | A |      ---------------------
+                                                                            |                   | 			                            | C |
+																			---------------------			                            | E |
+                                                                           	                                                                                                                      
+																				                                                        
+																				                                                        
+----                                                                                                                                    
+In the process of OAuth the user will fill the credential only in Login page that is owned by AS not bu client                          	
+This is bootelnek of trust. The AS is ready to share the validity f user but noot the credential of user with clients.                  	
+                                                                                                                                        	
+Oauth 2.0 define 4 diffrent kind of flow mechanism for uthentication between multiple party.                                            
+They should be used on scenario basis.                                                                                                  
+                                                                                                                                        
+This 4 are                                                                                                                              
+  Authorizaion Code Grant:-                                                                                                             	
+		This is useful when you have at least trust on one. either on clent or on RS.                                                   
+  Implicit Grant                                                                                                                        
+		This is useful when you do not trust any of them
+  Client Credential
+		When uer is not involved at all, you trust the servet to server, AS-to-Client 
+
+
+Authorizaion Code Grant:-
+	This is very useful for App for which you trust either the front end or back end and sure that saving Client_secrt in one of them is not issue.
+	Flow
+	
+	Say user 'Mufazzal' wants to access the client 'admPo' and need to idetified through AS 'mufUserPool'
+	
+	1. User(Mufazzal) go to some page of client and as he is not yet Authenticated so he has to go to AS('mufUserPool') first to request the Authentication
+			on behalf of Client(admPo)
+  	2. Noticing unauthenticated the client will redirect the user to AS server login page with some meta detail to let AS know that its on behalf of admPo 
+			the url of this page will look like this-
+				https:// <AS server domain> /oauth2/authorize?
+					response_type=	code&
+					client_id=		<Id of the client admPo>&
+					redirect_uri=	<Redirct Url of addmPo>&
+					state=			<Some random string>
+					
+	3. The redirected url will open the login page owned by AS(mufUserPool) but open at behalf of Client(admPo)
+		 The AS also check some basic sanity like
+			- Client id prsent in table
+			- The redirect_uri provided in url match with the client_id prsence in table of clients at AS.
+		User will fill the credential or fill any info that requred to authenticate him and press submit button.	
+	
+	4. If authentication is successful the the AS will generate the 'Authorization Code' and return it via redirect url.
+		 the client will later can use this code to generate the access token.
+		 
+	5. User is valid and Authentication is successful
+		 Then user will be redirected to 'redirect_url' given in url(== url in AS table). Along with the 'Auth Code'
+		 The formate of this url is
+				https:// <redirect_uri> ? 
+									code=	<The Auth code generated by AS>
+									state=	<value must match with the one provided in step 2>		
+			
+			## Security concern betwee step 2 and 5:-	
+					The client redircted the user to AS owner login page fine.
+					the user is typing the creds in that page
+					but some hacker from somewhere just pretent to be an AS and return you the fake Auth Code at the rdirect url.
+					To prevent this we send the 'state' variabe at AS server in step 2, 
+					In step 5 when user authenticae successfully and redirected back to client. the AS add the 'state' variable again in url 
+					and its value must match with what Clents sent in step 2.
+			
+			 		- User is invalid and Authentication is unsuccessful User wont be able to come to client at all.
+	
+	 6. Afetr step 5 the client has the 'Auth Code'. Now it time to get the Tokens(Access, Id and Refresh)
+	 		There is two scenario here
+			6.1. You trust the client itself : Client_secret stored at Client
+					To get the token the client must have the Auth Code he got in step 5 and The Clent_secret. 
+						Now the client has to call the Token API. The strucure of this API is standarizes as
+								POST
+									https:// <AS server domain> /oauth2/token?
+										Content-Type=	application/x-www-form-urlencoded&
+										Authorization=	Basic Base64(<Id of the client admPo>:<Client_secret of the client admPo>>)
+									BODY
+										grant_type:		authorization_code
+										code:			<The Auth code received in step 5>
+										client_id:		<Id of the client admPo>
+										redirect_uri:	<redirect url of the client admPo>
+										client_secret:	<secret of the client admPo>
+				The Client Secret in above api is required only if the developer has created the secret at a time of app registration
+				in AS. if not then we can leave it.
+				EG:-
+					for client 'admPo' you have to provide the secret
+					for client 'usrPo' you do not have to give.
+					
+				The API will reach to AS server again and finalyy produce below result if all is ook
+							{
+									"id_token": ".....",
+									"access_token": "......",
+									"refresh_token": ".......",
+									"expires_in": <time in seconds>,
+									"token_type": "Bearer"
+							}				
+					
+					Finally the client has the token, he now can use this token to access the protected resources from resource server.
+					expires_in will tell you how much time this token will be valid. so after this time later you have to refresh the token again
+					How to trefresh the token 
+						???????????????????
+					access_token vs id_token
+						???????????????????			
+				
+			6.2. You do not trust the client but trust the Resource server : Client_secret stored at RS
+						Most of thing remain same here except the the Auth code is first sent to an 'Middleware' server from client
+						and then that middleware server ill run the Token Api of AS server and so finally the Middleware server
+						who is trusted over the client-front-end will get the Access token.
+
+Implicit Grant:
+	This flow is useful when you trust nothing. neither clinet(front end) or its middleware server.
+	This grant is bit easier to get and required less step.
+	Flow:-
+	
+	The first 3 step is same as 'Aurh Code flow' as you ca see below
+	
+	1. User(Mufazzal) go to some page of client and as he is not yet Authenticated so he has to go to AS('mufUserPool') first to request the Authentication
+			on behalf of Client(admPo)
+  	2. Noticing unauthenticated the client will redirect the user to AS server login page with some meta detail to let AS know that its on behalf of admPo 
+			the url of this page will look like this-
+				https:// <AS server domain> /oauth2/authorize?
+					response_type=	token&
+					client_id=		<Id of the client admPo>&
+					redirect_uri=	<Redirct Url of addmPo>&
+					state=			<Some random string>
+					
+		IIMP: notice the diffrence of login pare url for 'Auth code flow' amd 'implicit flow'. The only diffrence is 'response_type=tocken'
+				instead of 'code'
+		
+		
+	3. The redirected url will open the login page owned by AS(mufUserPool) but open at behalf of Client(admPo)
+		 The AS also check some basic sanity like
+			- Client id prsent in table
+			- The redirect_uri provided in url match with the client_id prsence in table of clients at AS.
+		User will fill the credential or fill any info that requred to authenticate him and press submit button.	
+	
+	4. If authentication is successful the the AS will generate the 'access_token' and 'id_token' and return it via redirect url.
+		4.1 if User is valid and Authentication is successful
+				 Then user will be redirected to 'redirect_url' given in url(== url in AS table). Along with the tokens
+				 The formate of this url is
+						https:// <redirect_uri> ? 
+											access_token=	<the access token>&
+											id_token=		<the id token>&
+											expires_in=		<the id token>&
+											state=			<value must match with the one provided in step 2>		
+		Now you can use this tocken to get access the resource server 
+		
+		So this one is fairely simple but it has one big flaw:-
+			It does not give you the refresh_token. so once the access_token expired you will not be able to get new one.
+			This is because in implicit grant the AS assume that trust in client is low and so trust the cliens in least possible way
+			So give client token only once and after expiration if client need again, then user has to be there to generate the new one.
+		
+
+Client Credential Flow:-
+	In this of flow the user is not at all involved. Also at no point of time in this flow you will redirected to Login page of AS.
+	For this you just need to call one API of AS.
+	The formate of this API is	
+				POST
+					https:// <AS server domain> /oauth2/token?
+						Content-Type=	application/x-www-form-urlencoded&
+						Authorization=	Basic Base64(<Id of the client admPo>:<Client_secret of the client admPo>>)
+					BODY
+						grant_type:		client_credentials&
+						client_id:		<Id of the client admPo>
+						client_secret:	<Secret of the client admPo>
+	No login page and no redirection needed so we do not supply 'redirect_url' too
+		response:-
+			{
+				"access_token": "....",
+				"expires_in": 3600,
+				"token_type": "Bearer"
+			}
+		Just like in implicit flow you do not get the refresh token here.
+		Bu here you Also do not receive the id_token, that is because id token conyains the info about the user wh fill his 
+		creds in login page os AS. but here neither user nor login page is involve.
+		it only between   AS<-->Client  not  User<-->AS<-->Client
+	
+	
+Refresh the token:-
+	We know that the access_token expires in given time so we need to get the new token before that.
+	retriving the new tokenvis allowed only if your flow were 'Auth Code' so system is preasumable trusted.
+	in 'implicit' and 'client_credential' refressing token not allowed.
+	
+	That why you receive the refresh_token only in 'Auth code' flow not in others.
+	
+	To get the new access_token you need to simply call below api:-
+				POST
+					https:// <AS server domain> /oauth2/token?
+						Content-Type=	application/x-www-form-urlencoded&
+					BODY
+						grant_type:		refresh_token&
+						refresh_token:  <the refres_token you receive in the end of Auth Flow>
+						client_id:		<Id of the client admPo>
+						client_secret:	<Secret of the client admPo>		
+				Response
+							{
+									"id_token": ".....",
+									"access_token": "......",
+									"expires_in": <time in seconds>,
+									"token_type": "Bearer"
+							}					
+	
+	
+Access VS ID VS Refresh Token:-
+	????????????????????????????
+		
+		
+---------------------------------------------------		
+		
+JWT Token:-
+	In the final step of any Auth flow we grt the tokens.
+	all those token are in JWT formate. this is is special protocol to seurely authenticated user across deitributed system.
+	
+	JWT vs Session token:-
+		session token are stored in some DB at resource server. whenever a request comes the resource server do lookup in that DB to find the actual identity of user.
+		so se session token is kind of pointer in DB for user identity.
+		issue with this approach is that this you need to maintain the session DB and do look up on every api call.
+		advantage of this is that even if someone get the access token he cannot decode and get user info from that.
+		
+		JWT on the other hand a full envolop of user identity and his authorities.
+		its contain info related to userId, email and bunch of other info. in case of access_token it laso has scope to get its authority.
+		JWT has three part sparated bu dot
+		
+		1. Header:-
+			it contain ifo related to encryption
+		2. Payload
+			it contain info related to user. generally AS provide the ways to customize this part. you can set it up to have other info. 
+			below are some default field:-
+			1. iss:  the issuer of token. the owner of user directory. this is related to AS. for gmail it google.com 
+			2. aud:  the id of client app that is regitered at AS.
+			3. exp:	 the expiration time of token
+			4. iat:	 the time of token issuence			
+			5. scop: it comes only in case of access_token. this give you information about authority of identified user.
+				depending on the AS server, you can have more such field.
+		3. Signature
+			here lies the info if this token iv authentic or not.
+			JWT token is generated at AS server and sent to the user browser.
+			browser app (client) use this token to authenticate and authorize the user on resource server.
+			AS, browser app (client) and resource server all use this field to verfy the authenticity of the token.
+			signature is generated by AS, carried in each api by client app and verified at resource server [in consultaion with AS]
+	
+	
+	

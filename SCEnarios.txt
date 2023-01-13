@@ -1,13 +1,149 @@
 Large file upload from UI
+	2. Simple upload:-
+		Client send the whole file and server read the whole file
+		Adv:-
+			easiest to maintain
+		disAdv:-
+			server and client can be ovewhelm if file size is too large
+			connection intruption is hell
+	1. Leave it to third party:-
+		use a signed s3 url
+	2. Handle at server side:-
+		At server side you write a single POST route and in this you handle the chucks as input stream.
+		In node.js you do it by overriding the 'data' event of req.
+		Client make only one POST or PUT call with the file[small or big].
+		Server will read each chunk recived at its side and process it. it do not wait for all the chuck to load first.
+		Server can straem those chuck in disk or other location whithout holding them till all other chuck received. 
+		Adv:-
+			Server cannot be overwhelm with large file size
+		disAdv:-
+			There is only one post so client can be overwhlmed with that sigle post
+			connection inturrution will lost you all the uploaded progress.
+	3. Handle at server + client both side:-
+			At server you write the post api that will handle the indivisual chunck
+			At clinet we will split the files in small chunks and call post with necessary metadata for all other.
+			server will get all this chunk(+metadata) and re-arrange them to create the final file.
+		Adv:-
+			Server cannot be overwhelm with large file size as file is arrived in pieces
+			Client cannot be overwhelm with large file size as a file is splitted in piecess
 
-pause and intimate user before large form close
+pause and intimate user before large form close:-
+	
 
 api call at interval VS websocket debouncing
 
-hindind any key
-		function = f() {
-			this.cc = "ee"
-		}
+private property of objevt:-
+		function = f() { this.cc = "ee" }
 		k = new f()
 		k.cc --> should not be accessible
+	Achiving this is very tricky. you can do some trick
+	1. By constructor Scope:-
+		Here the private variable is declared in constructor and so closure of constructor is work as private scopr for all those variables.
+		Though member function (anotherFun) also cannot access then
+		ES6:-
+			class Person {
+				constructor(name) {
+					var _name = name
+					this.setName = function(name) { _name = name; }
+					this.getName = function() { return _name; }
+				}
+				anotherFun() {...}
+			}
+		ES5:-
+			function Person(name) {
+				var _name = name
+				this.setName = function(name) { _name = name; }
+				this.getName = function() { return _name; }
+			}
+			
+	2. By # in ES6 class
+		This is new feature and nor supported by older browser
+	
 
+
+----------------------
+
+Axios retry:-
+	use the axios interceptor 'axios-retry' and configure it properly to make retry on failed request
+	One time confuguration:-
+			const axios = require('axios');
+			const axiosRetry = require('axios-retry');
+
+			axiosRetry(axios, {
+				retries: 3, // number of retries
+				retryDelay: (retryCount) => {
+					console.log(`retry attempt: ${retryCount}`);
+					return retryCount * 2000; // time interval between retries
+				},
+				retryCondition: (error) => {
+					// if retry condition is not specified, by default idempotent requests are retried
+					return error.response.status === 503;
+				},
+			});	
+		above code will plug the interceptor in axios, which will execute after each call.
+		
+	Now use axios as usual way.
+		axios({url: '..', ...})
+		
+
+Axios commen req modifier:-
+	Add a request interceptor for this:-
+		axios.interceptors.request.use(function (config) {
+			const token = store.getState().session.token;
+			config.headers.Authorization =  token;
+			 
+			return config;
+		});	
+-------------
+
+Git merge:- All the commit in integrated in one single merge
+				mainline
+	--------1-----2-----3-----4-----5-------
+				|
+				-------A----B-----C---------
+		MERGE
+	--------1-----2-----3-----4-----5------------ABC--------
+				|							|
+				-------A----B-----C-------------D
+				
+				
+Git Rebase:- All the commit are individualluy merged
+				mainline
+	--------1-----2-----3-----4-----5-------
+				|
+				-------A----B-----C---------
+		MERGE
+	--------1-----2-----3-----4-----5------------A---B---C--------
+				|							|
+				-------A----B-----C-------------D
+				
+Git Cherrypick:- You can select the commits individually to merge or not
+				mainline
+	--------1-----2-----3-----4-----5-------
+				|
+				-------A----B-----C---------
+		MERGE
+	--------1-----2-----3-----4-----5------------A----C--------
+				|							|
+				-------A----B-----C-------------D
+				
+
+ 		
+	
+-------------
+	
+API debouncing
+useLayoutEffect
+print the number of render
+use case of useRef	
+Axios api cache
+HTTP headers
+debouncing and throttling in react
+cherry picking, git rebase, git merge, stash area, github action, fork
+pass function in setState
+stale closure react
+redux persist
+
+express 
+ helmet
+ puppeter

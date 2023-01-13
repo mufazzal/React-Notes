@@ -1,0 +1,108 @@
+Helmet:-
+	Helmet is a express middleware that provide a layer of security on HTTP header.
+	It remove, Modify or add a header based on best recent security advisory.
+	
+	Helmet do below operation on the HTTP header
+		Content-Security-Policy: 	It sets up the Security Policy to prevent taking any input as source from diffrent domain. use will not be able to pur a js code in 
+											any input field and execute.
+		X-Frame-Options: 			It is used to prevent ClickJacking. user will not be able to open the site in enbedded frame
+		X-Powered-By: 				It is used to remove X-Powered-By header. X-Powered-By header leaks the version of the server and its vendor.
+		Cross-Origin-Opener-Policy:	Its is used to set if a child window is opened under main browser window, then will it share the context or not.
+		Referrer-Policy: 			It is used to hide the referrer header.		
+		
+		Expect-CT: 					It is used for handling Certificate Transparency.
+		X-DNS-Prefetch-Control: 	It is used for controlling the fetching of browser DNS.
+		Public-Key-Pins: 			It is used for HTTP public key pinning.
+		Strict-Transport-Security: 	It is used for HTTP Strict Transport policy.
+		X-Download-Options: 		It restricts to various Download-Options.
+		Cache control: 				It is used for disabling Client-Side caching.
+		X-Content-Type-Options: 	It is used to prevent the Sniffing attack.
+		X-XSS-Protection: 			It is used to add protection to XSS attack	
+	
+	For more detail read docs related to those header.
+	
+	
+
+SEcurity best practice:-
+	Header security:-
+		MAke sure you give proper header. remove/add/modify them properly.
+		Like 
+			X-Powered-By: show info related to server and its version
+			Content-Security-Policy and X-XSS-Protection:
+				make sure that any source execute on browser originate from correct domain. 
+				
+
+Cache Headers:-
+
+Cors:-
+	CORS is used to manage if any server resource can be used bu other origin.
+	if api is running at 'api.muf.com' then cors define if this resource canm be access by other origin like google.com or shb.com.
+	other origin means:
+		a different scheme (HTTP or HTTPS): http://api.muf.com
+		a different domain: http://ere.muf.com	or http://ex.com
+		a different port: http://api.muf.com:456
+	
+	CORS catagorized request in two catagory and handle them in diffrent way. All modern browser automatically detect if request is simple or not and then take action bsed onlt
+	1. Simple:
+		A request will be a simple only if all below condition are mmet
+			It is a GET, HEAD, or POST request AND
+			Only set HEADER Accept, Accept Language, Content-Language, Content-Type AND
+			Content-Type header can only have the values application/x-www-form-urlencoded, multipart/form-data and text/plain
+		How it handle:-
+			The browser sends the request and get the response, but in the response browser frist check for header 'access-control-allow-origin'.
+			- if this header is missing in response then browser deny the script to access the data and notify the cors error in browser console.
+			- if this headder is prsent but its value do not satisfy the current domain then browser deny the script to access the data and notify the cors error in browser console.
+			- if this headder is prsent and its value  satisfy the current domain then browser allow the script to access the data and all work fine.
+			
+			Access-Control-Allow-Origin: '*'
+			Access-Control-Allow-Origin: 'ss.com'
+			Access-Control-Allow-Origin: 'ss.com, bb.com'	-> Incorrect, accept only single origin or *
+			Access-Control-Allow-Origin: '*.ss.comm'		-> Incorrect, composite wildcart not supported
+			
+	2. Perflight:
+		Any non simple request is s perflight request.
+		How its handle:-
+			before executing the actual request, browser call the OPTION request to find if server allow it or not.
+			this request contains
+				origin: 						the domain name from which the request is made
+				access-control-request-method: 	tells the server which HTTP method the request implements
+				access-control-request-headers: tells the server which headers the request includes
+			in response the server can decide if it will accept a request of this kind from this origin or not by responding with these headers
+				access-control-allow-origin: 		the origin that the server will allow
+				access-control-allow-methods:		a comma-separated list of methods that the server will allow
+				access-control-allow-headers:		a comma-separated list of headers that the server will allow
+				access-control-max-age:				tells the browser how long (in seconds) to cache the response to the preflight request	
+				Access-Control-Allow-Credentials	tells the browser that it accept the credential like username/password/cookie/token/Authrization in header. 
+			Browser will cache this response for 'access-control-max-age' time and use that as refrence for nest requests.
+			
+			
+			Once perflight request is done, based on its response the origanal request call will be made or denied by browser.
+			
+	
+	CORS not applicable:-
+		CORS rule is not applied if request is generated from same origin.
+		all the header like 'Access-control-Allow-*' etc will be ignored and nor perflieght or other things comes to picture
+		Cors also not applied on non origin end point like Postman or mobile app.
+	
+	Express and CORS:-
+		You can use the middleware 'cors' for this. once installed and configured properly, it will 
+		- handle the perflight request for you
+		- add necessaary access headers in the response of all the api.
+ 		
+		const cors = require('cors')		
+		const corsOptions = {
+			origin:  					-->	mapped to access-control-allow-origin, accept string, array of string or function
+			methods: 					-->	mapped to access-control-allow-methods
+			credentials: true,			--> mapped to Access-Control-Allow-Credentials
+			maxAge: 1000				--> mapped to access-control-max-age
+		}
+		 express_.use(cors(corsOptions))	
+		 
+	Dynamic CORS:-
+		You can write the dynamic CORS policy, which will emit the access headers based on origin.
+			const corsOptions = {
+				origin: function(origin, callback) {
+					if(all goog) callback(null, true);
+				  },
+				  ...
+			}			 

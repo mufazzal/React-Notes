@@ -1,0 +1,101 @@
+Unlike HTTP which run on typical Request and response modal. websocker give you a persistent connection.
+This is very useful for having a real time communication and save you from flood of HTTP request for real time update
+
+Advantage:-
+	1. the connection is persistent 
+	2. it give you bi directional channel so both can send and receive the signals
+	3. its server footprint is very less
+	4. actual real time
+	5. ultra low latency after initial handshak
+	
+Disadvantage:-
+	1. extra implementation
+	
+
+Connection establishment:-
+	The WS connetion begin as TCP connection only, but then upgraded to websocket one.
+	
+	process:-
+		1. client initiat the GET request with below Header. This tells the server that you need to upgrade this connection as 'websocket'.
+		    Sec-WebSocket-Key tells the server about a unique id the client has given to this connection.
+			GET ws://localhost2.com:3000/ HTTP/1.1
+			Connection: Upgrade
+			Upgrade: websocket
+			Sec-WebSocket-Key: <random value>
+		2. Now server respond back with below respone and convert the connection as WebSocket
+			HTTP/1.1 101 Switching Protocols
+			Connection: Upgrade
+			Upgrade: websocket			
+			Sec-WebSocket-Accept: <This header is a uniqe GUUID for the connection>
+		
+		Conncetion  established.
+		This is done by lib and browser itself.
+		
+For client and server both you can use the lib 'wbsocket' of npm.
+
+
+Passing Auth/Header data:-
+	You can pass the header and query string only at time of connection establishment. not after that when sending the messages.
+	
+	
+Server:-
+	import { WebSocketServer } from 'ws'
+	const wss = new WebSocketServer({ port: 2222 })
+	  wss.on('connection', (ws, connReq) => {
+	  
+		if (ws.readyState === ws.OPEN) {
+			
+		  ws.send(JSON.stringify({ ...}))
+
+		  ws.on("message", dataBuffer => { const msgReq = JSON.parse(dataBuffer.toString()) })
+		  ws.on("close", (closeCode, dtatBuffer) => { ... });
+		  ws.on('error', (errorCode, error) => { ... })
+
+		}
+	  })	
+	  
+	Events at Server:-
+		connection: when the connection established for first time 
+		message: when a message recive
+	Imp function:-
+		send: to send data from server to client
+	Imp params:-
+		ws: the websocket connection
+		req: reprsent the request connection. this has the param like url, queryString, header etc
+		dataBuffer: the raw data which is received from client
+Client:-
+	
+		
+Cavitas:-
+	handling connection loss:-
+		use ping-pong mechanics, send the signal and wait for its acknowlagment for 20 sec, if not then treat it as closed one.
+	Authrization:-
+		use the connection request[from client] at beging to send this info like
+			connect(localhost:2222/userId=1)
+		and at server
+			 wss.on('connection', (ws, connReq) => {
+				connReq.query.userId
+			 })
+	Browser close:-
+		
+
+websocket vs HTTP long polling:-
+	proir to WS, for real time communication between client and server  HTTP long polling weere used where HTTP connection stay for longer time.
+	but now no one use this.
+		
+
+Security:-
+	you can use SSL handshak with valid cerificate. you must then connect with 'wss://' not 'ws://'
+	
+Subprotocol:-
+	
+
+Passing params:-
+	You can pass the parameter only at connection time. after then you can pass the only in signals.
+	to pass it use  connect('ws://localhost:2222/userId=1')
+	
+	
+------------------
+progressive-web-apps
+
+https://cxsb.spirnet.ph/vpn/index.html T-mhussain smart@1234	

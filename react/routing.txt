@@ -88,4 +88,9 @@ Code spliting/Lazy loading of module:-
 		</Suspense>
 	  </Router>
 	);	
+-----------------------------------
+
+
+BrowserRouter:-
+	It uses the History api of HTML 5
 	

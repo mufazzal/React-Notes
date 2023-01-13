@@ -271,7 +271,91 @@ useState:-
 				})
 			here the value of prevCounter will surely be the current one.
 			
+
+
+-----------
+useRef:-
+	see you wants to create a click counter for a button and need to show count only in console not in UI.
+	or you wants to create a counter for render calls and need to show count only in console not in UI.
 	
+	1. with simple varibale:-
+		fc() {
+			let ctClkCount = 0
+			let renderConter = 0
+			
+			console.log(ctClkCount, renderConter)
+			
+			renderConter++
+			return <Button onClick={ctClkCount++} />
+			
+		}
+		Issue:-
+			issue in this approach is straightforward, in each render both the variable will be reinitilize and se to 0.
+			So it will always print 0, 0
+	2. with state var:-
+		fc() {
+			let [ctClkCount, setctClkCount] = useState(0)
+			let [renderConter, setRenderConter] = useState(0)
+			
+			console.log(ctClkCount, renderConter)
+			
+			setRenderConter(renderConter+1)
+			return <Button onClick={setctClkCount(ctClkCount+1)} />
+			
+		}
+		
+		issue:-
+			line 'setRenderConter(renderConter+1)' will going to create a infinite rendering.
+			line 'setctClkCount(ctClkCount+1)' will not create infinit rendering but still it will at least do a additional render as its changing the state.
+				and so causing usless rendering
+	
+		So if you wnats any variable in the functional component that do not impact the render mechanics directly, the challange is that 
+		- if you use the simple variable then it will re-initiated to default value on every render.
+		- if you use the state variable then it will be bounded to lifecycle and may cause infinite or uselsess render call.
+		
+		To solve this comes a useRef.
+		Use it if you wants to have a variable that is independent of lifecycle, not cause the render call but yet maintain its value across subsequent renders.
+		
+		useRef return the object like below:-
+			const ctClkCount = useRef(10)
+			ctClkCount -> {current: 10}
+			
+		- current is the actual current value of variable, use it to get and update the value.
+		- useRef() return the default value set as frst argument, only for the first render. in subsequent render it will return the updated value 
+		
+		
+			fc() {
+				let ctClkCount = useRef(0)
+				let renderConter = useRef(0)
+				
+				console.log(ctClkCount.current, renderConter.current)
+				
+				renderConter.current = renderConter.current+1
+				return <Button onClick={()=> {ctClkCount.current = ctClkCount.current+1}} />
+				
+			}
+		
+	
+	useRef for child Component access:-
+		
+	
+	useRef for child DOM element access:-
+		You can use it to get the DOM HTML element directly. this is very useful for doing operation directly 
+			fc() {
+				let inputRef = useRef(null)	
+				useEffect(()=> {
+					inputRef.current.focus()
+				})
+				
+				return <input ref={inputRef} />
+				
+			}		
+		
+		Another use case:-
+			1. to hold integer return from setInterval methode
+			
+		
+-----------	
 useReducer:-
 	This is alterbnative to useState, but comples and work like redux reducer. you have pass the reducer function and intialstate.
 	also instated of setter it gives you dispatch
