@@ -271,7 +271,32 @@ Mapping array:-
 ------------------------------
 
 generator function : 
-	this is rarly bieng used, it useful for React-Nativs and Node.js so better go through it little in internet.
+	Unlike traditional function, which called, execute and return after that.
+	in generator function you can do multiple return in sigle call. this sunction maintain its state and yield.
+	usage:-
+		   function * fun()
+			{
+				yield 10;
+				yield 20;
+				return 30
+				yield 40;    
+			}			  
+			var gen = fun();
+			console.log(gen.next());		{value: "10", done: false}
+			console.log(gen.next());		{value: "20", done: false}
+			console.log(gen.next());		{value: "30", done: true}
+			console.log(gen.next());		{done: true}
+	
+		- to make a next iteration call use next()
+			The result of next() is always an object with two properties:
+				value: the yielded value.
+				done: true if the function code has finished, otherwise false
+		- to do manual return you can call 'gen.return()'. after that all next() call will yield undefined.
+	
+	what if you do return in it:-
+	????
+	
+	
 -----------------------------
 
 spread oprator somtime give issue in compiling.

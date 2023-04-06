@@ -132,18 +132,9 @@ Git Cherrypick:- You can select the commits individually to merge or not
 	
 -------------
 	
-API debouncing
-useLayoutEffect
-print the number of render
-use case of useRef	
-Axios api cache
-HTTP headers
-debouncing and throttling in react
-cherry picking, git rebase, git merge, stash area, github action, fork
-pass function in setState
-stale closure react
-redux persist
+3 + "3"  	= 33
+3 + "gv"  	= 3gv
+3 + 3	 	= 6
+3 - "3"	 	= 0
+3 - "sdf"	= NaN
 
-express 
- helmet
- puppeter
